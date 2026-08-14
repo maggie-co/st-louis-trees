@@ -1,0 +1,160 @@
+@font-face {
+  font-family: "Helvetica Neue Local";
+  src: local("Helvetica Neue"), local("Helvetica"), local("Arial");
+  font-display: swap;
+}
+
+:root {
+  --paper: #f5f5f2;
+  --ink: #0a0a0a;
+  --gray: #b1b1ac;
+  --gray-dark: #73736e;
+  --line: #1b1b1b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue Local", Helvetica, Arial, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page {
+  min-height: 100svh;
+  padding: 18px 24px 14px;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 16px;
+}
+
+.masthead {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: start;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.identity,
+.status {
+  display: flex;
+  gap: 22px;
+}
+
+.status {
+  justify-content: flex-end;
+  color: var(--gray-dark);
+}
+
+.intro {
+  padding-top: 4px;
+  min-height: 18vh;
+  display: flex;
+  align-items: flex-end;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(72px, 9.2vw, 148px);
+  line-height: 0.79;
+  font-weight: 700;
+  letter-spacing: -0.087em;
+}
+
+.version-list {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+
+.version-link {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr) minmax(140px, 0.6fr) 38px;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.version-number {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-dark);
+}
+
+.version-title {
+  font-size: clamp(24px, 3vw, 44px);
+  line-height: 0.94;
+  font-weight: 700;
+  letter-spacing: -0.048em;
+  color: var(--gray);
+  transition: color 150ms ease;
+}
+
+.version-link:hover .version-title,
+.version-link:focus-visible .version-title {
+  color: var(--ink);
+}
+
+.version-link:focus-visible {
+  outline: none;
+  background: rgba(0, 0, 0, 0.035);
+}
+
+.version-meta {
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--gray-dark);
+}
+
+.version-year {
+  justify-self: end;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 14px 12px 12px;
+  }
+
+  h1 {
+    font-size: clamp(64px, 22vw, 110px);
+  }
+
+  .version-link {
+    grid-template-columns: 1fr auto;
+    row-gap: 6px;
+  }
+
+  .version-number {
+    grid-column: 1 / -1;
+  }
+
+  .version-meta {
+    grid-column: 1 / -1;
+  }
+}
