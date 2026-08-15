@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Maggie Coleman portfolio, bookshelf" />
   <title>Maggie Coleman, Portfolio</title>
-  <link rel="stylesheet" href="styles.css?v=59" />
+  <link rel="stylesheet" href="styles.css?v=67" />
 </head>
 <body>
   <main class="page">
@@ -140,9 +140,13 @@
       const coverTitle = document.createElement("span");
       coverTitle.className = "cover-title";
       coverTitle.textContent = title;
+      const coverCta = document.createElement("span");
+      coverCta.className = "cover-cta";
+      coverCta.innerHTML = "CLICK TO OPEN <span aria-hidden=\"true\">↗</span>";
       coverText.appendChild(coverCategory);
       coverText.appendChild(coverTitle);
       cover.appendChild(coverText);
+      cover.appendChild(coverCta);
       book.insertBefore(spineLabel, spine);
       book.insertBefore(bookPersp, spine);
       bookPersp.appendChild(book3d);
@@ -164,9 +168,10 @@
     let activeBook = null;
 
     function clearShifts() {
+      track.style.setProperty("--center-shift", "0px");
       books.forEach((b) => {
         b.style.left = "";
-        b.style.pointerEvents = "";
+        b.classList.remove("is-before-active");
       });
     }
 
@@ -174,12 +179,22 @@
       book.addEventListener("mouseenter", () => {
         activeBook = book;
         clearShifts();
-        const shift = parseFloat(book.style.getPropertyValue("--w")) + 3;
-        books.forEach((b) => {
-          if (b !== book) b.style.pointerEvents = "none";
-        });
+        // Close the space left by the rotated spine. The margin already
+        // reserves the cover on the right, so only earlier books move.
+        const shift = parseFloat(book.style.getPropertyValue("--w"));
+        // Recenter the visible composition: every resting spine remains in
+        // the width total except this hidden spine, which is replaced by the
+        // 230px open cover.
+        const openWidth = 230;
+        const leftEdgeShift = i > 0 ? shift : 3;
+        const rightEdgeGrowth = i < books.length - 1 ? 238 : openWidth;
+        track.style.setProperty(
+          "--center-shift",
+          `${-(leftEdgeShift + rightEdgeGrowth) / 2}px`
+        );
         for (let j = 0; j < i; j++) {
           books[j].style.left = `${shift}px`;
+          books[j].classList.add("is-before-active");
         }
       });
       book.addEventListener("mouseleave", () => {

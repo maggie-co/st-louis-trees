@@ -133,6 +133,8 @@ h1 {
   flex: 0 0 auto;
   gap: 3px;
   width: var(--track-w, max-content);
+  transform: translateX(var(--center-shift, 0px));
+  transition: transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1);
 }
 
 .category-filter {
@@ -182,9 +184,16 @@ h1 {
 }
 
 .book:hover {
+  left: 3px;
   transform: translateY(-8px);
-  margin-right: 230px;
+  margin-right: 238px;
   z-index: 5;
+}
+
+/* Earlier books move into the open book's former spine footprint. Keep their
+   hit areas above that now-invisible anchor so adjacent hovering still works. */
+.book.is-before-active {
+  z-index: 6;
 }
 
 .book.is-highlighted {
@@ -256,7 +265,6 @@ h1 {
   height: 100%;
   background: var(--spine-bg);
   border: 1px solid var(--line);
-  border-left: none;
   transform-origin: left center;
   transform: rotateY(92deg);
   overflow: hidden;
@@ -285,6 +293,26 @@ h1 {
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.15;
+  color: var(--fg);
+}
+
+.cover-cta {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--gray-dark);
+}
+
+.cover-cta span {
+  font-size: 15px;
   color: var(--fg);
 }
 

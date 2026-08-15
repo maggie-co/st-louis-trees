@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Columbus Archive, Columbus, Indiana, 2025" />
+  <title>Columbus Archive, Maggie Coleman</title>
+  <style>
+    @font-face {
+      font-family: "Helvetica Neue Local";
+      src: local("Helvetica Neue"), local("Helvetica"), local("Arial");
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #f5f5f2;
+      --fg: #0a0a0a;
+      --gray-dark: #6b6b66;
+      --line: #1b1b1b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Helvetica Neue Local", Helvetica, Arial, sans-serif;
+      letter-spacing: -0.025em;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px 24px 80px;
+    }
+
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .masthead a {
+      transition: color 200ms ease;
+    }
+
+    .masthead a:hover {
+      color: var(--gray-dark);
+    }
+
+    .status {
+      color: var(--gray-dark);
+    }
+
+    .project-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .project-nav a {
+      transition: color 200ms ease;
+    }
+
+    .project-nav a:hover {
+      color: var(--gray-dark);
+    }
+
+    .project-nav-top {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .project-nav-bottom {
+      margin-top: 72px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .hero {
+      margin-top: 32px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      align-items: baseline;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--gray-dark);
+    }
+
+    .hero-meta .divider {
+      color: var(--line);
+    }
+
+    h1 {
+      margin: 10px 0 0;
+      font-size: clamp(36px, 6vw, 72px);
+      line-height: 0.98;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-image {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      display: block;
+      margin-top: 32px;
+      cursor: pointer;
+      transition: opacity 200ms ease;
+    }
+
+    .hero-image:hover {
+      opacity: 0.8;
+    }
+
+    .hero-caption {
+      margin-top: 8px;
+      font-size: 10px;
+      color: var(--gray-dark);
+      letter-spacing: 0.01em;
+    }
+
+    .body-copy {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .body-copy p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.6;
+      letter-spacing: -0.01em;
+      max-width: 68ch;
+    }
+
+    .section-label {
+      margin-top: 56px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--gray-dark);
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    .gallery {
+      margin-top: 24px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .gallery.gallery-1 {
+      grid-template-columns: 1fr;
+    }
+
+    .gallery.gallery-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .gallery.gallery-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .gallery figure {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .gallery-image-wrapper {
+      background: #fff;
+      border: 1px solid var(--line);
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+    }
+
+    .gallery.gallery-1 .gallery-image-wrapper {
+      min-height: 320px;
+    }
+
+    .gallery img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+      cursor: pointer;
+      transition: opacity 200ms ease;
+    }
+
+    .gallery img:hover {
+      opacity: 0.75;
+    }
+
+    .gallery figcaption {
+      margin-top: 8px;
+      font-size: 9px;
+      color: var(--gray-dark);
+      cursor: pointer;
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .lightbox.active {
+      display: flex;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .lightbox-image {
+      max-width: 100%;
+      max-height: 75vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-caption {
+      margin-top: 16px;
+      color: #ffffff;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: none;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 200ms ease;
+    }
+
+    .lightbox-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      background: none;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 200ms ease;
+    }
+
+    .lightbox-nav:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .lightbox-prev {
+      left: 20px;
+    }
+
+    .lightbox-next {
+      right: 20px;
+    }
+
+    .lightbox-counter {
+      position: absolute;
+      bottom: 20px;
+      color: #ffffff;
+      font-size: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .gallery,
+      .gallery.gallery-2,
+      .gallery.gallery-4 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .gallery,
+      .gallery.gallery-2,
+      .gallery.gallery-4 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <a href="../index.html">← PORTFOLIO</a>
+      <div class="status"><span>2025</span></div>
+    </header>
+
+    <nav class="project-nav project-nav-top">
+      <a href="../index.html">← Fire Station 20</a>
+      <a href="../index.html">Living Earth Collective →</a>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-meta">
+        <span>Architectural Design II, ARCH 2110</span>
+        <span class="divider">·</span>
+        <span>Columbus, Indiana</span>
+        <span class="divider">·</span>
+        <span>2025</span>
+      </div>
+      <h1>Columbus Archive</h1>
+    </section>
+
+    <section class="body-copy">
+      <p>
+        Columbus, Indiana is known for an exceptional collection of modern
+        architecture designed by prominent architects and designers. This project
+        proposes an archive and visitor center that interprets that legacy through
+        a smaller object: the chair.
+      </p>
+      <p>
+        The archive displays chairs designed by architects represented throughout
+        Columbus, treating furniture as a scaled artifact of larger architectural
+        ideas. The building extends this relationship through a system of ribbons
+        that peel from its mass to form balconies, bookshelves, built-ins,
+        planters, and water features.
+      </p>
+      <p>
+        Visitors enter from the west and move through a mezzanine where furniture
+        is displayed above and below the circulation path. The exhibition opens
+        onto a balcony overlooking the plaza, framing views toward significant
+        buildings and the activity of the city. The sequence moves from the scale
+        of furniture, through the scale of the building, and ultimately to the
+        architecture of Columbus itself.
+      </p>
+    </section>
+
+    <div class="section-label">Model</div>
+    <div class="gallery gallery-1">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_22a_photo_diorama-model_01.jpg" alt="Diorama model photograph 1." data-index="0" />
+        </div>
+        <figcaption>Model.</figcaption>
+      </figure>
+    </div>
+
+    <div class="gallery gallery-2">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_22a_photo_diorama-model_02.jpg" alt="Diorama model photograph 2." data-index="1" />
+        </div>
+        <figcaption>Model detail.</figcaption>
+      </figure>
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_22a_photo_diorama-model_03.jpg" alt="Diorama model photograph 3." data-index="2" />
+        </div>
+        <figcaption>Model detail.</figcaption>
+      </figure>
+    </div>
+
+    <div class="section-label">Site</div>
+    <div class="gallery gallery-2">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_24b_photo_massing-in-site_01.jpg" alt="Massing in site photograph 1." data-index="3" />
+        </div>
+        <figcaption>Massing.</figcaption>
+      </figure>
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_24b_photo_massing-in-site_02.jpg" alt="Massing in site photograph 2." data-index="4" />
+        </div>
+        <figcaption>Massing.</figcaption>
+      </figure>
+    </div>
+
+    <div class="section-label">Drawings</div>
+    <div class="gallery gallery-2">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_25b_drawing_archive-plan_01.jpg" alt="Archive plan drawing 1." data-index="5" />
+        </div>
+        <figcaption>Plan.</figcaption>
+      </figure>
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_25b_drawing_archive-plan_02.jpg" alt="Archive plan drawing 2." data-index="6" />
+        </div>
+        <figcaption>Plan.</figcaption>
+      </figure>
+    </div>
+
+    <div class="gallery gallery-1">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_25c_drawing_archive-section_01.jpg" alt="Archive section drawing." data-index="7" />
+        </div>
+        <figcaption>Section.</figcaption>
+      </figure>
+    </div>
+
+    <div class="gallery gallery-2">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_21c_unrolled-tectonic_01-01.jpg" alt="Unrolled tectonic drawing 1." data-index="8" />
+        </div>
+        <figcaption>Tectonic.</figcaption>
+      </figure>
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_21c_unrolled-tectonic_01-02.jpg" alt="Unrolled tectonic drawing 2." data-index="9" />
+        </div>
+        <figcaption>Tectonic.</figcaption>
+      </figure>
+    </div>
+
+    <div class="section-label">Renderings</div>
+    <div class="gallery gallery-1">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_25d_render_archive-section_02.jpg" alt="Archive section render." data-index="10" />
+        </div>
+        <figcaption>Archive section.</figcaption>
+      </figure>
+    </div>
+
+    <div class="gallery gallery-2">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_13a_render_misread-rooms_01.jpg" alt="Misread rooms render 1." data-index="11" />
+        </div>
+        <figcaption>Interior view.</figcaption>
+      </figure>
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_13a_render_misread-rooms_02.jpg" alt="Misread rooms render 2." data-index="12" />
+        </div>
+        <figcaption>Interior view.</figcaption>
+      </figure>
+    </div>
+
+    <div class="gallery gallery-3">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_13a_render_misread-rooms_03.jpg" alt="Misread rooms render 3." data-index="13" />
+        </div>
+        <figcaption>Interior.</figcaption>
+      </figure>
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_13a_render_misread-rooms_04.jpg" alt="Misread rooms render 4." data-index="14" />
+        </div>
+        <figcaption>Interior.</figcaption>
+      </figure>
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_12c_render_atypical-storage_02.jpg" alt="Atypical storage render." data-index="15" />
+        </div>
+        <figcaption>Detail.</figcaption>
+      </figure>
+    </div>
+
+    <div class="gallery gallery-1">
+      <figure>
+        <div class="gallery-image-wrapper">
+          <img src="assets/fa25_2110_vale_coleman-maggie_12b_render_typical-wall_01.jpg" alt="Typical wall render." data-index="16" />
+        </div>
+        <figcaption>Wall detail.</figcaption>
+      </figure>
+    </div>
+
+    <nav class="project-nav project-nav-bottom">
+      <a href="../index.html">← Fire Station 20</a>
+      <a href="../index.html">Living Earth Collective →</a>
+    </nav>
+  </main>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">&times;</button>
+    <button class="lightbox-nav lightbox-prev" id="lightboxPrev">‹</button>
+    <button class="lightbox-nav lightbox-next" id="lightboxNext">›</button>
+    <div class="lightbox-content">
+      <img class="lightbox-image" id="lightboxImage" src="" alt="" />
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+    <div class="lightbox-counter" id="lightboxCounter"></div>
+  </div>
+
+  <script>
+    const allImages = Array.from(document.querySelectorAll('.gallery img[data-index]'));
+    const heroImage = document.querySelector('.hero-image');
+
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const lightboxCounter = document.getElementById('lightboxCounter');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const lightboxPrev = document.getElementById('lightboxPrev');
+    const lightboxNext = document.getElementById('lightboxNext');
+
+    let currentIndex = 0;
+
+    function openLightbox(index) {
+      currentIndex = index;
+      const img = allImages[index];
+      const caption = img.closest('figure').querySelector('figcaption')?.textContent || '';
+
+      lightboxImage.src = img.src;
+      lightboxImage.alt = img.alt;
+      lightboxCaption.textContent = caption;
+      lightboxCounter.textContent = `${index + 1} / ${allImages.length}`;
+      lightbox.classList.add('active');
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+    }
+
+    function nextImage() {
+      currentIndex = (currentIndex + 1) % allImages.length;
+      const img = allImages[currentIndex];
+      const caption = img.closest('figure').querySelector('figcaption')?.textContent || '';
+
+      lightboxImage.src = img.src;
+      lightboxImage.alt = img.alt;
+      lightboxCaption.textContent = caption;
+      lightboxCounter.textContent = `${currentIndex + 1} / ${allImages.length}`;
+    }
+
+    function prevImage() {
+      currentIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+      const img = allImages[currentIndex];
+      const caption = img.closest('figure').querySelector('figcaption')?.textContent || '';
+
+      lightboxImage.src = img.src;
+      lightboxImage.alt = img.alt;
+      lightboxCaption.textContent = caption;
+      lightboxCounter.textContent = `${currentIndex + 1} / ${allImages.length}`;
+    }
+
+    allImages.forEach((img, index) => {
+      img.addEventListener('click', () => openLightbox(index));
+    });
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxPrev.addEventListener('click', prevImage);
+    lightboxNext.addEventListener('click', nextImage);
+
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        closeLightbox();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') prevImage();
+      if (e.key === 'ArrowRight') nextImage();
+    });
+  </script>
+</body>
+</html>
