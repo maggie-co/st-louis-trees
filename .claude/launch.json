@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "serve-map",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:/Users/Maggie Coleman/portfolio/scripts/serve_map.ps1"],
+      "port": 8420,
+      "autoPort": true
+    },
+    {
+      "name": "portfolio-v2",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:/Users/Maggie Coleman/portfolio/serve_v2.ps1"],
+      "port": 8421
+    }
+  ]
+}
