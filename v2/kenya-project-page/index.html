@@ -306,6 +306,7 @@
     }
 
     .lightbox-caption {
+      display: none;
       margin-top: 16px;
       color: #ffffff;
       font-size: 14px;
@@ -453,11 +454,9 @@
           <source srcset="assets/frame-construction.webp" type="image/webp">
           <img src="assets/frame-construction.jpeg" alt="Maggie Coleman helping secure a timber frame lattice on site during construction." data-index="1" />
         </picture>
-        <figcaption>Framing the timber lattice for the wattle-and-daub structure.</figcaption>
       </figure>
       <figure>
         <video src="assets/construction-video.mp4" controls playsinline preload="metadata"></video>
-        <figcaption>Roofing in progress on site.</figcaption>
       </figure>
     </section>
 
@@ -467,7 +466,6 @@
           <source srcset="assets/team-trio.webp" type="image/webp">
           <img src="assets/team-trio.jpeg" alt="Maggie Coleman with two local GlobeAware coordinators at the project site gate." data-index="2" />
         </picture>
-        <figcaption>With the local coordinators who partnered on the build.</figcaption>
       </figure>
     </section>
 
@@ -503,11 +501,9 @@
     function openLightbox(index) {
       currentIndex = index;
       const img = allImages[index];
-      const caption = img.alt || '';
 
       lightboxImage.src = img.src;
       lightboxImage.alt = img.alt;
-      lightboxCaption.textContent = caption;
       lightboxCounter.textContent = `${index + 1} / ${allImages.length}`;
       lightbox.classList.add('active');
     }
@@ -519,22 +515,18 @@
     function nextImage() {
       currentIndex = (currentIndex + 1) % allImages.length;
       const img = allImages[currentIndex];
-      const caption = img.alt || '';
 
       lightboxImage.src = img.src;
       lightboxImage.alt = img.alt;
-      lightboxCaption.textContent = caption;
       lightboxCounter.textContent = `${currentIndex + 1} / ${allImages.length}`;
     }
 
     function prevImage() {
       currentIndex = (currentIndex - 1 + allImages.length) % allImages.length;
       const img = allImages[currentIndex];
-      const caption = img.alt || '';
 
       lightboxImage.src = img.src;
       lightboxImage.alt = img.alt;
-      lightboxCaption.textContent = caption;
       lightboxCounter.textContent = `${currentIndex + 1} / ${allImages.length}`;
     }
 
