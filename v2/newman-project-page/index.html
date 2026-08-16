@@ -188,6 +188,70 @@
       letter-spacing: 0.01em;
     }
 
+    .poster-figure img {
+      cursor: pointer;
+      transition: opacity 200ms ease;
+    }
+
+    .poster-figure img:hover {
+      opacity: 0.8;
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .lightbox.active {
+      display: flex;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .lightbox-image {
+      max-width: 100%;
+      max-height: 75vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: none;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 200ms ease;
+    }
+
+    .lightbox-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
   </style>
 </head>
 <body>
@@ -245,5 +309,43 @@
       <a href="../index.html">Street Completeness →</a>
     </nav>
   </main>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">&times;</button>
+    <div class="lightbox-content">
+      <img class="lightbox-image" id="lightboxImage" src="" alt="" />
+    </div>
+  </div>
+
+  <script>
+    const posterImage = document.querySelector('.poster-figure img');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    function openLightbox() {
+      lightboxImage.src = posterImage.src;
+      lightboxImage.alt = posterImage.alt;
+      lightbox.classList.add('active');
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+    }
+
+    posterImage.addEventListener('click', openLightbox);
+    lightboxClose.addEventListener('click', closeLightbox);
+
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        closeLightbox();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+    });
+  </script>
 </body>
 </html>
