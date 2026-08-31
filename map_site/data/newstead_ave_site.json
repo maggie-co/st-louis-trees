@@ -1,0 +1,40 @@
+﻿{
+    "type":  "FeatureCollection",
+    "features":  [
+                     {
+                         "type":  "Feature",
+                         "properties":  {
+                                            "name":  "Project Extent",
+                                            "type":  "Green Infrastructure Zone",
+                                            "status":  "Active"
+                                        },
+                         "geometry":  {
+                                          "type":  "Polygon",
+                                          "coordinates":  [
+                                                              [
+                                                                  [
+                                                                      -90.23024025639766,
+                                                                      38.67634953050754
+                                                                  ],
+                                                                  [
+                                                                      -90.2327011433826,
+                                                                      38.67754175096196
+                                                                  ],
+                                                                  [
+                                                                      -90.23637286969574,
+                                                                      38.67264253380343
+                                                                  ],
+                                                                  [
+                                                                      -90.23373230225252,
+                                                                      38.6715390503191
+                                                                  ],
+                                                                  [
+                                                                      -90.23024025639766,
+                                                                      38.67634953050754
+                                                                  ]
+                                                              ]
+                                                          ]
+                                      }
+                     }
+                 ]
+}

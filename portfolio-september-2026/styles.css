@@ -1,0 +1,470 @@
+@font-face {
+  font-family: "Helvetica Neue Local";
+  src: local("Helvetica Neue"), local("Helvetica"), local("Arial");
+  font-display: swap;
+}
+
+:root {
+  --bg: #f5f5f2;
+  --fg: #0a0a0a;
+  --spine-bg: #f5f5f2;
+  --spine-fg: #0a0a0a;
+  --gray-dark: #6b6b66;
+  --line: #1b1b1b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Helvetica Neue Local", Helvetica, Arial, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page {
+  min-height: 100svh;
+  padding: 20px 24px 0;
+}
+
+.intro {
+  margin-top: 20px;
+  padding-top: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  min-height: 16vh;
+  display: flex;
+  align-items: flex-end;
+  gap: 26px;
+}
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.masthead-mark,
+.status {
+  color: var(--gray-dark);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(64px, 8.4vw, 132px);
+  line-height: 0.79;
+  font-weight: 700;
+  letter-spacing: -0.087em;
+}
+
+.intro-divider {
+  align-self: stretch;
+  width: 1px;
+  background: var(--line);
+  margin-top: -20px;
+  margin-bottom: -12px;
+}
+
+.intro-links {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  gap: 10px;
+  padding-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--gray-dark);
+}
+
+.intro-links a {
+  transition: color 200ms ease;
+}
+
+.intro-links a:hover {
+  color: var(--fg);
+}
+
+/* ---- shelf ---- */
+
+.shelf-stage {
+  margin-top: 0;
+  padding-bottom: 40px;
+}
+
+.shelf-viewport {
+  display: flex;
+  justify-content: safe center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 44px 0 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.shelf-viewport::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.shelf-track {
+  display: flex;
+  align-items: flex-end;
+  flex: 0 0 auto;
+  gap: 3px;
+  width: var(--track-w, max-content);
+  transform: translateX(var(--center-shift, 0px));
+  transition: transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+
+.category-filter {
+  display: flex;
+  gap: 22px;
+  align-items: baseline;
+  margin-top: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.filter-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--gray-dark);
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.filter-btn:hover,
+.filter-btn.is-active {
+  color: var(--fg);
+}
+
+.book {
+  position: relative;
+  left: 0;
+  flex: 0 0 auto;
+  width: var(--w, 58px);
+  height: var(--h, 280px);
+  display: block;
+  /* The visible backgrounds belong to the spine and cover faces. Keeping an
+     opaque background here masks the preceding book when it shifts into the
+     vacated spine footprint during hover. */
+  background: transparent;
+  cursor: pointer;
+  transition: width 520ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 300ms ease,
+    margin-right 520ms cubic-bezier(0.22, 0.8, 0.2, 1), transform 360ms ease,
+    left 520ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+
+.book:hover {
+  left: 3px;
+  transform: translateY(-8px);
+  margin-right: 238px;
+  z-index: 5;
+}
+
+/* Earlier books move into the open book's former spine footprint. Keep their
+   hit areas above that now-invisible anchor so adjacent hovering still works. */
+.book.is-before-active {
+  z-index: 6;
+}
+
+.book.is-highlighted {
+  transform: translateY(-40px);
+}
+
+/* Isolated 3D context: .book itself stays a plain 2D box (the JS
+   translateX shift for closing the gap only ever touches this element),
+   while perspective + preserve-3d live entirely inside this wrapper so
+   they can't interact with that shift's own compositing layer. Also,
+   preserve-3d is only switched on while actually hovered, so at most
+   one book is ever a 3D rendering context at a time instead of all 12
+   simultaneously -- fewer concurrent 3D contexts for Chrome's
+   compositor to juggle. */
+.book-persp {
+  position: absolute;
+  inset: 0;
+  perspective: 700px;
+}
+
+.book-3d {
+  position: absolute;
+  inset: 0;
+  transform-style: flat;
+}
+
+.spine-label {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  transform-origin: right center;
+  transition: transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1),
+    opacity 180ms ease 120ms;
+}
+
+.book:hover .spine-label {
+  transform: scaleX(0.04);
+  opacity: 0;
+}
+
+.book:hover .book-3d {
+  transform-style: preserve-3d;
+}
+
+.face-spine,
+.face-cover {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  backface-visibility: hidden;
+  transition: transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+
+.face-spine {
+  left: 0;
+  width: 100%;
+  background: var(--spine-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  transform-origin: right center;
+  transform: rotateY(0deg);
+}
+
+.face-cover {
+  left: 100%;
+  width: 230px;
+  height: 100%;
+  background: var(--spine-bg);
+  border: 1px solid var(--line);
+  transform-origin: left center;
+  transform: rotateY(92deg);
+  overflow: hidden;
+}
+
+.cover-text {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: calc(28px + var(--top-offset, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cover-category {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--gray-dark);
+}
+
+.cover-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--fg);
+}
+
+.cover-cta {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--gray-dark);
+}
+
+.cover-cta span {
+  font-size: 15px;
+  color: var(--fg);
+}
+
+.book:hover .face-spine {
+  transform: rotateY(-92deg);
+}
+
+.book:hover .face-cover {
+  transform: rotateY(0deg);
+}
+
+.book-open-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 8px;
+  padding: 22px;
+  background: var(--spine-bg);
+  color: var(--spine-fg);
+  border-radius: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 260ms ease 140ms;
+  pointer-events: none;
+}
+
+.open-category {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--gray-dark);
+}
+
+.open-title {
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.open-meta {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gray-dark);
+}
+
+.open-description {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0;
+  color: #4a4a45;
+}
+
+/* ---- spine typography ---- */
+
+.spine-label .book-title {
+  position: absolute;
+  left: 50%;
+  bottom: 82px;
+
+  writing-mode: vertical-rl;
+  transform: translateX(-50%) rotate(180deg);
+
+  font-size: clamp(12px, 1.1vw, 16px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--fg);
+  margin: 0;
+}
+
+.spine-label .book-sub {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+
+  writing-mode: vertical-rl;
+  transform: translateX(-50%) rotate(180deg);
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--gray-dark);
+  white-space: nowrap;
+  margin: 0;
+}
+
+.shelf-plank {
+  height: 1px;
+  margin-top: 0;
+  background: var(--line);
+}
+
+.credit {
+  position: fixed;
+  right: 12px;
+  bottom: 8px;
+  z-index: 5;
+}
+
+.credit a,
+.credit span {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--gray-dark);
+  opacity: 0.6;
+  transition: opacity 200ms ease;
+}
+
+.credit a:hover {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 14px 12px 0;
+  }
+
+  h1 {
+    font-size: clamp(52px, 18vw, 96px);
+  }
+
+  .intro {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .intro-links {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 18px;
+    padding-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book,
+  .face-cover,
+  .face-spine {
+    transition-duration: 1ms;
+  }
+}

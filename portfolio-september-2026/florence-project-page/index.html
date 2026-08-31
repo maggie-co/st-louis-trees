@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="La Spezieria, Florence restaurant and spice shop, architectural design" />
+  <title>La Spezieria, Maggie Coleman</title>
+  <style>
+    @font-face {
+      font-family: "Helvetica Neue Local";
+      src: local("Helvetica Neue"), local("Helvetica"), local("Arial");
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #f5f5f2;
+      --fg: #0a0a0a;
+      --gray-dark: #6b6b66;
+      --line: #1b1b1b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Helvetica Neue Local", Helvetica, Arial, sans-serif;
+      letter-spacing: -0.025em;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px 24px 80px;
+    }
+
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .masthead a {
+      transition: color 200ms ease;
+    }
+
+    .masthead a:hover {
+      color: var(--gray-dark);
+    }
+
+    .status {
+      color: var(--gray-dark);
+    }
+
+    .hero {
+      margin-top: 40px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 18px;
+      align-items: baseline;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--gray-dark);
+    }
+
+    .hero-meta .divider {
+      color: var(--line);
+    }
+
+    h1 {
+      margin: 10px 0 28px;
+      font-size: clamp(40px, 7vw, 84px);
+      line-height: 0.92;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    h2 {
+      margin: 40px 0 16px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-image {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      display: block;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      margin-top: 56px;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      display: block;
+      background: #000;
+      cursor: pointer;
+      transition: opacity 200ms ease;
+    }
+
+    .gallery img:hover {
+      opacity: 0.8;
+    }
+
+    .gallery figure {
+      margin: 0;
+    }
+
+    .body-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 56px;
+    }
+
+    .body-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--gray-dark);
+    }
+
+    .body-copy p {
+      margin: 0 0 20px;
+      font-size: 16px;
+      line-height: 1.6;
+      letter-spacing: -0.01em;
+    }
+
+    .body-copy p:last-child {
+      margin-bottom: 0;
+    }
+
+    .project-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .project-nav a {
+      transition: color 200ms ease;
+    }
+
+    .project-nav a:hover {
+      color: var(--gray-dark);
+    }
+
+    .project-nav-top {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .project-nav-bottom {
+      margin-top: 72px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .lightbox.active {
+      display: flex;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .lightbox-image {
+      max-width: 100%;
+      max-height: 75vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: none;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 200ms ease;
+    }
+
+    .lightbox-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      background: none;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 200ms ease;
+    }
+
+    .lightbox-nav:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .lightbox-prev {
+      left: 20px;
+    }
+
+    .lightbox-next {
+      right: 20px;
+    }
+
+    .lightbox-counter {
+      position: absolute;
+      bottom: 20px;
+      color: #ffffff;
+      font-size: 12px;
+    }
+
+    @media (max-width: 720px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <a href="../index.html">← PORTFOLIO</a>
+      <div class="status"><span>2026</span></div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-meta">
+        <span>Adaptive Reuse</span>
+        <span class="divider">·</span>
+        <span>Florence, Italy</span>
+        <span class="divider">·</span>
+        <span>Restaurant & Spezieria</span>
+      </div>
+      <h1>La Spezieria</h1>
+      <p style="margin-top: 20px; font-size: 16px; line-height: 1.6; color: var(--gray-dark);">A spice shop and restaurant exploring salt and spice in Florence's culinary and pharmaceutical history, designed with stepped arches and tiered niches inspired by Carlo Scarpa.</p>
+    </section>
+
+    <section class="body-grid">
+      <div class="body-label">Concept</div>
+      <div class="body-copy">
+        <p>
+          This summer I focused on salt and spice—what first drew me were their architecturally fascinating market displays and their crucial place in Florence's culinary history. The history of salt and spices in Florence stretches back to Rome, where soldiers were often paid in salt rather than currency. Pisa's salt blockade of Florence in the 12th century is why the famous Florentine bread, pane toscano, contains no salt.
+        </p>
+        <p>
+          I became fascinated with the spezieria, a spice shop, as an architectural type. Though mostly antiquated now, its clearest typological ancestor is the city's apothecaries and pharmacies.
+        </p>
+      </div>
+    </section>
+
+    <section class="body-grid">
+      <div class="body-label">Site & Heritage</div>
+      <div class="body-copy">
+        <p>
+          La Spezieria occupies what was once the Medici Botanical Garden grounds, adjacent to San Marco. The herbs cultivated here for the apothecary served culinary, medicinal, and artistic purposes. The facade references this pharmaceutical heritage. Situated perpendicular to the historic Farmacia facade, it borrows its proportions as a formal gesture.
+        </p>
+      </div>
+    </section>
+
+    <section class="gallery">
+      <figure>
+        <img src="assets/model-detail-01.jpg" alt="Architectural model detail showing stepped arches and niches" data-index="0" />
+      </figure>
+      <figure>
+        <img src="assets/model-detail-02.jpg" alt="Model with salt showing material and scale" data-index="1" />
+      </figure>
+      <figure>
+        <img src="assets/floor-plan.jpg" alt="La Spezieria floor plan at 1:100" data-index="2" />
+      </figure>
+      <figure>
+        <img src="assets/model-box.jpg" alt="Complete architectural model in display box" data-index="3" />
+      </figure>
+      <figure>
+        <img src="assets/elevation-detail.jpg" alt="Building elevation studies" data-index="4" />
+      </figure>
+      <figure>
+        <img src="assets/section-study.jpg" alt="Cross-section showing tiered design" data-index="5" />
+      </figure>
+    </section>
+
+    <section class="body-grid">
+      <div class="body-label">Design Language</div>
+      <div class="body-copy">
+        <p>
+          I drew heavily from Carlo Scarpa's work, implementing his stepped arches and niches across multiple scales, from furniture to the building itself. This language creates a visual rhythm and sense of layered discovery throughout the space.
+        </p>
+      </div>
+    </section>
+
+    <section class="body-grid">
+      <div class="body-label">Program</div>
+      <div class="body-copy">
+        <p>
+          La Spezieria functions as both a restaurant and spezieria—a spice shop. Spices, salts, and herbs are displayed in the niches formed by the arches and occupy half of the central counter. The other half serves as a bar, featuring spice and salt-based beverages. A rooftop garden hangs above the dining space, so diners eat surrounded by their culinary sources.
+        </p>
+      </div>
+    </section>
+
+    <section class="body-grid">
+      <div class="body-label">Spatial Organization</div>
+      <div class="body-copy">
+        <p>
+          The grid comprises ten-by-ten-foot modules, offset in plan, creating pockets of sightlines and intimate dining alcoves. A spice cabinet at scale stores fragments and friezes from the building, containing reliefs of key sections. These compressed fragments emphasize the tiered, layered, stepped Scarpa design language throughout the project.
+        </p>
+      </div>
+    </section>
+
+    <section class="gallery" style="grid-template-columns: 1fr; margin-top: 56px;">
+      <figure>
+        <img src="assets/model-full-view.jpg" alt="Complete La Spezieria architectural model" data-index="6" />
+      </figure>
+    </section>
+
+  </main>
+
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">&times;</button>
+    <button class="lightbox-nav lightbox-prev" id="lightboxPrev">‹</button>
+    <button class="lightbox-nav lightbox-next" id="lightboxNext">›</button>
+    <div class="lightbox-content">
+      <img class="lightbox-image" id="lightboxImage" src="" alt="" />
+    </div>
+    <div class="lightbox-counter" id="lightboxCounter"></div>
+  </div>
+
+  <script>
+    const allImages = Array.from(document.querySelectorAll('img[data-index]'));
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxCounter = document.getElementById('lightboxCounter');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const lightboxPrev = document.getElementById('lightboxPrev');
+    const lightboxNext = document.getElementById('lightboxNext');
+
+    let currentIndex = 0;
+
+    function openLightbox(index) {
+      currentIndex = index;
+      const img = allImages[index];
+      lightboxImage.src = img.src;
+      lightboxImage.alt = img.alt;
+      lightboxCounter.textContent = `${index + 1} / ${allImages.length}`;
+      lightbox.classList.add('active');
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+    }
+
+    function nextImage() {
+      currentIndex = (currentIndex + 1) % allImages.length;
+      const img = allImages[currentIndex];
+      lightboxImage.src = img.src;
+      lightboxImage.alt = img.alt;
+      lightboxCounter.textContent = `${currentIndex + 1} / ${allImages.length}`;
+    }
+
+    function prevImage() {
+      currentIndex = (currentIndex - 1 + allImages.length) % allImages.length;
+      const img = allImages[currentIndex];
+      lightboxImage.src = img.src;
+      lightboxImage.alt = img.alt;
+      lightboxCounter.textContent = `${currentIndex + 1} / ${allImages.length}`;
+    }
+
+    allImages.forEach((img, index) => {
+      img.addEventListener('click', () => openLightbox(index));
+    });
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxPrev.addEventListener('click', prevImage);
+    lightboxNext.addEventListener('click', nextImage);
+
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        closeLightbox();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') prevImage();
+      if (e.key === 'ArrowRight') nextImage();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Water Main",
+        "utility": "Water",
+        "diameter": "8 in",
+        "material": "PVC",
+        "depth": "4-5 ft"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.23024, 38.67635],
+          [-90.23270, 38.67754],
+          [-90.23637, 38.67264]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Sanitary Sewer",
+        "utility": "Sewer",
+        "diameter": "6 in",
+        "material": "Clay Tile",
+        "depth": "8-10 ft"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.23270, 38.67754],
+          [-90.23373, 38.67154],
+          [-90.23024, 38.67635]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Storm Sewer",
+        "utility": "Storm Drain",
+        "diameter": "12 in",
+        "material": "Concrete",
+        "depth": "6-8 ft"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.23637, 38.67264],
+          [-90.23373, 38.67154]
+        ]
+      }
+    }
+  ]
+}

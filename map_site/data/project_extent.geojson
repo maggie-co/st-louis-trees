@@ -1,0 +1,24 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Project Extent",
+        "description": "Polygon boundary for i-Tree Canopy analysis"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-90.23024, 38.67635],
+            [-90.23270, 38.67754],
+            [-90.23637, 38.67264],
+            [-90.23373, 38.67154],
+            [-90.23024, 38.67635]
+          ]
+        ]
+      }
+    }
+  ]
+}
