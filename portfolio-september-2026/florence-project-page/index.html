@@ -112,11 +112,26 @@
       display: block;
     }
 
+    .section-label {
+      margin-top: 56px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--gray-dark);
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
     .gallery {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 3px;
-      margin-top: 56px;
+      margin-top: 16px;
+    }
+
+    .gallery.gallery-3 {
+      grid-template-columns: repeat(3, 1fr);
     }
 
     .gallery img {
@@ -333,24 +348,72 @@
       </div>
     </section>
 
+    <div class="section-label">Model</div>
     <section class="gallery">
       <figure>
-        <img src="assets/model-detail-01.jpg" alt="Architectural model detail showing stepped arches and niches" data-index="0" />
+        <img src="assets/photo-furniture-01.jpg" alt="La Spezieria model photograph" data-index="0" />
       </figure>
       <figure>
-        <img src="assets/model-detail-02.jpg" alt="Model with salt showing material and scale" data-index="1" />
+        <img src="assets/photo-furniture-02.jpg" alt="La Spezieria model photograph" data-index="1" />
       </figure>
       <figure>
-        <img src="assets/floor-plan.jpg" alt="La Spezieria floor plan at 1:100" data-index="2" />
+        <img src="assets/photo-furniture-03.jpg" alt="La Spezieria model photograph" data-index="2" />
       </figure>
       <figure>
-        <img src="assets/model-box.jpg" alt="Complete architectural model in display box" data-index="3" />
+        <img src="assets/photo-furniture-04.jpg" alt="La Spezieria model photograph" data-index="3" />
       </figure>
       <figure>
-        <img src="assets/elevation-detail.jpg" alt="Building elevation studies" data-index="4" />
+        <img src="assets/photo-furniture-05.jpg" alt="La Spezieria model photograph" data-index="4" />
       </figure>
       <figure>
-        <img src="assets/section-study.jpg" alt="Cross-section showing tiered design" data-index="5" />
+        <img src="assets/photo-furniture-06.jpg" alt="La Spezieria model photograph" data-index="5" />
+      </figure>
+      <figure>
+        <img src="assets/photo-furniture-07.jpg" alt="La Spezieria model photograph" data-index="6" />
+      </figure>
+      <figure>
+        <img src="assets/photo-furniture-08.jpg" alt="La Spezieria model photograph" data-index="7" />
+      </figure>
+      <figure>
+        <img src="assets/photo-box-model.jpg" alt="La Spezieria box model" data-index="8" />
+      </figure>
+    </section>
+
+    <div class="section-label">Drawings</div>
+    <section class="gallery">
+      <figure>
+        <img src="assets/drawing-furniture-01.jpg" alt="Furniture design drawing" data-index="9" />
+      </figure>
+      <figure>
+        <img src="assets/drawing-furniture-02.jpg" alt="Furniture design drawing" data-index="10" />
+      </figure>
+      <figure>
+        <img src="assets/drawing-furniture-03.jpg" alt="Furniture design drawing" data-index="11" />
+      </figure>
+      <figure>
+        <img src="assets/drawing-plan.jpg" alt="La Spezieria floor plan" data-index="12" />
+      </figure>
+      <figure>
+        <img src="assets/drawing-section.jpg" alt="La Spezieria section" data-index="13" />
+      </figure>
+      <figure>
+        <img src="assets/drawing-precedent-01.jpg" alt="Precedent study" data-index="14" />
+      </figure>
+      <figure>
+        <img src="assets/drawing-precedent-02.jpg" alt="Precedent study" data-index="15" />
+      </figure>
+    </section>
+
+    <div class="section-label">Details</div>
+    <section class="gallery">
+      <figure>
+        <img src="assets/photo-still-life.jpg" alt="La Spezieria design detail" data-index="16" />
+      </figure>
+      <figure>
+        <img src="assets/photo-relief-01.jpg" alt="La Spezieria relief detail" data-index="17" />
+      </figure>
+      <figure>
+        <img src="assets/photo-relief-02.jpg" alt="La Spezieria relief detail" data-index="18" />
       </figure>
     </section>
 
@@ -379,12 +442,6 @@
           The grid comprises ten-by-ten-foot modules, offset in plan, creating pockets of sightlines and intimate dining alcoves. A spice cabinet at scale stores fragments and friezes from the building, containing reliefs of key sections. These compressed fragments emphasize the tiered, layered, stepped Scarpa design language throughout the project.
         </p>
       </div>
-    </section>
-
-    <section class="gallery" style="grid-template-columns: 1fr; margin-top: 56px;">
-      <figure>
-        <img src="assets/model-full-view.jpg" alt="Complete La Spezieria architectural model" data-index="6" />
-      </figure>
     </section>
 
   </main>
