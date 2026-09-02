@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Layer Exporter</title>
+<style>
+  body {
+    font-family: monospace;
+    background: #1a1a1a;
+    color: #ccc;
+    padding: 20px;
+    margin: 0;
+  }
+  #status {
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 20px;
+    max-width: 600px;
+    color: #999;
+  }
+  .progress { color: #8fcf9f; }
+  .error { color: #ff6b6b; }
+  select, button {
+    background: #333;
+    color: #ccc;
+    border: 1px solid #666;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 13px;
+  }
+  button { margin-left: 10px; }
+  button:hover { background: #444; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  #canvas { display: none; }
+</style>
+</head>
+<body>
+
+<h2>Layer Exporter</h2>
+<p>Export each layer as transparent PNG (1200×800px)</p>
+
+<div>
+  <select id="layerSelect">
+    <option value="">-- Select a layer --</option>
+  </select>
+  <button id="exportBtn" disabled onclick="exportSelected()">Export Layer</button>
+</div>
+
+<div id="status"></div>
+<canvas id="canvas" width="1200" height="800"></canvas>
+
+<script>
+const SITE_COLOR = '#2a1a4d';
+const TORNADO_COLOR = '#3d3a6b';
+const MSD_COLOR = '#2f6b8a';
+const WATERCANOPY_COLOR = '#8fcf9f';
+
+const LAYERS = [
+  { id: 'bounding-box', file: null, geomType: 'line', label: 'Bounding Box', color: '#666666', opacity: 1 },
+  { id: 'proposed-redesign-site', file: 'newstead_ave_site.json', geomType: 'polygon', label: 'Proposed Site', color: '#ffffff', opacity: 0.35 },
+  { id: 'tornado-tree-damage', file: 'tornado_tree_damage_2025.json', geomType: 'point', label: 'Tornado Damage', color: TORNADO_COLOR, opacity: 0.8 },
+  { id: 'tornado-path', file: 'tornado_path_2025.json', geomType: 'polygon', label: 'Tornado Path', color: TORNADO_COLOR, opacity: 0.4 },
+  { id: 'msd-ownership', file: 'msd_ownership.json', geomType: 'polygon', label: 'MSD Ownership', color: MSD_COLOR },
+  { id: 'msd-stormwater-projects', file: 'msd_large_stormwater_projects.json', geomType: 'polygon', label: 'MSD Stormwater', color: MSD_COLOR },
+  { id: 'msd-problem-areas', file: 'msd_problem_areas.json', geomType: 'polygon', label: 'MSD Problem Areas', color: MSD_COLOR },
+  { id: 'modern-hydro', file: 'modern_hydro_flow_routes.json', geomType: 'line', label: 'Modern Flow Routes', color: WATERCANOPY_COLOR },
+  { id: 'rivers-lakes', file: 'rivers_and_lakes.json', geomType: 'polygon', label: 'Rivers & Lakes', color: WATERCANOPY_COLOR, opacity: 0.5 },
+  { id: 'floodplain', file: 'stl_floodplain.json', geomType: 'polygon', label: 'FEMA Floodplain', color: WATERCANOPY_COLOR, opacity: 0.4 },
+  { id: 'trees', file: 'trees_slim.json', geomType: 'point', label: 'Trees', color: '#ffffff' }
+];
+
+const select = document.getElementById('layerSelect');
+const exportBtn = document.getElementById('exportBtn');
+const status = document.getElementById('status');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+LAYERS.forEach(layer => {
+  const opt = document.createElement('option');
+  opt.value = layer.id;
+  opt.textContent = layer.label;
+  select.appendChild(opt);
+});
+
+select.addEventListener('change', () => {
+  exportBtn.disabled = !select.value;
+});
+
+function log(text, className = '') {
+  const line = document.createElement('div');
+  if (className) line.className = className;
+  line.textContent = text;
+  status.appendChild(line);
+}
+
+function getBounds(geojson) {
+  let minLon = 180, maxLon = -180, minLat = 90, maxLat = -90;
+
+  function processCoord(lon, lat) {
+    minLon = Math.min(minLon, lon);
+    maxLon = Math.max(maxLon, lon);
+    minLat = Math.min(minLat, lat);
+    maxLat = Math.max(maxLat, lat);
+  }
+
+  geojson.features.forEach(f => {
+    const geom = f.geometry;
+    if (geom.type === 'Point') {
+      processCoord(geom.coordinates[0], geom.coordinates[1]);
+    } else if (geom.type === 'LineString') {
+      geom.coordinates.forEach(c => processCoord(c[0], c[1]));
+    } else if (geom.type === 'Polygon') {
+      geom.coordinates.forEach(ring => {
+        ring.forEach(c => processCoord(c[0], c[1]));
+      });
+    } else if (geom.type === 'MultiPolygon') {
+      geom.coordinates.forEach(poly => {
+        poly.forEach(ring => {
+          ring.forEach(c => processCoord(c[0], c[1]));
+        });
+      });
+    }
+  });
+
+  return { minLon, maxLon, minLat, maxLat };
+}
+
+function lonLatToCanvas(lon, lat, bounds, padding = 40) {
+  const { minLon, maxLon, minLat, maxLat } = bounds;
+  const width = canvas.width - padding * 2;
+  const height = canvas.height - padding * 2;
+
+  const x = padding + ((lon - minLon) / (maxLon - minLon)) * width;
+  const y = padding + ((maxLat - lat) / (maxLat - minLat)) * height;
+
+  return { x, y };
+}
+
+function drawGeometry(geom, bounds, color, opacity, padding = 40) {
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = opacity;
+  ctx.lineWidth = 1.5;
+
+  if (geom.type === 'Point') {
+    const pos = lonLatToCanvas(geom.coordinates[0], geom.coordinates[1], bounds, padding);
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (geom.type === 'LineString') {
+    ctx.beginPath();
+    geom.coordinates.forEach((c, i) => {
+      const pos = lonLatToCanvas(c[0], c[1], bounds, padding);
+      if (i === 0) ctx.moveTo(pos.x, pos.y);
+      else ctx.lineTo(pos.x, pos.y);
+    });
+    ctx.stroke();
+  } else if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
+    const polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+    polys.forEach(poly => {
+      poly.forEach((ring, ringIdx) => {
+        ctx.beginPath();
+        ring.forEach((c, i) => {
+          const pos = lonLatToCanvas(c[0], c[1], bounds, padding);
+          if (i === 0) ctx.moveTo(pos.x, pos.y);
+          else ctx.lineTo(pos.x, pos.y);
+        });
+        ctx.closePath();
+        if (ringIdx === 0) ctx.fill();
+        ctx.stroke();
+      });
+    });
+  }
+
+  ctx.globalAlpha = 1.0;
+}
+
+async function exportSelected() {
+  const layerId = select.value;
+  if (!layerId) return;
+
+  const layer = LAYERS.find(l => l.id === layerId);
+  exportBtn.disabled = true;
+  log(`Exporting ${layer.label}...`, 'progress');
+
+  try {
+    await exportLayer(layer);
+    log(`✓ Downloaded ${layer.label}`, 'progress');
+  } catch (e) {
+    log(`✗ Error: ${e.message}`, 'error');
+  } finally {
+    exportBtn.disabled = false;
+  }
+}
+
+async function exportLayer(layer) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Clear canvas
+      ctx.fillStyle = '#00000000';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let geojson;
+
+      if (layer.id === 'bounding-box') {
+        geojson = {
+          type: 'FeatureCollection',
+          features: [{
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: [
+                [-90.330, 38.520],
+                [-90.157, 38.520],
+                [-90.157, 38.785],
+                [-90.330, 38.785],
+                [-90.330, 38.520]
+              ]
+            }
+          }]
+        };
+      } else {
+        const res = await fetch(`data/${layer.file}`);
+        geojson = await res.json();
+      }
+
+      // Get bounds
+      const bounds = getBounds(geojson);
+
+      // Draw border/extent
+      const padding = 40;
+      ctx.strokeStyle = '#666666';
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.6;
+      const topLeft = lonLatToCanvas(bounds.minLon, bounds.maxLat, bounds, padding);
+      const bottomRight = lonLatToCanvas(bounds.maxLon, bounds.minLat, bounds, padding);
+      ctx.strokeRect(topLeft.x, topLeft.y, bottomRight.x - topLeft.x, bottomRight.y - topLeft.y);
+      ctx.globalAlpha = 1.0;
+
+      // Draw features
+      const opacity = layer.opacity !== undefined ? layer.opacity : 0.7;
+      geojson.features.forEach(f => {
+        drawGeometry(f.geometry, bounds, layer.color, opacity, padding);
+      });
+
+      // Export
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${layer.id}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        resolve();
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+</script>
+
+</body>
+</html>

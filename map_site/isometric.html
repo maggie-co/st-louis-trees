@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>St. Louis Flood &amp; Canopy Infrastructure</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+  :root {
+    --bg: #161616;
+    --panel: #1a1a1a;
+    --border: #3a3a3a;
+    --text: #e8e8e8;
+    --muted: #999999;
+    --accent: #f7d03c;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Times New Roman', Times, serif;
+  }
+  #map { position: absolute; inset: 0; }
+
+  #panel {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: 290px;
+    max-height: calc(100% - 32px);
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 16px;
+    z-index: 2;
+  }
+  #panel h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+  }
+  #panel .subtitle {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--muted);
+    margin: 0 0 16px;
+  }
+  .group-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin: 16px 0 4px;
+    font-weight: 600;
+  }
+  .group-label:first-of-type { margin-top: 0; }
+
+  .layer-row {
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13.5px;
+    position: relative;
+  }
+  .group-label + .layer-row { border-top: none; }
+  .layer-row .row-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .layer-row label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .swatch {
+    width: 10px;
+    height: 10px;
+    flex: none;
+    border-radius: 2px;
+  }
+  .layer-row input[type="checkbox"] {
+    accent-color: var(--accent);
+  }
+  .info-btn {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    border-radius: 50%;
+    border: 1px solid var(--muted);
+    background: transparent;
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'Times New Roman', Times, serif;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+    padding: 0;
+  }
+  .info-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .info-popover {
+    display: none;
+    margin-top: 6px;
+    background: #111111;
+    border: 1px solid var(--border);
+    padding: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .info-popover.open { display: block; }
+  .info-popover strong { color: var(--text); display: block; margin-bottom: 4px; }
+  .info-popover .cite {
+    display: block;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+    font-style: italic;
+    font-size: 11px;
+  }
+
+  .maplibregl-popup-content {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 13px;
+    padding: 10px 12px;
+    max-width: 260px;
+  }
+  .maplibregl-popup-tip { border-top-color: var(--panel) !important; }
+  .maplibregl-popup-close-button { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div id="panel">
+  <h1>St. Louis Flood &amp; Canopy Infrastructure</h1>
+  <div id="layer-list"></div>
+</div>
+
+<script>
+/*
+ * Inferno colormap approximation (matplotlib "inferno"), sampled at 10
+ * canonical stops and linearly interpolated in RGB space for arbitrary t.
+ * Used to give each layer group its own band of the palette.
+ */
+const INFERNO_STOPS = [
+  '#000004', '#1b0c41', '#4a0c6b', '#781c6d', '#a52c60',
+  '#cf4446', '#ed6925', '#fb9a06', '#f7d03c', '#fcffa4'
+];
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function rgbToHex(rgb) {
+  return '#' + rgb.map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+}
+function infernoColor(t) {
+  t = Math.max(0, Math.min(1, t));
+  const scaled = t * (INFERNO_STOPS.length - 1);
+  const i = Math.floor(scaled);
+  const frac = scaled - i;
+  if (i >= INFERNO_STOPS.length - 1) return INFERNO_STOPS[INFERNO_STOPS.length - 1];
+  const a = hexToRgb(INFERNO_STOPS[i]);
+  const b = hexToRgb(INFERNO_STOPS[i + 1]);
+  return rgbToHex(a.map((v, idx) => v + (b[idx] - v) * frac));
+}
+/* Assign each group a band of the colormap; layers within a group are
+ * spread evenly across that band. Ordered dark -> bright, deliberately
+ * pushed toward the extremes for contrast against the dark canvas:
+ * water (deep indigo/black) -> hydrology history (violet) -> flood risk
+ * (magenta-red) -> MSD infrastructure (orange) -> canopy (sole bright
+ * pale-yellow highlight, reserved for this one layer only). */
+function bandColors(start, end, count) {
+  if (count === 1) return [infernoColor((start + end) / 2)];
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    colors.push(infernoColor(start + (end - start) * (i / (count - 1))));
+  }
+  return colors;
+}
+/*
+ * Layer config. Each entry describes one source/layer pair.
+ * geomType drives which MapLibre layer type + paint we build.
+ * showInfo controls whether the group gets a clickable info icon.
+ * source/detail are shown in the click-triggered info popover as the
+ * short description + cited source.
+ *
+ * Six-group color ramp (top of legend -> bottom), per requested palette:
+ * Proposed Redesign Site, Tornado, MSD, FEMA flood, Water & Canopy, City Boundary.
+ */
+/* mako-inspired ramp (dark purple -> blue -> teal -> pale green),
+ * ordered top-of-legend (darkest/most purple) to bottom (lightest). */
+const SITE_COLOR = '#2a1a4d';
+const TORNADO_COLOR = '#3d3a6b';
+const MSD_COLOR = '#2f6b8a';
+const FEMA_COLOR = '#3a9188';
+const WATERCANOPY_COLOR = '#8fcf9f';
+const BOUNDARY_COLOR = '#6b6b6b';
+
+const LAYERS = [
+  {
+    id: 'bounding-box', file: null, geomType: 'line', group: null, showInfo: false,
+    label: 'Isometric Bounding Box', color: '#666666', opacity: 1, defaultOn: true,
+    source: 'Manual definition',
+    detail: 'Rectangular bounds for isometric visualization.',
+    noPopup: true, inline: true
+  },
+  {
+    id: 'proposed-redesign-site', file: 'newstead_ave_site.json', geomType: 'polygon', group: null, showInfo: false,
+    label: 'Proposed Redesign Site', color: '#ffffff', opacity: 0.35, defaultOn: true,
+    source: 'Newstead Ave (Kossuth to Carter Ave)',
+    detail: 'Site boundary for proposed green infrastructure redesign.',
+    noPopup: true
+  },
+  {
+    id: 'tornado-tree-damage', file: 'tornado_tree_damage_2025.json', geomType: 'point', group: 'May 2025 Tornado', showInfo: true,
+    label: 'Tree damage points', color: TORNADO_COLOR, opacity: 0.8, defaultOn: true,
+    source: 'National Weather Service Damage Assessment Toolkit',
+    detail: '441 tree-damage points: uprooted, snapped trunks, branch breaks. Surveyed June 2, 2025 onward. Part of 852 total damage points in revised assessment. (2025)',
+    popup: f => `<strong>${f.dod_txt || 'Tree damage'}</strong><br>EF Scale: ${f.efscale || 'n/a'}<br>Damage degree: ${f.damage_txt || 'n/a'}`
+  },
+  {
+    id: 'tornado-path', file: 'tornado_path_2025.json', geomType: 'polygon', group: 'May 2025 Tornado', showInfo: true,
+    label: 'Tornado path (EF-3)', color: TORNADO_COLOR, opacity: 0.4, defaultOn: true,
+    source: 'City of St. Louis / National Weather Service',
+    detail: 'May 16, 2025 EF-3 tornado track. Path width: 3,168 yards (1.8 miles). Survey date: June 2, 2025. Revised assessment with 10,000+ damage points published June 2026. (2025)',
+    popup: f => `<strong>EF-${f.ef_rank} Tornado — May 16, 2025</strong><br>Structures exposed: ${f.structures_exposed || 'n/a'}`
+  },
+  {
+    id: 'msd-ownership', file: 'msd_ownership.json', geomType: 'polygon', group: 'MSD infrastructure', showInfo: true,
+    label: 'MSD-owned parcels', color: MSD_COLOR, pattern: 'hatch-cross', defaultOn: true,
+    source: 'Metropolitan St. Louis Sewer District (MSD_OWNERSHIP)',
+    detail: '292 parcels owned by MSD. (2020)',
+    popup: f => `<strong>${f.Address || 'MSD parcel'}</strong><br>${f.Owner_1 || ''}`
+  },
+  {
+    id: 'msd-stormwater-projects', file: 'msd_large_stormwater_projects.json', geomType: 'polygon', group: 'MSD infrastructure', showInfo: true,
+    label: 'MSD large stormwater projects', color: MSD_COLOR, pattern: 'hatch-neg45', defaultOn: true,
+    source: 'Metropolitan St. Louis Sewer District (MSD_LargeScale_Stormwater_Projects)',
+    detail: '262 parcels within large-scale MSD stormwater project footprints. (2020)',
+    popup: f => `<strong>${(f.address || '').trim() || 'Stormwater project parcel'}</strong><br>${f.subtype || ''} ${f.poly_type || ''}<br>${f.notes || ''}`
+  },
+  {
+    id: 'msd-problem-areas', file: 'msd_problem_areas.json', geomType: 'polygon', group: 'MSD infrastructure', showInfo: true,
+    label: 'MSD problem areas', color: MSD_COLOR, pattern: 'hatch-45', defaultOn: true,
+    source: 'Metropolitan St. Louis Sewer District (MSD_ProblemAreas)',
+    detail: '77 known stormwater/sewer problem areas identified by MSD. (2020)',
+    popup: f => `<strong>MSD problem area</strong><br>${f.PROBAREA || ''}`
+  },
+  {
+    id: 'modern-hydro', file: 'modern_hydro_flow_routes.json', geomType: 'line', group: 'Water & Canopy', showInfo: true,
+    label: 'Modern flow routes', color: WATERCANOPY_COLOR, defaultOn: true,
+    source: 'City of St. Louis Flood Risk Map (ModernHydroFlowRoutes)',
+    detail: 'Modeled current-day surface flow paths, derived hydrology. 136 features. (2020)',
+    popup: f => `<strong>Modeled flow route</strong>`
+  },
+  {
+    id: 'rivers-lakes', file: 'rivers_and_lakes.json', geomType: 'polygon', group: 'Water & Canopy', showInfo: true,
+    label: 'Rivers and Lakes', color: WATERCANOPY_COLOR, opacity: 0.5, defaultOn: true,
+    source: 'City of St. Louis Flood Risk Map (STLOUIS RIVERS + HistoricLakes)',
+    detail: 'Named rivers and lakes, merged into one layer. 27 features: 25 rivers, 2 lakes (one no longer open water). (2020)',
+    popup: f => `<strong>${f.name || f.kind}</strong><br>${f.kind}${f.municipality ? ' — ' + f.municipality + ', ' + f.state : ''}${f.source_detail ? '<br>Source: ' + f.source_detail : ''}`
+  },
+  {
+    id: 'floodplain', file: 'stl_floodplain.json', geomType: 'polygon', group: 'Water & Canopy', showInfo: true,
+    label: 'FEMA floodplain', color: WATERCANOPY_COLOR, opacity: 0.4, defaultOn: true,
+    source: 'City of St. Louis Flood Risk Map (STL_Floodplain)',
+    detail: 'FLD_ZONE / SFHA_TF classification, 329 features. City-maintained FEMA-derived layer. (2020)',
+    popup: f => `<strong>Flood zone ${f.FLD_ZONE || ''}</strong><br>SFHA: ${f.SFHA_TF === 'T' ? 'Yes' : 'No'}<br>Floodway: ${f.FLOODWAY || 'n/a'}`
+  },
+  {
+    id: 'trees', file: 'trees_slim.json', geomType: 'point', group: 'Water & Canopy', showInfo: true,
+    label: 'Trees', color: '#ffffff', defaultOn: true,
+    source: 'City of St. Louis Tree Inventory',
+    detail: 'Point shapefile, reprojected from NAD83 StatePlane MO East (ftUS) to WGS84. DBH = diameter at breast height (trunk diameter measured 4.5ft above ground), the standard forestry measure of tree size. (2020)',
+    popup: f => `<strong>${f.species || 'Unknown species'}</strong><br>DBH: ${f.dbh}"<br>Condition: ${f.condition || 'n/a'}<br>${f.address || ''}`
+  },
+];
+
+const panel = document.getElementById('layer-list');
+let lastGroup = null;
+const HATCH_CSS = {
+  'hatch-45': 'repeating-linear-gradient(45deg, ' + MSD_COLOR + ' 0 2px, transparent 2px 6px)',
+  'hatch-neg45': 'repeating-linear-gradient(-45deg, ' + MSD_COLOR + ' 0 2px, transparent 2px 6px)',
+  'hatch-cross': 'repeating-linear-gradient(45deg, ' + MSD_COLOR + ' 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, ' + MSD_COLOR + ' 0 2px, transparent 2px 6px)'
+};
+LAYERS.forEach(l => {
+  if (l.group !== lastGroup) {
+    if (l.group) {
+      const gl = document.createElement('div');
+      gl.className = 'group-label';
+      gl.textContent = l.group;
+      panel.appendChild(gl);
+    }
+    lastGroup = l.group;
+  }
+  const swatchStyle = l.pattern ? `background:${HATCH_CSS[l.pattern]}` : `background:${l.color}`;
+  const row = document.createElement('div');
+  row.className = 'layer-row';
+  row.innerHTML = `
+    <div class="row-main">
+      <label>
+        <input type="checkbox" id="toggle-${l.id}" ${l.defaultOn ? 'checked' : ''}>
+        <span class="swatch" style="${swatchStyle}"></span>
+        ${l.label}
+      </label>
+      ${l.showInfo ? `<button type="button" class="info-btn" id="info-btn-${l.id}">i</button>` : ''}
+    </div>
+    ${l.showInfo ? `
+      <div class="info-popover" id="info-popover-${l.id}">
+        <strong>${l.label}</strong>
+        ${l.detail}
+        <span class="cite">Source: ${l.source}</span>
+      </div>
+    ` : ''}
+  `;
+  panel.appendChild(row);
+});
+
+// Click-to-toggle info popovers; clicking elsewhere or the same icon closes them.
+document.querySelectorAll('.info-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const id = btn.id.replace('info-btn-', '');
+    const pop = document.getElementById(`info-popover-${id}`);
+    const isOpen = pop.classList.contains('open');
+    document.querySelectorAll('.info-popover.open').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.info-btn.active').forEach(b => b.classList.remove('active'));
+    if (!isOpen) {
+      pop.classList.add('open');
+      btn.classList.add('active');
+    }
+  });
+});
+document.addEventListener('click', () => {
+  document.querySelectorAll('.info-popover.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.info-btn.active').forEach(b => b.classList.remove('active'));
+});
+
+window.map = new maplibregl.Map({
+  container: 'map',
+  style: {
+    version: 8,
+    sources: {
+      'dark-basemap': {
+  type: 'raster',
+  tiles: [
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+  ],
+  tileSize: 256,
+  attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
+},
+    },
+    layers: [
+      {
+        id: 'background',
+        type: 'background',
+        paint: { 'background-color': '#161616' }
+      },
+      {
+        id: 'dark-basemap-layer',
+        type: 'raster',
+        source: 'dark-basemap',
+        paint: { 'raster-opacity': 0.9, 'raster-brightness-max': 0.45 }
+      }
+    ]
+  },
+  center: [-90.25, 38.63],
+  zoom: 11.5
+});
+
+map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+map.on('load', () => {
+  map.addSource('osm-labels', {
+    type: 'vector',
+    tiles: ['https://tile.openstreetmap.org/data/v3/{z}/{x}/{y}.pbf'],
+    minzoom: 0,
+    maxzoom: 14
+  });
+
+  map.addLayer({
+    id: 'street-labels',
+    type: 'symbol',
+    source: 'osm-labels',
+    'source-layer': 'transportation',
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-size': 12,
+      'text-max-width': 12,
+      'visibility': ['case', ['>=', ['zoom'], 14], 'visible', 'none']
+    },
+    paint: {
+      'text-color': '#999999',
+      'text-halo-color': '#161616',
+      'text-halo-width': 1
+    }
+  }, 'trees'); // Insert before trees layer
+
+  const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true });
+
+  /* Generate diagonal-hatch pattern tiles so same-color polygon layers
+   * (MSD infrastructure) stay visually distinct without extra colors. */
+  function makeHatchPattern(color, angleDeg, cross) {
+    const size = 16;
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, size, size);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.9;
+    const draw = (deg) => {
+      ctx.save();
+      ctx.translate(size / 2, size / 2);
+      ctx.rotate(deg * Math.PI / 180);
+      ctx.beginPath();
+      ctx.moveTo(-size, 0);
+      ctx.lineTo(size, 0);
+      ctx.stroke();
+      ctx.restore();
+    };
+    draw(angleDeg);
+    if (cross) draw(angleDeg + 90);
+    return ctx.getImageData(0, 0, size, size);
+  }
+  map.addImage('hatch-45', makeHatchPattern(MSD_COLOR, 45, false));
+  map.addImage('hatch-neg45', makeHatchPattern(MSD_COLOR, -45, false));
+  map.addImage('hatch-cross', makeHatchPattern(MSD_COLOR, 45, true));
+
+  /* Inverted city-boundary mask: darkens everything OUTSIDE the city limits. */
+  fetch('data/st_louis_city_boundary.json')
+    .then(r => r.json())
+    .then(cityData => {
+      const cityRing = cityData.features[0].geometry.coordinates[0];
+      const worldRing = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+      const maskGeoJSON = {
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'Polygon', coordinates: [worldRing, cityRing] }
+        }]
+      };
+      map.addSource('city-mask', { type: 'geojson', data: maskGeoJSON });
+      const boundaryLayerConfig = LAYERS.find(l => l.id === 'city-boundary');
+      map.addLayer({
+        id: 'city-mask-layer', type: 'fill', source: 'city-mask',
+        layout: { visibility: 'visible' },
+        paint: { 'fill-color': boundaryLayerConfig.color, 'fill-opacity': boundaryLayerConfig.opacity }
+      });
+      document.getElementById('toggle-city-boundary')?.addEventListener('change', (e) => {
+        map.setLayoutProperty('city-mask-layer', 'visibility', e.target.checked ? 'visible' : 'none');
+        map.setLayoutProperty('city-mask-layer-top', 'visibility', e.target.checked ? 'visible' : 'none');
+      });
+
+      /* Opaque top mask layer to actually clip/hide data extending past the boundary */
+      map.addLayer({
+        id: 'city-mask-layer-top', type: 'fill', source: 'city-mask',
+        layout: { visibility: 'visible' },
+        paint: { 'fill-color': '#161616', 'fill-opacity': 1 }
+      });
+    });
+
+  // Create bounding box GeoJSON
+  const boundingBoxData = {
+    type: 'FeatureCollection',
+    features: [{
+      type: 'Feature',
+      properties: { name: 'Isometric bounds' },
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [-90.330, 38.520],
+          [-90.157, 38.520],
+          [-90.157, 38.785],
+          [-90.330, 38.785],
+          [-90.330, 38.520]
+        ]
+      }
+    }]
+  };
+
+  LAYERS.forEach(l => {
+    if (l.id === 'city-boundary') return; // handled by the inverted mask above
+
+    if (l.id === 'bounding-box') {
+      map.addSource('bounding-box', { type: 'geojson', data: boundingBoxData });
+      map.addLayer({
+        id: 'bounding-box', type: 'line', source: 'bounding-box',
+        layout: { visibility: l.defaultOn ? 'visible' : 'none' },
+        paint: {
+          'line-color': l.color,
+          'line-width': 2,
+          'line-dasharray': [5, 5],
+          'line-opacity': 0.8
+        }
+      });
+    } else {
+      map.addSource(l.id, { type: 'geojson', data: `data/${l.file}` });
+
+      if (l.geomType === 'point') {
+        map.addLayer({
+          id: l.id, type: 'circle', source: l.id,
+          layout: { visibility: l.defaultOn ? 'visible' : 'none' },
+          paint: {
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 0.25, 14, 1.5, 17, 7, 20, 15],
+            'circle-color': l.color,
+            'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.4, 12, 0.7, 20, 0.9],
+            'circle-stroke-width': 0
+          }
+        });
+      } else if (l.geomType === 'line') {
+        map.addLayer({
+          id: l.id, type: 'line', source: l.id,
+          layout: { visibility: l.defaultOn ? 'visible' : 'none' },
+          paint: {
+            'line-color': l.color,
+            'line-width': 1.2,
+            'line-opacity': 0.85
+          }
+        });
+      } else {
+        const fillPaint = l.pattern
+          ? { 'fill-pattern': l.pattern, 'fill-opacity': 0.9 }
+          : { 'fill-color': l.color, 'fill-opacity': l.opacity !== undefined ? l.opacity : 0.3 };
+        map.addLayer({
+          id: l.id + '-fill', type: 'fill', source: l.id,
+          layout: { visibility: l.defaultOn ? 'visible' : 'none' },
+          paint: fillPaint
+        });
+        map.addLayer({
+          id: l.id + '-line', type: 'line', source: l.id,
+          layout: { visibility: l.defaultOn ? 'visible' : 'none' },
+          paint: { 'line-color': l.color, 'line-width': 0.6, 'line-opacity': 0.7 }
+        });
+      }
+
+      const clickLayerId = l.geomType === 'polygon' ? l.id + '-fill' : l.id;
+      if (!l.noPopup) {
+        map.on('click', clickLayerId, (e) => {
+          const f = e.features[0].properties;
+          popup.setLngLat(e.lngLat).setHTML(l.popup(f)).addTo(map);
+        });
+      }
+      map.on('mouseenter', clickLayerId, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', clickLayerId, () => {
+        map.getCanvas().style.cursor = '';
+      });
+    }
+
+    document.getElementById(`toggle-${l.id}`).addEventListener('change', (e) => {
+      const vis = e.target.checked ? 'visible' : 'none';
+      if (l.geomType === 'polygon') {
+        map.setLayoutProperty(l.id + '-fill', 'visibility', vis);
+        map.setLayoutProperty(l.id + '-line', 'visibility', vis);
+      } else {
+        map.setLayoutProperty(l.id, 'visibility', vis);
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>

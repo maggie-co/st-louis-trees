@@ -4,9 +4,7 @@
                      {
                          "type":  "Feature",
                          "properties":  {
-                                            "name":  "Project Extent",
-                                            "type":  "Green Infrastructure Zone",
-                                            "status":  "Active"
+                                            "name":  "Proposed Redesign Site"
                                         },
                          "geometry":  {
                                           "type":  "Polygon",

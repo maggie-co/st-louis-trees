@@ -13,6 +13,12 @@
       "runtimeExecutable": "powershell",
       "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:/Users/Maggie Coleman/portfolio/serve_v2.ps1"],
       "port": 8421
+    },
+    {
+      "name": "isometric-map",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:/Users/Maggie Coleman/portfolio/scripts/serve_isometric.ps1"],
+      "port": 8422
     }
   ]
 }
