@@ -452,58 +452,72 @@ document.getElementById('export-btn').addEventListener('click', async () => {
   });
 
   try {
-    // Collect visible layers as GeoJSON
-    const exportGeoJSON = { type: 'FeatureCollection', features: [] };
-    const checkedLayers = Array.from(document.querySelectorAll('.layer-row input[type="checkbox"]:checked'))
-      .map(cb => cb.closest('.layer-row').textContent.trim().split('\n')[0]);
+    // Collect all visible layer data
+    const visibleLayerIds = new Set(
+      Array.from(document.querySelectorAll('.layer-row input[type="checkbox"]:checked'))
+        .map(cb => {
+          const row = cb.closest('.layer-row');
+          const label = row.querySelector('label').textContent.trim();
+          return LAYERS.find(l => l.label === label)?.id;
+        })
+        .filter(Boolean)
+    );
+
+    // Build bounds from all visible layers
+    const bounds = { minLon: Infinity, maxLon: -Infinity, minLat: Infinity, maxLat: -Infinity };
 
     LAYERS.forEach(layer => {
-      if (layer.geom && checkedLayers.some(name => layer.id.includes(name.toLowerCase()) || name.includes(layer.id))) {
-        if (layer.geom.features) {
-          exportGeoJSON.features.push(...layer.geom.features);
-        }
-      }
+      if (!visibleLayerIds.has(layer.id) || !layer.geom) return;
+      layer.geom.features?.forEach(f => {
+        const getCoords = (c) => {
+          if (typeof c[0] === 'number') {
+            bounds.minLon = Math.min(bounds.minLon, c[0]);
+            bounds.maxLon = Math.max(bounds.maxLon, c[0]);
+            bounds.minLat = Math.min(bounds.minLat, c[1]);
+            bounds.maxLat = Math.max(bounds.maxLat, c[1]);
+          } else {
+            c.forEach(getCoords);
+          }
+        };
+        const coords = f.geometry.coordinates;
+        if (f.geometry.type === 'Point') getCoords(coords);
+        else if (coords) getCoords(coords);
+      });
     });
 
-    // Convert GeoJSON to SVG
-    const bounds = { minLon: Infinity, maxLon: -Infinity, minLat: Infinity, maxLat: -Infinity };
-    exportGeoJSON.features.forEach(f => {
-      const geom = f.geometry;
-      const getCoords = (coords) => {
-        if (Array.isArray(coords[0])) {
-          coords.forEach(getCoords);
-        } else {
-          bounds.minLon = Math.min(bounds.minLon, coords[0]);
-          bounds.maxLon = Math.max(bounds.maxLon, coords[0]);
-          bounds.minLat = Math.min(bounds.minLat, coords[1]);
-          bounds.maxLat = Math.max(bounds.maxLat, coords[1]);
-        }
-      };
-      if (geom.type === 'Point') getCoords(geom.coordinates);
-      else if (geom.coordinates) getCoords(geom.coordinates);
-    });
+    const latMid = (bounds.minLat + bounds.maxLat) / 2;
+    const aspect = ((bounds.maxLon - bounds.minLon) * Math.cos(latMid * Math.PI / 180)) / (bounds.maxLat - bounds.minLat);
+    const width = 3600, height = Math.round(width / aspect);
 
-    const width = 3600, height = Math.round(width / (((bounds.maxLon - bounds.minLon) * Math.cos((bounds.minLat + bounds.maxLat) / 2 * Math.PI / 180)) / (bounds.maxLat - bounds.minLat)));
     let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="#161616"/>`;
 
-    exportGeoJSON.features.forEach(f => {
-      const color = '#e8e8e8';
-      const toXY = (lon, lat) => ({
-        x: ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * width,
-        y: ((bounds.maxLat - lat) / (bounds.maxLat - bounds.minLat)) * height
-      });
+    const toXY = (lon, lat) => ({
+      x: ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * width,
+      y: ((bounds.maxLat - lat) / (bounds.maxLat - bounds.minLat)) * height
+    });
 
-      const geom = f.geometry;
-      if (geom.type === 'Point') {
-        const pt = toXY(geom.coordinates[0], geom.coordinates[1]);
-        svg += `<circle cx="${pt.x}" cy="${pt.y}" r="8" fill="${color}"/>`;
-      } else if (geom.type === 'LineString') {
-        const pts = geom.coordinates.map(c => toXY(c[0], c[1]));
-        svg += `<polyline points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" stroke="${color}" stroke-width="2.5" fill="none"/>`;
-      } else if (geom.type === 'Polygon') {
-        const pts = geom.coordinates[0].map(c => toXY(c[0], c[1]));
-        svg += `<polygon points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" fill="${color}" opacity="0.5" stroke="${color}" stroke-width="1"/>`;
-      }
+    // Export all visible layers
+    LAYERS.forEach(layer => {
+      if (!visibleLayerIds.has(layer.id) || !layer.geom) return;
+      const color = layer.color || '#e8e8e8';
+      const opacity = layer.opacity ?? 1;
+      const stroke = layer.strokeOpacity ?? 1;
+
+      layer.geom.features?.forEach(f => {
+        const geom = f.geometry;
+        if (geom.type === 'Point') {
+          const pt = toXY(geom.coordinates[0], geom.coordinates[1]);
+          svg += `<circle cx="${pt.x}" cy="${pt.y}" r="8" fill="${color}" opacity="${opacity}"/>`;
+        } else if (geom.type === 'LineString') {
+          const pts = geom.coordinates.map(c => toXY(c[0], c[1]));
+          svg += `<polyline points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" stroke="${color}" stroke-width="2.5" fill="none" opacity="${stroke}"/>`;
+        } else if (geom.type === 'Polygon') {
+          geom.coordinates.forEach(ring => {
+            const pts = ring.map(c => toXY(c[0], c[1]));
+            svg += `<polygon points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" fill="${color}" opacity="${opacity}" stroke="${color}" stroke-width="1"/>`;
+          });
+        }
+      });
     });
 
     svg += '</svg>';
