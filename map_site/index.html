@@ -107,8 +107,8 @@
         }
 
         .container {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-rows: auto 1fr;
             height: 100vh;
         }
 
@@ -119,6 +119,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .header h1 {
@@ -1052,6 +1053,7 @@
             overflow-y: auto;
             overflow-x: hidden;
             padding: 0;
+            min-height: 0;
         }
     </style>
 </head>
