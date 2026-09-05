@@ -1182,16 +1182,6 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Local Champion Interest *</label>
-                        <select id="recChampion" required>
-                            <option value="">Select</option>
-                            <option value="high">Yes - community leader advocating</option>
-                            <option value="moderate">Maybe - potential advocate</option>
-                            <option value="low">No - limited community engagement</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
                         <label>Neighborhood Sentiment Towards Trees (1-10)</label>
                         <select id="recSentiment" required>
                             <option value="">Select</option>
@@ -2400,12 +2390,11 @@
             const wind = document.getElementById('recWind').value;
             const priority = document.getElementById('priority1').value;
             const maintenance = document.getElementById('recMaintenance').value;
-            const champion = document.getElementById('recChampion').value;
             const aesthetic = document.getElementById('aestheticPref').value;
             const wildlife = document.getElementById('wildlifePriority').value;
 
             // Check required fields
-            if (!location || !proximity || !utilities || !powerLines || !sun || !drainage || !rainfall || !sentiment || !maintenance || !champion) {
+            if (!location || !proximity || !utilities || !powerLines || !sun || !drainage || !rainfall || !sentiment || !maintenance) {
                 alert('Please answer all required questions (marked with *)');
                 return;
             }
@@ -2542,15 +2531,6 @@
                     }
                     else if (maintenance === 'moderate' && SPECIES[sp].maintenance !== 'high') {
                         score += 5;
-                    }
-
-                    // Local champion factor (8 pts max)
-                    if (champion === 'high' && SPECIES[sp].iconic_appeal >= 7) {
-                        score += 8;
-                        reasons.push('Iconic, championable species');
-                    }
-                    else if (champion === 'moderate' && SPECIES[sp].iconic_appeal >= 6) {
-                        score += 4;
                     }
 
                     // Aesthetic preference (8 pts max)
