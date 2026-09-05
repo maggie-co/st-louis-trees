@@ -1063,17 +1063,13 @@
                 <div class="panel">
                     <h2>Find Recommended Species</h2>
 
-                    <div style="background: #f9f8f6; padding: 12px; border-radius: 2px; margin-bottom: 24px; font-size: 11px; color: #777;">
-                        <strong>*</strong> = Required • Answer all required questions for best results
-                    </div>
-
                     <!-- Site & Physical -->
-                    <h3>Site Location <span style="color: var(--accent); font-weight: 700;">*</span></h3>
+                    <h3>Site Location</h3>
                     <div class="form-group">
                         <label>Where is this tree going?</label>
                         <select id="recLocation" required>
                             <option value="">Select</option>
-                            <option value="street">Street/Public ROW</option>
+                            <option value="street">Street/public ROW</option>
                             <option value="residential">Residential Yard</option>
                             <option value="park">Park/Greenspace</option>
                             <option value="commercial">Commercial Property</option>
@@ -1082,7 +1078,7 @@
                     </div>
 
                     <!-- Infrastructure -->
-                    <h3>Infrastructure & Constraints <span style="color: var(--accent); font-weight: 700;">*</span></h3>
+                    <h3>Infrastructure & Constraints</h3>
                     <div class="form-group">
                         <label>Proximity to Building</label>
                         <select id="recProximity" required>
@@ -1124,7 +1120,7 @@
                     </div>
 
                     <!-- Environmental -->
-                    <h3>Environmental Conditions <span style="color: var(--accent); font-weight: 700;">*</span></h3>
+                    <h3>Environmental Conditions</h3>
                     <div class="form-group">
                         <label>Sun Exposure</label>
                         <select id="recSun" required>
@@ -1166,7 +1162,7 @@
                     </div>
 
                     <!-- Social/Community -->
-                    <h3>Community & Social <span style="color: var(--accent); font-weight: 700;">*</span></h3>
+                    <h3>Community & Social</h3>
                     <div class="form-group">
                         <label>Maintenance Capacity *</label>
                         <select id="recMaintenance" required>
@@ -2190,20 +2186,6 @@
         function renderFlowchart() {
             const display = document.getElementById('flowchartDisplay');
             display.innerHTML = '';
-
-            // Add metrics guide at top
-            const metricsGuide = document.createElement('div');
-            metricsGuide.className = 'metrics-guide';
-            metricsGuide.innerHTML = `
-                <h3>How It Works</h3>
-                <p><strong>Inputs:</strong> Provide basic tree information (diameter, species, health, sun exposure, age).</p>
-                <p><strong>Growth Calculations:</strong> Model future size using allometric equations and species growth rates.</p>
-                <p><strong>Canopy Metrics:</strong> Estimate canopy area, biomass, and leaf area from crown dimensions.</p>
-                <p><strong>Carbon Storage:</strong> Calculate total and annual carbon sequestration over time.</p>
-                <p><strong>Ecosystem Services:</strong> Quantify stormwater interception, pollution removal, energy savings, and shade.</p>
-                <p><strong>Life Cycle Adjustment:</strong> Account for tree survival probability to get expected benefits.</p>
-            `;
-            display.appendChild(metricsGuide);
 
             // Add legend (floating in bottom right via CSS)
             const legendBox = document.createElement('div');
