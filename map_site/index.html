@@ -538,26 +538,21 @@
 
         .info-icon {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: white;
-            background: var(--accent);
-            border-radius: 50%;
-            cursor: help;
-            font-weight: 700;
+            font-size: 12px;
+            color: var(--accent);
+            cursor: pointer;
             vertical-align: super;
             position: relative;
-            margin-left: 6px;
-            flex-shrink: 0;
+            margin-left: 4px;
+            user-select: none;
+            font-style: italic;
+            font-weight: 600;
         }
 
         .info-icon .info-tooltip {
             display: none;
             position: absolute;
-            bottom: 125%;
+            bottom: 120%;
             left: 50%;
             transform: translateX(-50%);
             background: #371203;
@@ -579,7 +574,7 @@
             pointer-events: all;
         }
 
-        .info-icon:hover .info-tooltip {
+        .info-icon.active .info-tooltip {
             display: block;
         }
 
@@ -1190,7 +1185,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Underground Utilities <span class="info-icon">ⓘ<span class="info-tooltip">Whether buried gas, water, sewer, or electric lines run beneath the site - deep-rooted species can damage them. Before planting, call Missouri One Call (dial 811 or visit <a href="https://www.mo1call.com" target="_blank" rel="noopener">mo1call.com</a>) to have lines marked for free.</span></span></label>
+                        <label>Underground Utilities <span class="info-icon">i<span class="info-tooltip">Whether buried gas, water, sewer, or electric lines run beneath the site - deep-rooted species can damage them. Before planting, call Missouri One Call (dial 811 or visit <a href="https://www.mo1call.com" target="_blank" rel="noopener">mo1call.com</a>) to have lines marked for free.</span></span></label>
                         <select id="recUtilities">
                             <option value="">Select</option>
                             <option value="0">Yes, directly above</option>
@@ -1200,7 +1195,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Overhead Power Lines <span class="info-icon">ⓘ<span class="info-tooltip">Whether utility lines cross above the planting site - tall-maturing trees planted underneath require repeated topping/pruning by the utility. Check clearance guidance from your electric provider (e.g. Ameren Missouri's "right tree, right place" program at <a href="https://www.ameren.com" target="_blank" rel="noopener">ameren.com</a>) before choosing a mature height.</span></span></label>
+                        <label>Overhead Power Lines <span class="info-icon">i<span class="info-tooltip">Whether utility lines cross above the planting site - tall-maturing trees planted underneath require repeated topping/pruning by the utility. Check clearance guidance from your electric provider (e.g. Ameren Missouri's "right tree, right place" program at <a href="https://www.ameren.com" target="_blank" rel="noopener">ameren.com</a>) before choosing a mature height.</span></span></label>
                         <select id="recPowerLines">
                             <option value="">Select</option>
                             <option value="0">Yes, directly above</option>
@@ -1210,7 +1205,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Wind Exposure <span class="info-icon">ⓘ<span class="info-tooltip">How exposed the site is to sustained/prevailing wind - open lots, rooftops, and river-bluff edges are high-exposure; courtyards and tree-lined streets are sheltered. Higher exposure favors wind-firm species with strong branch attachment.</span></span></label>
+                        <label>Wind Exposure <span class="info-icon">i<span class="info-tooltip">How exposed the site is to sustained/prevailing wind - open lots, rooftops, and river-bluff edges are high-exposure; courtyards and tree-lined streets are sheltered. Higher exposure favors wind-firm species with strong branch attachment.</span></span></label>
                         <select id="recWind">
                             <option value="">Optional</option>
                             <option value="high">High (exposed area)</option>
@@ -1222,7 +1217,7 @@
                     <!-- Environmental -->
                     <h3>Environmental Conditions</h3>
                     <div class="form-group">
-                        <label>Sun Exposure<span class="required-marker">*</span> <span class="info-icon">ⓘ<span class="info-tooltip">Average hours of direct sunlight the site receives daily during the growing season. Observe the site at different times of day, or estimate from nearby building/tree shadows and orientation (south-facing = more sun).</span></span></label>
+                        <label>Sun Exposure<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">Average hours of direct sunlight the site receives daily during the growing season. Observe the site at different times of day, or estimate from nearby building/tree shadows and orientation (south-facing = more sun).</span></span></label>
                         <select id="recSun" required>
                             <option value="">Select</option>
                             <option value="full">Full Sun (6+ hrs)</option>
@@ -1232,7 +1227,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Soil Drainage<span class="required-marker">*</span> <span class="info-icon">ⓘ<span class="info-tooltip">How quickly water moves through the soil. Test it yourself: dig a 12"-deep hole, fill with water, let it drain, refill, and time the second drain - under 4 hrs is well-drained, 4–8 hrs is moderate, over 8 hrs is poor/wet. See MU Extension's guide at <a href="https://extension.missouri.edu" target="_blank" rel="noopener">extension.missouri.edu</a>.</span></span></label>
+                        <label>Soil Drainage<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">How quickly water moves through the soil. Test it yourself: dig a 12"-deep hole, fill with water, let it drain, refill, and time the second drain - under 4 hrs is well-drained, 4–8 hrs is moderate, over 8 hrs is poor/wet. See MU Extension's guide at <a href="https://extension.missouri.edu" target="_blank" rel="noopener">extension.missouri.edu</a>.</span></span></label>
                         <select id="recDrainage" required>
                             <option value="">Select</option>
                             <option value="poor">Poor (wet/clay)</option>
@@ -1242,7 +1237,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Annual Rainfall Available <span class="info-icon">ⓘ<span class="info-tooltip">Typical yearly precipitation the site receives naturally (before irrigation). St. Louis averages ~40 in/yr, but microsites vary - check 30-year climate normals from the National Weather Service St. Louis office at <a href="https://www.weather.gov/lsx" target="_blank" rel="noopener">weather.gov/lsx</a>.</span></span></label>
+                        <label>Annual Rainfall Available <span class="info-icon">i<span class="info-tooltip">Typical yearly precipitation the site receives naturally (before irrigation). St. Louis averages ~40 in/yr, but microsites vary - check 30-year climate normals from the National Weather Service St. Louis office at <a href="https://www.weather.gov/lsx" target="_blank" rel="noopener">weather.gov/lsx</a>.</span></span></label>
                         <select id="recRainfall">
                             <option value="">Select</option>
                             <option value="low">Low (&lt;30 in/yr) - needs irrigation</option>
@@ -1252,7 +1247,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Water Budget (irrigation access) <span class="info-icon">ⓘ<span class="info-tooltip">How much supplemental watering you can realistically provide during establishment (the first 2–3 years) - hose access, irrigation systems, or volunteer watering crews. Distinct from Annual Rainfall, which is what the site gets naturally.</span></span></label>
+                        <label>Water Budget (irrigation access) <span class="info-icon">i<span class="info-tooltip">How much supplemental watering you can realistically provide during establishment (the first 2–3 years) - hose access, irrigation systems, or volunteer watering crews. Distinct from Annual Rainfall, which is what the site gets naturally.</span></span></label>
                         <select id="recWater">
                             <option value="">Optional</option>
                             <option value="high">Regular irrigation available</option>
@@ -1264,7 +1259,7 @@
                     <!-- Social/Community -->
                     <h3>Community & Social</h3>
                     <div class="form-group">
-                        <label>Maintenance Capacity<span class="required-marker">*</span> <span class="info-icon">ⓘ<span class="info-tooltip">Ongoing care realistically available after planting - pruning, pest/disease monitoring, mulching, watering. High = staff/volunteers on a schedule; Low = planted and largely left alone.</span></span></label>
+                        <label>Maintenance Capacity<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">Ongoing care realistically available after planting - pruning, pest/disease monitoring, mulching, watering. High = staff/volunteers on a schedule; Low = planted and largely left alone.</span></span></label>
                         <select id="recMaintenance" required>
                             <option value="">Select</option>
                             <option value="high">High (volunteers/staff available)</option>
@@ -1274,7 +1269,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Neighborhood Sentiment Towards Trees (1-10) <span class="info-icon">ⓘ<span class="info-tooltip">Subjective but crucial: how supportive nearby residents are of tree planting/construction on-site, since low support raises vandalism and neglect risk. Survey the block directly rather than guessing - see the USDA Forest Service's community engagement guidance at <a href="https://www.fs.usda.gov/managing-land/urban-forests" target="_blank" rel="noopener">fs.usda.gov/managing-land/urban-forests</a> or the Arbor Day Foundation's community forestry resources at <a href="https://www.arborday.org" target="_blank" rel="noopener">arborday.org</a> for how to run a proper door-to-door or written survey.</span></span></label>
+                        <label>Neighborhood Sentiment Towards Trees (1-10) <span class="info-icon">i<span class="info-tooltip">Subjective but crucial: how supportive nearby residents are of tree planting/construction on-site, since low support raises vandalism and neglect risk. Survey the block directly rather than guessing - see the USDA Forest Service's community engagement guidance at <a href="https://www.fs.usda.gov/managing-land/urban-forests" target="_blank" rel="noopener">fs.usda.gov/managing-land/urban-forests</a> or the Arbor Day Foundation's community forestry resources at <a href="https://www.arborday.org" target="_blank" rel="noopener">arborday.org</a> for how to run a proper door-to-door or written survey.</span></span></label>
                         <select id="recSentiment">
                             <option value="">Select</option>
                             <option value="1">1 - Very opposed</option>
@@ -1303,7 +1298,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Wildlife Benefit Priority <span class="info-icon">ⓘ<span class="info-tooltip">How much you want this tree to support pollinators, birds, and other wildlife (nectar, fruit/seed, nesting habitat) versus prioritizing other traits. Native species generally provide the highest wildlife value in St. Louis.</span></span></label>
+                        <label style="display: block; margin-bottom: 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Wildlife Benefit Priority <span class="info-icon">i<span class="info-tooltip">How much you want this tree to support pollinators, birds, and other wildlife (nectar, fruit/seed, nesting habitat) versus prioritizing other traits. Native species generally provide the highest wildlife value in St. Louis.</span></span></label>
                         <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
                             <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
                                 <input type="checkbox" id="wildlifeHigh" style="flex-shrink: 0; width: 16px; height: 16px;">
@@ -1369,6 +1364,24 @@
     <div class="tooltip" id="tooltip"></div>
 
     <script>
+        // Info icon click handler
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('info-icon')) {
+                e.stopPropagation();
+                // Close other tooltips
+                document.querySelectorAll('.info-icon.active').forEach(icon => {
+                    if (icon !== e.target) icon.classList.remove('active');
+                });
+                // Toggle current tooltip
+                e.target.classList.toggle('active');
+            } else if (!e.target.closest('.info-icon')) {
+                // Close all tooltips when clicking elsewhere
+                document.querySelectorAll('.info-icon.active').forEach(icon => {
+                    icon.classList.remove('active');
+                });
+            }
+        });
+
         // ============================================================================
         // SPECIES DATABASE (25 species)
         // ============================================================================
