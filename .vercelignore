@@ -1,0 +1,5 @@
+map_site/data/
+.git/
+.env
+node_modules/
+*.md
