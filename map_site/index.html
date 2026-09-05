@@ -394,6 +394,9 @@
             background: linear-gradient(90deg, #fafaf8 0%, #f5f1eb 100%);
             border-radius: 3px;
             margin-bottom: 32px;
+            min-height: 300px;
+            position: relative;
+            z-index: 10;
         }
 
         .flowchart-tier {
@@ -1042,6 +1045,14 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .methodology-content {
+            flex: 1;
+            display: block;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0;
+        }
     </style>
 </head>
 <body>
@@ -1359,7 +1370,7 @@
                 <button class="back-btn" onclick="goToScreen('landingScreen')">Back</button>
             </div>
 
-            <div class="main full" style="overflow-y: auto;">
+            <div class="methodology-content">
                 <div style="padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%;">
                     <div id="flowchartDisplay"></div>
                 </div>
