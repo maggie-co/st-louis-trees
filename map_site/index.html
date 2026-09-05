@@ -1909,6 +1909,21 @@
 
             if (screenId === 'methodologyScreen') {
                 setTimeout(() => {
+                    // Fix height calculation for methodology-content
+                    const screen = document.getElementById('methodologyScreen');
+                    const header = screen.querySelector('.header');
+                    const content = screen.querySelector('.methodology-content');
+
+                    // Use getBoundingClientRect for reliable measurements
+                    const screenRect = screen.getBoundingClientRect();
+                    const headerRect = header.getBoundingClientRect();
+                    const screenHeight = screenRect.height > 0 ? screenRect.height : window.innerHeight;
+                    const headerHeight = headerRect.height > 0 ? headerRect.height : 70; // fallback to 70px
+                    const availableHeight = Math.max(0, screenHeight - headerHeight);
+
+                    content.style.height = availableHeight + 'px';
+                    content.style.overflow = 'auto';
+
                     renderFlowchart();
                 }, 200);
             }
