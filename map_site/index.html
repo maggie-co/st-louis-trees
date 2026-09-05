@@ -383,7 +383,11 @@ document.addEventListener('click', () => {
   document.querySelectorAll('.info-btn.active').forEach(b => b.classList.remove('active'));
 });
 
-// Export visible layers (and basemap, if checked) as a PNG cropped to the Bounding Box
+// Export visible layers as separate vector SVG files, one per layer, all cropped to the
+// same Bounding Box extent/canvas so they register perfectly when stacked. Illustrator/
+// Photoshop only reliably treat SEPARATE FILES as separate layers — a single SVG with
+// multiple top-level <g> elements still gets flattened into one layer/group by both apps'
+// importers, so a single combined file can't satisfy "each layer as its own Photoshop layer."
 document.getElementById('export-btn').addEventListener('click', async () => {
   const anyChecked = Array.from(document.querySelectorAll('.layer-row input[type="checkbox"]')).some(cb => cb.checked);
   if (!anyChecked) {
@@ -393,153 +397,115 @@ document.getElementById('export-btn').addEventListener('click', async () => {
 
   const btn = document.getElementById('export-btn');
   btn.disabled = true;
-  btn.textContent = '📥 Exporting...';
-
-  // Basemap visibility already reflects the Basemap checkbox — export as-is.
-
-  // Crop exactly to the Bounding Box layer's coordinates
-  const bboxLayer = LAYERS.find(l => l.id === 'bounding-box');
-  const bboxCoords = bboxLayer.geom.features[0].geometry.coordinates;
-  const lons = bboxCoords.map(c => c[0]);
-  const lats = bboxCoords.map(c => c[1]);
-  const minLon = Math.min(...lons), maxLon = Math.max(...lons);
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-  const latMid = (minLat + maxLat) / 2;
-  const realAspect = ((maxLon - minLon) * Math.cos(latMid * Math.PI / 180)) / (maxLat - minLat);
-
-  // Temporarily size the map container to match the bounding box aspect ratio for an exact crop
-  const container = map.getContainer();
-  const targetWidth = 3600;
-  const targetHeight = Math.round(targetWidth / realAspect);
-  const origWidth = container.style.width;
-  const origHeight = container.style.height;
-  const origCenter = map.getCenter();
-  const origZoom = map.getZoom();
-  container.style.width = targetWidth + 'px';
-  container.style.height = targetHeight + 'px';
-  map.resize();
-  map.fitBounds([[minLon, minLat], [maxLon, maxLat]], { padding: 0, duration: 0, animate: false });
-
-  // Thicken lines/dots/polygon outlines for export only — the live map is untouched by these restores.
-  // Circle radius uses a flat literal (not a multiplier) because the interpolated on-screen
-  // value at the export's fitBounds zoom is tiny (~1-2px) — 2x of tiny is still tiny.
-  const EXPORT_LINE_SCALE = 2.5;
-  const EXPORT_CIRCLE_RADIUS = 8;
-  // Boundary/extent reference lines get extra emphasis on export — flat width + full opacity.
-  const EXPORT_EMPHASIS_LINES = { 'stl-boundary-line': 7, 'bounding-box': 7, 'modern-hydro': 12 };
-  const scaledPaint = [];
-  map.getStyle().layers.forEach(sl => {
-    if (sl.type === 'circle') {
-      const orig = map.getPaintProperty(sl.id, 'circle-radius');
-      if (orig !== undefined) {
-        map.setPaintProperty(sl.id, 'circle-radius', EXPORT_CIRCLE_RADIUS);
-        scaledPaint.push({ id: sl.id, prop: 'circle-radius', orig });
-      }
-    } else if (sl.type === 'line') {
-      const origWidth = map.getPaintProperty(sl.id, 'line-width');
-      if (origWidth !== undefined) {
-        if (EXPORT_EMPHASIS_LINES[sl.id] !== undefined) {
-          map.setPaintProperty(sl.id, 'line-width', EXPORT_EMPHASIS_LINES[sl.id]);
-          const origOpacity = map.getPaintProperty(sl.id, 'line-opacity');
-          map.setPaintProperty(sl.id, 'line-opacity', 1);
-          scaledPaint.push({ id: sl.id, prop: 'line-opacity', orig: origOpacity });
-        } else {
-          map.setPaintProperty(sl.id, 'line-width', ['*', origWidth, EXPORT_LINE_SCALE]);
-        }
-        scaledPaint.push({ id: sl.id, prop: 'line-width', orig: origWidth });
-      }
-    }
-  });
 
   try {
-    // Collect all visible layer data
-    const visibleLayerIds = new Set(
-      Array.from(document.querySelectorAll('.layer-row input[type="checkbox"]:checked'))
-        .map(cb => {
-          const row = cb.closest('.layer-row');
-          const label = row.querySelector('label').textContent.trim();
-          return LAYERS.find(l => l.label === label)?.id;
-        })
-        .filter(Boolean)
-    );
+    const visibleLayerIds = Array.from(document.querySelectorAll('.layer-row input[type="checkbox"]:checked'))
+      .map(cb => cb.id.replace('toggle-', ''))
+      .filter(id => id && id !== 'basemap' && LAYERS.find(l => l.id === id));
 
-    // Build bounds from all visible layers
-    const bounds = { minLon: Infinity, maxLon: -Infinity, minLat: Infinity, maxLat: -Infinity };
+    btn.textContent = '📥 Loading data...';
 
-    LAYERS.forEach(layer => {
-      if (!visibleLayerIds.has(layer.id) || !layer.geom) return;
-      layer.geom.features?.forEach(f => {
-        const getCoords = (c) => {
-          if (typeof c[0] === 'number') {
-            bounds.minLon = Math.min(bounds.minLon, c[0]);
-            bounds.maxLon = Math.max(bounds.maxLon, c[0]);
-            bounds.minLat = Math.min(bounds.minLat, c[1]);
-            bounds.maxLat = Math.max(bounds.maxLat, c[1]);
-          } else {
-            c.forEach(getCoords);
-          }
-        };
-        const coords = f.geometry.coordinates;
-        if (f.geometry.type === 'Point') getCoords(coords);
-        else if (coords) getCoords(coords);
-      });
-    });
+    // Fetch real GeoJSON for every visible layer — map sources only expose the raw
+    // URL/geom they were constructed with, not the parsed features, so re-fetch fresh.
+    const layerData = await Promise.all(visibleLayerIds.map(async id => {
+      const layer = LAYERS.find(l => l.id === id);
+      let geojson = layer.geom;
+      if (!geojson && layer.file) {
+        try {
+          geojson = await fetch(`data/${layer.file}`).then(r => r.json());
+        } catch (e) {
+          console.error('Export: failed to load', layer.id, e);
+          geojson = null;
+        }
+      }
+      return { layer, geojson };
+    }));
+
+    // Crop to the Bounding Box layer's own coordinates (matches the original PNG export's
+    // behavior) rather than the union of all data extents — some layers (e.g. floodplain)
+    // extend past the box, and we want a clean crop, not a stretched canvas.
+    const bboxLayer = LAYERS.find(l => l.id === 'bounding-box');
+    const bboxCoords = bboxLayer.geom.features[0].geometry.coordinates;
+    const bounds = {
+      minLon: Math.min(...bboxCoords.map(c => c[0])),
+      maxLon: Math.max(...bboxCoords.map(c => c[0])),
+      minLat: Math.min(...bboxCoords.map(c => c[1])),
+      maxLat: Math.max(...bboxCoords.map(c => c[1]))
+    };
 
     const latMid = (bounds.minLat + bounds.maxLat) / 2;
     const aspect = ((bounds.maxLon - bounds.minLon) * Math.cos(latMid * Math.PI / 180)) / (bounds.maxLat - bounds.minLat);
     const width = 3600, height = Math.round(width / aspect);
-
-    let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="#161616"/>`;
 
     const toXY = (lon, lat) => ({
       x: ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * width,
       y: ((bounds.maxLat - lat) / (bounds.maxLat - bounds.minLat)) * height
     });
 
-    // Export all visible layers
-    LAYERS.forEach(layer => {
-      if (!visibleLayerIds.has(layer.id) || !layer.geom) return;
+    // Draws any GeoJSON geometry type (including Multi* variants) into the svg parts array
+    function drawGeometry(parts, geom, color, opacity, strokeOpacity) {
+      const type = geom.type;
+      if (type === 'Point') {
+        const pt = toXY(geom.coordinates[0], geom.coordinates[1]);
+        parts.push(`<circle cx="${pt.x}" cy="${pt.y}" r="8" fill="${color}" opacity="${opacity}"/>`);
+      } else if (type === 'MultiPoint') {
+        geom.coordinates.forEach(c => drawGeometry(parts, { type: 'Point', coordinates: c }, color, opacity, strokeOpacity));
+      } else if (type === 'LineString') {
+        const pts = geom.coordinates.map(c => toXY(c[0], c[1]));
+        parts.push(`<polyline points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" stroke="${color}" stroke-width="2.5" fill="none" opacity="${strokeOpacity}"/>`);
+      } else if (type === 'MultiLineString') {
+        geom.coordinates.forEach(line => drawGeometry(parts, { type: 'LineString', coordinates: line }, color, opacity, strokeOpacity));
+      } else if (type === 'Polygon') {
+        geom.coordinates.forEach(ring => {
+          const pts = ring.map(c => toXY(c[0], c[1]));
+          parts.push(`<polygon points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" fill="${color}" opacity="${opacity}" stroke="${color}" stroke-width="1"/>`);
+        });
+      } else if (type === 'MultiPolygon') {
+        geom.coordinates.forEach(poly => drawGeometry(parts, { type: 'Polygon', coordinates: poly }, color, opacity, strokeOpacity));
+      }
+    }
+
+    function buildSingleLayerSvg(label, parts) {
+      return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">`
+        + `<title>${label}</title>`
+        + `<defs><clipPath id="crop"><rect x="0" y="0" width="${width}" height="${height}"/></clipPath></defs>`
+        + `<g clip-path="url(#crop)">${parts.join('')}</g>`
+        + `</svg>`;
+    }
+
+    function downloadSvg(filename, svgString) {
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    const exportable = layerData.filter(({ geojson }) => geojson && geojson.features);
+
+    // One file per layer, numbered to preserve stacking order — drag/load all of them into
+    // Photoshop (File > Scripts > Load Files into Stack) or Illustrator (each file placed on
+    // its own layer) to reconstruct the full stack as separate, individually named layers.
+    for (let i = 0; i < exportable.length; i++) {
+      const { layer, geojson } = exportable[i];
+      btn.textContent = `📥 Exporting ${i + 1}/${exportable.length}...`;
       const color = layer.color || '#e8e8e8';
       const opacity = layer.opacity ?? 1;
-      const stroke = layer.strokeOpacity ?? 1;
-
-      layer.geom.features?.forEach(f => {
-        const geom = f.geometry;
-        if (geom.type === 'Point') {
-          const pt = toXY(geom.coordinates[0], geom.coordinates[1]);
-          svg += `<circle cx="${pt.x}" cy="${pt.y}" r="8" fill="${color}" opacity="${opacity}"/>`;
-        } else if (geom.type === 'LineString') {
-          const pts = geom.coordinates.map(c => toXY(c[0], c[1]));
-          svg += `<polyline points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" stroke="${color}" stroke-width="2.5" fill="none" opacity="${stroke}"/>`;
-        } else if (geom.type === 'Polygon') {
-          geom.coordinates.forEach(ring => {
-            const pts = ring.map(c => toXY(c[0], c[1]));
-            svg += `<polygon points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" fill="${color}" opacity="${opacity}" stroke="${color}" stroke-width="1"/>`;
-          });
-        }
-      });
-    });
-
-    svg += '</svg>';
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'stl-layers.svg';
-    a.click();
-    URL.revokeObjectURL(url);
+      const strokeOpacity = layer.strokeOpacity ?? 1;
+      const parts = [];
+      geojson.features.forEach(f => f.geometry && drawGeometry(parts, f.geometry, color, opacity, strokeOpacity));
+      const num = String(i + 1).padStart(2, '0');
+      const safeName = layer.label.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase();
+      downloadSvg(`${num}-${safeName}.svg`, buildSingleLayerSvg(layer.label, parts));
+      // Small delay between downloads — browsers can silently drop rapid-fire programmatic
+      // downloads triggered back-to-back in the same tick.
+      await new Promise(r => setTimeout(r, 250));
+    }
   } finally {
-    // Restore original line/circle widths
-    scaledPaint.forEach(({ id, prop, orig }) => {
-      if (map.getLayer(id)) map.setPaintProperty(id, prop, orig);
-    });
-
-    // Restore original size and view
-    container.style.width = origWidth;
-    container.style.height = origHeight;
-    map.resize();
-    map.jumpTo({ center: origCenter, zoom: origZoom });
-
     btn.disabled = false;
     btn.textContent = '📥 Export Visible Layers';
   }
