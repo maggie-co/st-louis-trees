@@ -218,6 +218,12 @@
             padding: 0;
         }
 
+        .form-group select.field-error,
+        .form-group input.field-error {
+            border-color: #d00 !important;
+            box-shadow: 0 0 0 1px #d00;
+        }
+
         .year-display {
             text-align: center;
             font-size: 24px;
@@ -511,11 +517,14 @@
             padding: 10px 12px;
             border-radius: 3px;
             font-size: 11px;
+            font-weight: normal;
+            text-transform: none;
+            letter-spacing: normal;
             z-index: 1000;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            min-width: 200px;
-            max-width: 300px;
-            line-height: 1.4;
+            min-width: 220px;
+            max-width: 320px;
+            line-height: 1.5;
         }
 
         .param-label:hover .param-tooltip {
@@ -802,16 +811,33 @@
         }
 
         .species-results {
-            display: grid;
-            gap: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
             margin-top: 20px;
+            margin-left: -40px;
+            margin-right: -40px;
+            padding-left: 40px;
+            padding-right: 40px;
+            width: calc(100% + 80px);
         }
 
         .species-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 2px;
-            padding: 16px;
+            background: transparent;
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            border-radius: 0;
+            padding: 20px 0;
+            box-shadow: none;
+            page-break-inside: avoid;
+            margin-left: 0;
+            margin-right: 0;
+            width: 100%;
+        }
+
+        .species-card:first-child {
+            border-top: none;
+            padding-top: 0;
         }
 
         .species-name {
@@ -991,6 +1017,16 @@
                 <p>Explore all 25 calculation formulas. Hover over any node to see the math.</p>
             </div>
         </div>
+
+        <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 11px; color: #999; text-align: center; line-height: 1.6;">
+            <div style="margin-bottom: 12px;">
+                A project by <strong>Living Earth Design Collective</strong><br/>
+                Built on the framework of the <a href="https://www.fs.usda.gov/managing-land/urban-forests/itree" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">iTree Design tool</a>
+            </div>
+            <div>
+                Project team: Andrés Fernández-Aguilar, Maggie Coleman, Gail Bray
+            </div>
+        </div>
     </div>
 
     <!-- Evaluate Screen -->
@@ -1058,36 +1094,6 @@
 
                     <div class="benefits-grid" id="benefitsDisplay"></div>
 
-                    <h3 style="margin-top: 32px;">Benefit Metrics Explained</h3>
-                    <div style="background: #faf9f7; border: 1px solid #e8e8e8; border-radius: 3px; padding: 16px; font-size: 11px; line-height: 1.6;">
-                        <div style="margin-bottom: 16px;">
-                            <strong>Total Stored Carbon (kg)</strong><br/>
-                            Cumulative carbon locked in tree biomass. Calculated using allometric equation: Biomass = a(DBH)^b, where DBH is diameter at breast height. Carbon = Biomass × 0.5 (carbon comprises ~50% of dry biomass).
-                        </div>
-                        <div style="margin-bottom: 16px;">
-                            <strong>Annual Sequestration (kg/year)</strong><br/>
-                            How much carbon the tree removes from atmosphere yearly. Based on annual growth rate and species productivity coefficients. This represents new biomass accumulation minus natural decay.
-                        </div>
-                        <div style="margin-bottom: 16px;">
-                            <strong>Stormwater Intercepted (gal/year)</strong><br/>
-                            Rainfall captured by leaves and bark before reaching ground. Estimated as: Canopy Area × Leaf Area Index × Annual Rainfall × 0.18 interception factor × 264.172 (conversion to gallons). Reduces urban runoff and flooding.
-                        </div>
-                        <div style="margin-bottom: 16px;">
-                            <strong>Pollution Removed (kg/year)</strong><br/>
-                            Air pollutants (particulates, ozone, NO₂, PM2.5) filtered by foliage. Based on leaf surface area and species-specific capture efficiency: Pollution = Leaf Area × 0.5 kg/m²/year. Improves air quality.
-                        </div>
-                        <div style="margin-bottom: 16px;">
-                            <strong>Energy Savings (kWh/year)</strong><br/>
-                            Electricity avoided through shade (cooling) and windbreaks (heating reduction). Formula: (Canopy Area × 0.6 shade factor × 50 kWh/m²/year) ÷ 3 building efficiency factor. Reduces HVAC load.
-                        </div>
-                        <div style="margin-bottom: 16px;">
-                            <strong>Survival Probability (%)</strong><br/>
-                            Likelihood tree survives to projected year. Calculated using: Survival = (1 - mortality_rate)^age, adjusted for site conditions (health, sentiment, infrastructure conflicts). Lower survival = higher risk investment.
-                        </div>
-                        <div style="color: #777; font-size: 10px; margin-top: 12px;">
-                            <strong>Sources:</strong> USDA Forest Service iTree Eco Model • ISO 14067 Carbon Footprinting • NWCC Stormwater Interception Tables • US EPA Air Quality Benefits Database • Nowak et al. (2013)
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1132,8 +1138,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Underground Utilities</label>
-                        <select id="recUtilities" required>
+                        <label class="param-label">Underground Utilities
+                            <span class="param-tooltip">Whether buried gas, water, sewer, or electric lines run beneath the site - deep-rooted species can damage them. Before planting, call Missouri One Call (dial 811 or visit <a href="https://www.mo1call.com" target="_blank" rel="noopener">mo1call.com</a>) to have lines marked for free.</span>
+                        </label>
+                        <select id="recUtilities" aria-describedby="tooltip-utilities">
                             <option value="">Select</option>
                             <option value="0">Yes, directly above</option>
                             <option value="1">Nearby</option>
@@ -1142,8 +1150,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Overhead Power Lines</label>
-                        <select id="recPowerLines" required>
+                        <label class="param-label">Overhead Power Lines
+                            <span class="param-tooltip">Whether utility lines cross above the planting site - tall-maturing trees planted underneath require repeated topping/pruning by the utility. Check clearance guidance from your electric provider (e.g. Ameren Missouri's "right tree, right place" program at <a href="https://www.ameren.com" target="_blank" rel="noopener">ameren.com</a>) before choosing a mature height.</span>
+                        </label>
+                        <select id="recPowerLines">
                             <option value="">Select</option>
                             <option value="0">Yes, directly above</option>
                             <option value="1">Nearby</option>
@@ -1152,7 +1162,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Wind Exposure</label>
+                        <label class="param-label">Wind Exposure
+                            <span class="param-tooltip">How exposed the site is to sustained/prevailing wind - open lots, rooftops, and river-bluff edges are high-exposure; courtyards and tree-lined streets are sheltered. Higher exposure favors wind-firm species with strong branch attachment.</span>
+                        </label>
                         <select id="recWind">
                             <option value="">Optional</option>
                             <option value="high">High (exposed area)</option>
@@ -1164,7 +1176,9 @@
                     <!-- Environmental -->
                     <h3>Environmental Conditions</h3>
                     <div class="form-group">
-                        <label>Sun Exposure<span class="required-marker">*</span></label>
+                        <label class="param-label">Sun Exposure<span class="required-marker">*</span>
+                            <span class="param-tooltip">Average hours of direct sunlight the site receives daily during the growing season. Observe the site at different times of day, or estimate from nearby building/tree shadows and orientation (south-facing = more sun).</span>
+                        </label>
                         <select id="recSun" required>
                             <option value="">Select</option>
                             <option value="full">Full Sun (6+ hrs)</option>
@@ -1174,7 +1188,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Soil Drainage<span class="required-marker">*</span></label>
+                        <label class="param-label">Soil Drainage<span class="required-marker">*</span>
+                            <span class="param-tooltip">How quickly water moves through the soil. Test it yourself: dig a 12"-deep hole, fill with water, let it drain, refill, and time the second drain - under 4 hrs is well-drained, 4–8 hrs is moderate, over 8 hrs is poor/wet. See MU Extension's guide at <a href="https://extension.missouri.edu" target="_blank" rel="noopener">extension.missouri.edu</a>.</span>
+                        </label>
                         <select id="recDrainage" required>
                             <option value="">Select</option>
                             <option value="poor">Poor (wet/clay)</option>
@@ -1184,8 +1200,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Annual Rainfall Available <span style="color: var(--accent); font-weight: 700;">*</span></label>
-                        <select id="recRainfall" required>
+                        <label class="param-label">Annual Rainfall Available
+                            <span class="param-tooltip">Typical yearly precipitation the site receives naturally (before irrigation). St. Louis averages ~40 in/yr, but microsites vary - check 30-year climate normals from the National Weather Service St. Louis office at <a href="https://www.weather.gov/lsx" target="_blank" rel="noopener">weather.gov/lsx</a>.</span>
+                        </label>
+                        <select id="recRainfall">
                             <option value="">Select</option>
                             <option value="low">Low (&lt;30 in/yr) - needs irrigation</option>
                             <option value="moderate">Moderate (30-45 in/yr) - St. Louis avg</option>
@@ -1194,7 +1212,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Water Budget (irrigation access)</label>
+                        <label class="param-label">Water Budget (irrigation access)
+                            <span class="param-tooltip">How much supplemental watering you can realistically provide during establishment (the first 2–3 years) - hose access, irrigation systems, or volunteer watering crews. Distinct from Annual Rainfall, which is what the site gets naturally.</span>
+                        </label>
                         <select id="recWater">
                             <option value="">Optional</option>
                             <option value="high">Regular irrigation available</option>
@@ -1206,7 +1226,9 @@
                     <!-- Social/Community -->
                     <h3>Community & Social</h3>
                     <div class="form-group">
-                        <label>Maintenance Capacity<span class="required-marker">*</span></label>
+                        <label class="param-label">Maintenance Capacity<span class="required-marker">*</span>
+                            <span class="param-tooltip">Ongoing care realistically available after planting - pruning, pest/disease monitoring, mulching, watering. High = staff/volunteers on a schedule; Low = planted and largely left alone.</span>
+                        </label>
                         <select id="recMaintenance" required>
                             <option value="">Select</option>
                             <option value="high">High (volunteers/staff available)</option>
@@ -1216,8 +1238,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Neighborhood Sentiment Towards Trees (1-10)</label>
-                        <select id="recSentiment" required>
+                        <label class="param-label">Neighborhood Sentiment Towards Trees (1-10)
+                            <span class="param-tooltip">Subjective but crucial: how supportive nearby residents are of tree planting/construction on-site, since low support raises vandalism and neglect risk. Survey the block directly rather than guessing - see the USDA Forest Service's community engagement guidance at <a href="https://www.fs.usda.gov/managing-land/urban-forests" target="_blank" rel="noopener">fs.usda.gov/managing-land/urban-forests</a> or the Arbor Day Foundation's community forestry resources at <a href="https://www.arborday.org" target="_blank" rel="noopener">arborday.org</a> for how to run a proper door-to-door or written survey.</span>
+                        </label>
+                        <select id="recSentiment">
                             <option value="">Select</option>
                             <option value="1">1 - Very opposed</option>
                             <option value="2">2</option>
@@ -1245,7 +1269,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Wildlife Benefit Priority</label>
+                        <label class="param-label" style="display: block; margin-bottom: 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Wildlife Benefit Priority
+                            <span class="param-tooltip" style="text-transform: none; letter-spacing: normal;">How much you want this tree to support pollinators, birds, and other wildlife (nectar, fruit/seed, nesting habitat) versus prioritizing other traits. Native species generally provide the highest wildlife value in St. Louis.</span>
+                        </label>
                         <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
                             <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
                                 <input type="checkbox" id="wildlifeHigh" style="flex-shrink: 0; width: 16px; height: 16px;">
@@ -1318,6 +1344,7 @@
         // St. Louis native/adapted species only
         const SPECIES = {
             "Red Maple": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Acer_rubrum_15-p.bot-a.rubrum-114.jpg/500px-Acer_rubrum_15-p.bot-a.rubrum-114.jpg",
                 max_height: 22, max_crown: 14, growth_rate: 0.8,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.028, k_c: 0.034, lai: 4.5,
                 utilities: 0.7, power_lines: 0.8, wind: 0.7, drainage: "moderate", sun: "full",
@@ -1325,6 +1352,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 7, maintenance: "low", iconic_appeal: 8
             },
             "White Oak": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Keeler_Oak_Tree_-_distance_photo%2C_May_2013.jpg/500px-Keeler_Oak_Tree_-_distance_photo%2C_May_2013.jpg",
                 max_height: 28, max_crown: 22, growth_rate: 0.55,
                 biomass_a: 0.12, biomass_b: 2.48, k_h: 0.025, k_c: 0.030, lai: 4.2,
                 utilities: 0.9, power_lines: 0.9, wind: 0.8, drainage: "good", sun: "full",
@@ -1332,6 +1360,7 @@
                 aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 9
             },
             "Bald Cypress": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Taxodium_distichum_NRCSMS01010.jpg/500px-Taxodium_distichum_NRCSMS01010.jpg",
                 max_height: 30, max_crown: 16, growth_rate: 0.85,
                 biomass_a: 0.09, biomass_b: 2.42, k_h: 0.026, k_c: 0.032, lai: 4.0,
                 utilities: 0.6, power_lines: 0.7, wind: 0.6, drainage: "poor", sun: "full",
@@ -1339,6 +1368,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 6, maintenance: "medium", iconic_appeal: 7
             },
             "Black Gum": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Nyssa_sylvatica_v_sylvatica.jpg/500px-Nyssa_sylvatica_v_sylvatica.jpg",
                 max_height: 25, max_crown: 18, growth_rate: 0.7,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.027, k_c: 0.033, lai: 4.3,
                 utilities: 0.75, power_lines: 0.8, wind: 0.7, drainage: "poor", sun: "full",
@@ -1346,6 +1376,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 6
             },
             "Pin Oak": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Pin_oak_quercus_palustris.jpg/500px-Pin_oak_quercus_palustris.jpg",
                 max_height: 20, max_crown: 15, growth_rate: 0.75,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.029, k_c: 0.034, lai: 4.3,
                 utilities: 0.85, power_lines: 0.85, wind: 0.75, drainage: "moderate", sun: "full",
@@ -1353,6 +1384,7 @@
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "low", iconic_appeal: 6
             },
             "Willow Oak": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Tree_in_Mississippi.jpg/500px-Tree_in_Mississippi.jpg",
                 max_height: 23, max_crown: 16, growth_rate: 0.8,
                 biomass_a: 0.10, biomass_b: 2.44, k_h: 0.028, k_c: 0.034, lai: 4.6,
                 utilities: 0.75, power_lines: 0.75, wind: 0.6, drainage: "poor", sun: "full",
@@ -1360,6 +1392,7 @@
                 aesthetic_type: "shade", wildlife_value: 7, maintenance: "low", iconic_appeal: 5
             },
             "Red Oak": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Quercus_rubra_%40_Tortworth_Court.jpg/500px-Quercus_rubra_%40_Tortworth_Court.jpg",
                 max_height: 27, max_crown: 20, growth_rate: 0.8,
                 biomass_a: 0.11, biomass_b: 2.46, k_h: 0.026, k_c: 0.031, lai: 4.2,
                 utilities: 0.8, power_lines: 0.8, wind: 0.75, drainage: "good", sun: "full",
@@ -1367,6 +1400,7 @@
                 aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 8
             },
             "Black Oak": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Quercus_velutina_001.jpg/500px-Quercus_velutina_001.jpg",
                 max_height: 26, max_crown: 19, growth_rate: 0.75,
                 biomass_a: 0.11, biomass_b: 2.46, k_h: 0.027, k_c: 0.032, lai: 4.1,
                 utilities: 0.8, power_lines: 0.8, wind: 0.75, drainage: "good", sun: "full",
@@ -1374,6 +1408,7 @@
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "low", iconic_appeal: 7
             },
             "Serviceberry": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Amelanchier_arborea_leaves.JPG/500px-Amelanchier_arborea_leaves.JPG",
                 max_height: 16, max_crown: 10, growth_rate: 0.5,
                 biomass_a: 0.08, biomass_b: 2.40, k_h: 0.032, k_c: 0.038, lai: 4.7,
                 utilities: 0.95, power_lines: 0.95, wind: 0.85, drainage: "moderate", sun: "partial",
@@ -1381,6 +1416,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 9, maintenance: "low", iconic_appeal: 7
             },
             "Redbud": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/RedbudOhio02.jpg/500px-RedbudOhio02.jpg",
                 max_height: 14, max_crown: 11, growth_rate: 0.55,
                 biomass_a: 0.08, biomass_b: 2.39, k_h: 0.033, k_c: 0.039, lai: 4.5,
                 utilities: 0.95, power_lines: 0.95, wind: 0.8, drainage: "good", sun: "partial",
@@ -1388,6 +1424,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 8
             },
             "Hackberry": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Celtis_occidentalis_20090606.jpg/500px-Celtis_occidentalis_20090606.jpg",
                 max_height: 24, max_crown: 18, growth_rate: 0.7,
                 biomass_a: 0.10, biomass_b: 2.44, k_h: 0.027, k_c: 0.033, lai: 4.3,
                 utilities: 0.7, power_lines: 0.7, wind: 0.85, drainage: "good", sun: "full",
@@ -1395,6 +1432,7 @@
                 aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 6
             },
             "Honey Locust": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Gleditsia_triacanthos_%28Honeylocust%29_%2838246396371%29.jpg/500px-Gleditsia_triacanthos_%28Honeylocust%29_%2838246396371%29.jpg",
                 max_height: 25, max_crown: 17, growth_rate: 0.85,
                 biomass_a: 0.09, biomass_b: 2.42, k_h: 0.028, k_c: 0.034, lai: 3.5,
                 utilities: 0.75, power_lines: 0.75, wind: 0.8, drainage: "good", sun: "full",
@@ -1402,6 +1440,7 @@
                 aesthetic_type: "shade", wildlife_value: 5, maintenance: "medium", iconic_appeal: 5
             },
             "Kentucky Coffeetree": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Gymnocladus_dioicus_JPG1a.jpg/500px-Gymnocladus_dioicus_JPG1a.jpg",
                 max_height: 26, max_crown: 16, growth_rate: 0.65,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.027, k_c: 0.033, lai: 3.2,
                 utilities: 0.75, power_lines: 0.75, wind: 0.9, drainage: "good", sun: "full",
@@ -1409,6 +1448,7 @@
                 aesthetic_type: "shade", wildlife_value: 6, maintenance: "medium", iconic_appeal: 4
             },
             "Black Walnut": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Black_Walnut_nut_and_leave_detail.JPG/500px-Black_Walnut_nut_and_leave_detail.JPG",
                 max_height: 28, max_crown: 20, growth_rate: 0.6,
                 biomass_a: 0.12, biomass_b: 2.48, k_h: 0.025, k_c: 0.030, lai: 4.0,
                 utilities: 0.6, power_lines: 0.6, wind: 0.8, drainage: "good", sun: "full",
@@ -1416,6 +1456,7 @@
                 aesthetic_type: "shade", wildlife_value: 7, maintenance: "high", iconic_appeal: 5
             },
             "Sycamore": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Pawling_Sycamore%2C_Valley_Forge_National_Historic_Park%2C_Pennsylvania_June_2024.jpg/500px-Pawling_Sycamore%2C_Valley_Forge_National_Historic_Park%2C_Pennsylvania_June_2024.jpg",
                 max_height: 32, max_crown: 24, growth_rate: 0.9,
                 biomass_a: 0.13, biomass_b: 2.50, k_h: 0.024, k_c: 0.029, lai: 4.1,
                 utilities: 0.5, power_lines: 0.5, wind: 0.7, drainage: "poor", sun: "full",
@@ -1423,6 +1464,7 @@
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "high", iconic_appeal: 6
             },
             "Tulip Tree": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Liriodendron_tulipifera_%28arbre%29_-_Laeken.JPG/500px-Liriodendron_tulipifera_%28arbre%29_-_Laeken.JPG",
                 max_height: 30, max_crown: 18, growth_rate: 0.95,
                 biomass_a: 0.11, biomass_b: 2.47, k_h: 0.025, k_c: 0.030, lai: 4.3,
                 utilities: 0.7, power_lines: 0.7, wind: 0.6, drainage: "good", sun: "full",
@@ -1430,6 +1472,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 6, maintenance: "medium", iconic_appeal: 7
             },
             "Sweet Gum": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/2014-11-02_13_06_29_Sweet_Gum_during_autumn_along_Lower_Ferry_Road_in_Ewing%2C_New_Jersey.JPG/500px-2014-11-02_13_06_29_Sweet_Gum_during_autumn_along_Lower_Ferry_Road_in_Ewing%2C_New_Jersey.JPG",
                 max_height: 28, max_crown: 19, growth_rate: 0.8,
                 biomass_a: 0.11, biomass_b: 2.46, k_h: 0.026, k_c: 0.031, lai: 4.2,
                 utilities: 0.65, power_lines: 0.65, wind: 0.7, drainage: "moderate", sun: "full",
@@ -1437,6 +1480,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 7, maintenance: "medium", iconic_appeal: 6
             },
             "American Elm": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/American_Elm_Tree%2C_Old_South_Street%2C_Northampton%2C_MA_-_October_2019.jpg/500px-American_Elm_Tree%2C_Old_South_Street%2C_Northampton%2C_MA_-_October_2019.jpg",
                 max_height: 29, max_crown: 21, growth_rate: 0.85,
                 biomass_a: 0.12, biomass_b: 2.48, k_h: 0.025, k_c: 0.030, lai: 4.4,
                 utilities: 0.7, power_lines: 0.7, wind: 0.75, drainage: "moderate", sun: "full",
@@ -1444,6 +1488,7 @@
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "high", iconic_appeal: 7
             },
             "Green Ash": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Fraxinus_pensylvanica_a1.jpg/500px-Fraxinus_pensylvanica_a1.jpg",
                 max_height: 24, max_crown: 16, growth_rate: 0.75,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.028, k_c: 0.034, lai: 4.3,
                 utilities: 0.8, power_lines: 0.8, wind: 0.75, drainage: "good", sun: "full",
@@ -1451,6 +1496,7 @@
                 aesthetic_type: "shade", wildlife_value: 6, maintenance: "medium", iconic_appeal: 5
             },
             "Pawpaw": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Asimina_triloba3.jpg/500px-Asimina_triloba3.jpg",
                 max_height: 12, max_crown: 9, growth_rate: 0.45,
                 biomass_a: 0.07, biomass_b: 2.38, k_h: 0.035, k_c: 0.041, lai: 4.8,
                 utilities: 0.95, power_lines: 0.95, wind: 0.8, drainage: "moderate", sun: "shade",
@@ -1458,6 +1504,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 9, maintenance: "low", iconic_appeal: 4
             },
             "Mulberry": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/MorusRubra9.jpg/500px-MorusRubra9.jpg",
                 max_height: 20, max_crown: 14, growth_rate: 0.8,
                 biomass_a: 0.09, biomass_b: 2.42, k_h: 0.030, k_c: 0.035, lai: 4.6,
                 utilities: 0.85, power_lines: 0.85, wind: 0.8, drainage: "good", sun: "full",
@@ -1465,6 +1512,7 @@
                 aesthetic_type: "mixed", wildlife_value: 10, maintenance: "medium", iconic_appeal: 6
             },
             "Hickory": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/2021-03-03_10_34_58_Shagbark_Hickory_trunk_within_the_woodlands_along_the_West_Branch_Shabakunk_Creek_in_Ewing_Township%2C_Mercer_County%2C_New_Jersey.jpg/500px-2021-03-03_10_34_58_Shagbark_Hickory_trunk_within_the_woodlands_along_the_West_Branch_Shabakunk_Creek_in_Ewing_Township%2C_Mercer_County%2C_New_Jersey.jpg",
                 max_height: 26, max_crown: 18, growth_rate: 0.55,
                 biomass_a: 0.12, biomass_b: 2.48, k_h: 0.026, k_c: 0.031, lai: 4.1,
                 utilities: 0.85, power_lines: 0.85, wind: 0.9, drainage: "good", sun: "full",
@@ -1472,6 +1520,7 @@
                 aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 5
             },
             "Sugar Maple": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Acer_saccharum_1-jgreenlee_%285098070608%29.jpg/500px-Acer_saccharum_1-jgreenlee_%285098070608%29.jpg",
                 max_height: 27, max_crown: 20, growth_rate: 0.6,
                 biomass_a: 0.11, biomass_b: 2.46, k_h: 0.026, k_c: 0.031, lai: 4.4,
                 utilities: 0.8, power_lines: 0.8, wind: 0.85, drainage: "good", sun: "full",
@@ -1479,6 +1528,7 @@
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "low", iconic_appeal: 9
             },
             "Ginkgo": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/GINKGOBAUM-2.jpg/500px-GINKGOBAUM-2.jpg",
                 max_height: 25, max_crown: 14, growth_rate: 0.65,
                 biomass_a: 0.10, biomass_b: 2.44, k_h: 0.027, k_c: 0.033, lai: 3.9,
                 utilities: 0.95, power_lines: 0.95, wind: 0.95, drainage: "good", sun: "full",
@@ -1486,6 +1536,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 4, maintenance: "low", iconic_appeal: 8
             },
             "Zelkova": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Zelkova_serrata_Noma_keyaki01.jpg/500px-Zelkova_serrata_Noma_keyaki01.jpg",
                 max_height: 24, max_crown: 16, growth_rate: 0.7,
                 biomass_a: 0.10, biomass_b: 2.44, k_h: 0.028, k_c: 0.033, lai: 4.2,
                 utilities: 0.85, power_lines: 0.85, wind: 0.8, drainage: "good", sun: "full",
@@ -1493,6 +1544,7 @@
                 aesthetic_type: "shade", wildlife_value: 5, maintenance: "low", iconic_appeal: 6
             },
             "Sweetbay Magnolia": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Magnolia_virginiana_flower_2.jpg/500px-Magnolia_virginiana_flower_2.jpg",
                 max_height: 18, max_crown: 12, growth_rate: 0.6,
                 biomass_a: 0.08, biomass_b: 2.40, k_h: 0.031, k_c: 0.036, lai: 4.7,
                 utilities: 0.9, power_lines: 0.9, wind: 0.7, drainage: "poor", sun: "partial",
@@ -1500,6 +1552,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 7, maintenance: "medium", iconic_appeal: 8
             },
             "Fringe Tree": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Chionanthus_virginicus_Arkansas.jpg/500px-Chionanthus_virginicus_Arkansas.jpg",
                 max_height: 12, max_crown: 10, growth_rate: 0.5,
                 biomass_a: 0.06, biomass_b: 2.35, k_h: 0.034, k_c: 0.040, lai: 4.5,
                 utilities: 0.95, power_lines: 0.95, wind: 0.8, drainage: "moderate", sun: "partial",
@@ -1507,6 +1560,7 @@
                 aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 7
             },
             "Ironwood": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Ostrya_virginiana_2.jpg/500px-Ostrya_virginiana_2.jpg",
                 max_height: 14, max_crown: 11, growth_rate: 0.45,
                 biomass_a: 0.07, biomass_b: 2.38, k_h: 0.033, k_c: 0.039, lai: 4.4,
                 utilities: 0.95, power_lines: 0.95, wind: 0.85, drainage: "moderate", sun: "shade",
@@ -1514,6 +1568,7 @@
                 aesthetic_type: "mixed", wildlife_value: 7, maintenance: "low", iconic_appeal: 5
             },
             "Cornelian Cherry": {
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/CornusMas_Fruits_01.jpg/500px-CornusMas_Fruits_01.jpg",
                 max_height: 16, max_crown: 12, growth_rate: 0.55,
                 biomass_a: 0.07, biomass_b: 2.39, k_h: 0.032, k_c: 0.037, lai: 4.3,
                 utilities: 0.9, power_lines: 0.9, wind: 0.8, drainage: "good", sun: "full",
@@ -2453,6 +2508,11 @@
             `;
         }
 
+        ['recLocation', 'recProximity', 'recSun', 'recDrainage', 'recMaintenance'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', () => { if (el.value) el.classList.remove('field-error'); });
+        });
+
         function runRecommender() {
             const location = document.getElementById('recLocation').value;
             const proximity = document.getElementById('recProximity').value;
@@ -2475,8 +2535,22 @@
             };
 
             // Check required fields
-            if (!location || !proximity || !utilities || !powerLines || !sun || !drainage || !rainfall || !sentiment || !maintenance) {
-                alert('Please answer all required questions (marked with *)');
+            const requiredFields = {
+                recLocation: location, recProximity: proximity, recSun: sun,
+                recDrainage: drainage, recMaintenance: maintenance
+            };
+            let firstInvalid = null;
+            Object.keys(requiredFields).forEach(id => {
+                const el = document.getElementById(id);
+                if (!requiredFields[id]) {
+                    el.classList.add('field-error');
+                    if (!firstInvalid) firstInvalid = el;
+                } else {
+                    el.classList.remove('field-error');
+                }
+            });
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
@@ -2676,7 +2750,9 @@
                         </div>
                         <div class="score-text">Suitability: ${Math.round(score)}%</div>
 
-                        <div class="species-benefits">
+                        <div style="position: relative; margin-top: 8px;">
+                            ${SPECIES[sp].image ? `<div style="position: absolute; top: 0; right: 0; width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; background: #f5f1eb; border-radius: 2px; padding: 8px;"><img src="${SPECIES[sp].image}" alt="${sp}" style="max-width: 100%; max-height: 100%; height: auto; object-fit: contain;"></div>` : ''}
+                            <div class="species-benefits" style="margin-right: ${SPECIES[sp].image ? '165px' : '0'};">
                             <div style="font-weight: 600; color: var(--primary); margin-bottom: 6px; font-size: 10px;">Est. Benefits @ 30 years</div>
 
                             <div class="benefit-row">
