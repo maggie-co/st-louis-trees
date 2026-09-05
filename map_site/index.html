@@ -452,53 +452,68 @@ document.getElementById('export-btn').addEventListener('click', async () => {
   });
 
   try {
-    // Wait for the map to repaint at the new size. The export container is much larger than the
-    // on-screen map, so it requests far more basemap tiles than usual — give it real time to land
-    // instead of racing a short fallback timer (which caused patchy/half-loaded basemap tiles).
-    await new Promise(resolve => {
-      map.once('idle', resolve);
-      map.triggerRepaint();
-      setTimeout(resolve, 6000); // generous fallback in case idle never fires
-    });
-    // Extra safety: keep polling until the basemap raster source itself reports fully loaded.
-    const waitStart = Date.now();
-    while (!map.isSourceLoaded('dark-basemap') && Date.now() - waitStart < 5000) {
-      await new Promise(r => setTimeout(r, 150));
-    }
+    // Collect visible layers as GeoJSON
+    const exportGeoJSON = { type: 'FeatureCollection', features: [] };
+    const checkedLayers = Array.from(document.querySelectorAll('.layer-row input[type="checkbox"]:checked'))
+      .map(cb => cb.closest('.layer-row').textContent.trim().split('\n')[0]);
 
-    // The long wait above occasionally lands on a fully blank WebGL frame (backgrounded tab,
-    // dropped GPU context, etc.) — detect that and force a fresh repaint before giving up.
-    function isCanvasBlank(canvas) {
-      const probeCtx = document.createElement('canvas').getContext('2d');
-      probeCtx.canvas.width = canvas.width;
-      probeCtx.canvas.height = canvas.height;
-      probeCtx.drawImage(canvas, 0, 0);
-      const { data } = probeCtx.getImageData(0, 0, canvas.width, canvas.height);
-      for (let i = 3; i < data.length; i += 4 * 977) {
-        if (data[i] !== 0) return false;
+    LAYERS.forEach(layer => {
+      if (layer.geom && checkedLayers.some(name => layer.id.includes(name.toLowerCase()) || name.includes(layer.id))) {
+        if (layer.geom.features) {
+          exportGeoJSON.features.push(...layer.geom.features);
+        }
       }
-      return true;
-    }
+    });
 
-    let mapCanvas = map.getCanvas();
-    let attempts = 0;
-    while (isCanvasBlank(mapCanvas) && attempts < 3) {
-      attempts++;
-      map.resize();
-      await new Promise(resolve => {
-        map.once('idle', resolve);
-        map.triggerRepaint();
-        setTimeout(resolve, 2000);
+    // Convert GeoJSON to SVG
+    const bounds = { minLon: Infinity, maxLon: -Infinity, minLat: Infinity, maxLat: -Infinity };
+    exportGeoJSON.features.forEach(f => {
+      const geom = f.geometry;
+      const getCoords = (coords) => {
+        if (Array.isArray(coords[0])) {
+          coords.forEach(getCoords);
+        } else {
+          bounds.minLon = Math.min(bounds.minLon, coords[0]);
+          bounds.maxLon = Math.max(bounds.maxLon, coords[0]);
+          bounds.minLat = Math.min(bounds.minLat, coords[1]);
+          bounds.maxLat = Math.max(bounds.maxLat, coords[1]);
+        }
+      };
+      if (geom.type === 'Point') getCoords(geom.coordinates);
+      else if (geom.coordinates) getCoords(geom.coordinates);
+    });
+
+    const width = 3600, height = Math.round(width / (((bounds.maxLon - bounds.minLon) * Math.cos((bounds.minLat + bounds.maxLat) / 2 * Math.PI / 180)) / (bounds.maxLat - bounds.minLat)));
+    let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="#161616"/>`;
+
+    exportGeoJSON.features.forEach(f => {
+      const color = '#e8e8e8';
+      const toXY = (lon, lat) => ({
+        x: ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * width,
+        y: ((bounds.maxLat - lat) / (bounds.maxLat - bounds.minLat)) * height
       });
-      mapCanvas = map.getCanvas();
-    }
 
-    const dataUrl = mapCanvas.toDataURL('image/png');
+      const geom = f.geometry;
+      if (geom.type === 'Point') {
+        const pt = toXY(geom.coordinates[0], geom.coordinates[1]);
+        svg += `<circle cx="${pt.x}" cy="${pt.y}" r="8" fill="${color}"/>`;
+      } else if (geom.type === 'LineString') {
+        const pts = geom.coordinates.map(c => toXY(c[0], c[1]));
+        svg += `<polyline points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" stroke="${color}" stroke-width="2.5" fill="none"/>`;
+      } else if (geom.type === 'Polygon') {
+        const pts = geom.coordinates[0].map(c => toXY(c[0], c[1]));
+        svg += `<polygon points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" fill="${color}" opacity="0.5" stroke="${color}" stroke-width="1"/>`;
+      }
+    });
 
+    svg += '</svg>';
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = 'stl-layers.png';
+    a.href = url;
+    a.download = 'stl-layers.svg';
     a.click();
+    URL.revokeObjectURL(url);
   } finally {
     // Restore original line/circle widths
     scaledPaint.forEach(({ id, prop, orig }) => {
