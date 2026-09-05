@@ -537,23 +537,20 @@
         }
 
         .info-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            display: inline-block;
             width: 18px;
             height: 18px;
-            font-size: 13px;
-            font-family: 'Times New Roman', serif;
-            line-height: 1;
-            color: var(--accent);
-            border: 1.5px solid var(--accent);
-            border-radius: 50%;
+            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11" fill="none" stroke="%230F8BCD" stroke-width="1.5"/><circle cx="12" cy="6" r="1.5" fill="%230F8BCD"/><rect x="10.5" y="10" width="3" height="8" fill="%230F8BCD"/></svg>');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
             cursor: pointer;
-            vertical-align: text-bottom;
+            vertical-align: middle;
             position: relative;
             margin-left: 4px;
             user-select: none;
-            font-weight: 400;
+            font-size: 0;
+            color: transparent;
         }
 
         .info-icon .info-tooltip {
@@ -1052,23 +1049,27 @@
     <div class="screen active" id="landingScreen">
         <div class="landing-header">
             <h1>St. Louis Tree Calculator</h1>
-            <p>Tree recommendation tool for St. Louis</p>
+            <p>A parameter-based tool for evaluating tree species and quantifying ecosystem benefits specific to St. Louis conditions. Our recommendations and analysis are built on the iTree Design framework but account for site-specific constraints, social conditions, native plant preferences, and aesthetics. Rather than providing rigid, one-size-fits-all guidance, the calculator delivers recommendations tailored to your location, environmental goals, and site conditions.</p>
         </div>
 
-        <div class="cards-grid">
-            <div class="card" onclick="goToScreen('recommenderScreen')">
+        <div style="margin-bottom: 16px; font-size: 11px; color: var(--text);">TOOLS</div>
+        <div class="cards-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 40px;">
+            <div class="card" onclick="goToScreen('recommenderScreen')" style="border-left: 4px solid var(--accent);">
                 <h2>Recommend Species</h2>
                 <p>Find the best species for your site based on constraints and environmental goals.</p>
             </div>
 
-            <div class="card" onclick="goToScreen('evaluateScreen')">
+            <div class="card" onclick="goToScreen('evaluateScreen')" style="border-left: 4px solid var(--accent);">
                 <h2>Evaluate Trees</h2>
-                <p>Model multiple trees placed on your map. See aggregated ecosystem benefits over time.</p>
+                <p>Model multiple trees placed on your map. See total ecosystem benefits over time.</p>
             </div>
+        </div>
 
-            <div class="card" onclick="goToScreen('methodologyScreen')" style="border-left: 3px solid var(--secondary); padding-left: 28px;">
-                <h2>Framework</h2>
-                <p>Explore all 25 calculation formulas. Hover over any node to see the math.</p>
+        <div style="margin-bottom: 16px; font-size: 11px; color: var(--text);">FRAMEWORK</div>
+        <div class="cards-grid" style="grid-template-columns: repeat(1, 1fr);">
+            <div class="card" onclick="goToScreen('methodologyScreen')" style="border-left: 4px solid var(--secondary);">
+                <h2>Parameters Chart</h2>
+                <p>Explore all 25 calculation formulas and how site-specific parameters drive recommendations. Hover over any node to see the math.</p>
             </div>
         </div>
 
@@ -1192,7 +1193,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Underground Utilities <span class="info-icon">i<span class="info-tooltip">Whether buried gas, water, sewer, or electric lines run beneath the site - deep-rooted species can damage them. Before planting, call Missouri One Call (dial 811 or visit <a href="https://www.mo1call.com" target="_blank" rel="noopener">mo1call.com</a>) to have lines marked for free.</span></span></label>
+                        <label>Underground Utilities <span class="info-icon">i<span class="info-tooltip">Whether buried gas, water, sewer, or electric lines run beneath the site-deep-rooted species can damage them. Before planting, call Missouri One Call (dial 811 or visit <a href="https://www.mo1call.com" target="_blank" rel="noopener">mo1call.com</a>) to have lines marked for free.</span></span></label>
                         <select id="recUtilities">
                             <option value="">Select</option>
                             <option value="0">Yes, directly above</option>
@@ -1202,7 +1203,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Overhead Power Lines <span class="info-icon">i<span class="info-tooltip">Whether utility lines cross above the planting site - tall-maturing trees planted underneath require repeated topping/pruning by the utility. Check clearance guidance from your electric provider (e.g. Ameren Missouri's "right tree, right place" program at <a href="https://www.ameren.com" target="_blank" rel="noopener">ameren.com</a>) before choosing a mature height.</span></span></label>
+                        <label>Overhead Power Lines <span class="info-icon">i<span class="info-tooltip">Whether utility lines cross above the planting site-tall-maturing trees planted underneath require repeated topping/pruning by the utility. Check clearance guidance from your electric provider (e.g. Ameren Missouri's "right tree, right place" program at <a href="https://www.ameren.com" target="_blank" rel="noopener">ameren.com</a>) before choosing a mature height.</span></span></label>
                         <select id="recPowerLines">
                             <option value="">Select</option>
                             <option value="0">Yes, directly above</option>
@@ -1212,7 +1213,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Wind Exposure <span class="info-icon">i<span class="info-tooltip">How exposed the site is to sustained/prevailing wind - open lots, rooftops, and river-bluff edges are high-exposure; courtyards and tree-lined streets are sheltered. Higher exposure favors wind-firm species with strong branch attachment.</span></span></label>
+                        <label>Wind Exposure <span class="info-icon">i<span class="info-tooltip">How exposed the site is to sustained/prevailing wind-open lots, rooftops, and river-bluff edges are high-exposure; courtyards and tree-lined streets are sheltered. Higher exposure favors wind-firm species with strong branch attachment.</span></span></label>
                         <select id="recWind">
                             <option value="">Optional</option>
                             <option value="high">High (exposed area)</option>
@@ -1234,7 +1235,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Soil Drainage<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">How quickly water moves through the soil. Test it yourself: dig a 12"-deep hole, fill with water, let it drain, refill, and time the second drain - under 4 hrs is well-drained, 4–8 hrs is moderate, over 8 hrs is poor/wet. See MU Extension's guide at <a href="https://extension.missouri.edu" target="_blank" rel="noopener">extension.missouri.edu</a>.</span></span></label>
+                        <label>Soil Drainage<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">How quickly water moves through the soil. Test it yourself: dig a 12"-deep hole, fill with water, let it drain, refill, and time the second drain-under 4 hrs is well-drained, 4–8 hrs is moderate, over 8 hrs is poor/wet. See MU Extension's guide at <a href="https://extension.missouri.edu" target="_blank" rel="noopener">extension.missouri.edu</a>.</span></span></label>
                         <select id="recDrainage" required>
                             <option value="">Select</option>
                             <option value="poor">Poor (wet/clay)</option>
@@ -1244,17 +1245,17 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Annual Rainfall Available <span class="info-icon">i<span class="info-tooltip">Typical yearly precipitation the site receives naturally (before irrigation). St. Louis averages ~40 in/yr, but microsites vary - check 30-year climate normals from the National Weather Service St. Louis office at <a href="https://www.weather.gov/lsx" target="_blank" rel="noopener">weather.gov/lsx</a>.</span></span></label>
+                        <label>Annual Rainfall Available <span class="info-icon">i<span class="info-tooltip">Typical yearly precipitation the site receives naturally (before irrigation). St. Louis averages ~40 in/yr, but microsites vary-check 30-year climate normals from the National Weather Service St. Louis office at <a href="https://www.weather.gov/lsx" target="_blank" rel="noopener">weather.gov/lsx</a>.</span></span></label>
                         <select id="recRainfall">
                             <option value="">Select</option>
-                            <option value="low">Low (&lt;30 in/yr) - needs irrigation</option>
-                            <option value="moderate">Moderate (30-45 in/yr) - St. Louis avg</option>
-                            <option value="high">High (&gt;45 in/yr) - flood-tolerant needed</option>
+                            <option value="low">Low (&lt;30 in/yr)-needs irrigation</option>
+                            <option value="moderate">Moderate (30-45 in/yr)-St. Louis avg</option>
+                            <option value="high">High (&gt;45 in/yr)-flood-tolerant needed</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label>Water Budget (irrigation access) <span class="info-icon">i<span class="info-tooltip">How much supplemental watering you can realistically provide during establishment (the first 2–3 years) - hose access, irrigation systems, or volunteer watering crews. Distinct from Annual Rainfall, which is what the site gets naturally.</span></span></label>
+                        <label>Water Budget (irrigation access) <span class="info-icon">i<span class="info-tooltip">How much supplemental watering you can realistically provide during establishment (the first 2–3 years)-hose access, irrigation systems, or volunteer watering crews. Distinct from Annual Rainfall, which is what the site gets naturally.</span></span></label>
                         <select id="recWater">
                             <option value="">Optional</option>
                             <option value="high">Regular irrigation available</option>
@@ -1266,7 +1267,7 @@
                     <!-- Social/Community -->
                     <h3>Community & Social</h3>
                     <div class="form-group">
-                        <label>Maintenance Capacity<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">Ongoing care realistically available after planting - pruning, pest/disease monitoring, mulching, watering. High = staff/volunteers on a schedule; Low = planted and largely left alone.</span></span></label>
+                        <label>Maintenance Capacity<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">Ongoing care realistically available after planting-pruning, pest/disease monitoring, mulching, watering. High = staff/volunteers on a schedule; Low = planted and largely left alone.</span></span></label>
                         <select id="recMaintenance" required>
                             <option value="">Select</option>
                             <option value="high">High (volunteers/staff available)</option>
@@ -1276,19 +1277,19 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Neighborhood Sentiment Towards Trees (1-10) <span class="info-icon">i<span class="info-tooltip">Subjective but crucial: how supportive nearby residents are of tree planting/construction on-site, since low support raises vandalism and neglect risk. Survey the block directly rather than guessing - see the USDA Forest Service's community engagement guidance at <a href="https://www.fs.usda.gov/managing-land/urban-forests" target="_blank" rel="noopener">fs.usda.gov/managing-land/urban-forests</a> or the Arbor Day Foundation's community forestry resources at <a href="https://www.arborday.org" target="_blank" rel="noopener">arborday.org</a> for how to run a proper door-to-door or written survey.</span></span></label>
+                        <label>Neighborhood Sentiment Towards Trees (1-10) <span class="info-icon">i<span class="info-tooltip">Subjective but crucial: how supportive nearby residents are of tree planting/construction on-site, since low support raises vandalism and neglect risk. Survey the block directly rather than guessing-see the USDA Forest Service's community engagement guidance at <a href="https://www.fs.usda.gov/managing-land/urban-forests" target="_blank" rel="noopener">fs.usda.gov/managing-land/urban-forests</a> or the Arbor Day Foundation's community forestry resources at <a href="https://www.arborday.org" target="_blank" rel="noopener">arborday.org</a> for how to run a proper door-to-door or written survey.</span></span></label>
                         <select id="recSentiment">
                             <option value="">Select</option>
-                            <option value="1">1 - Very opposed</option>
+                            <option value="1">1-Very opposed</option>
                             <option value="2">2</option>
                             <option value="3">3</option>
                             <option value="4">4</option>
-                            <option value="5">5 - Neutral/Unknown</option>
+                            <option value="5">5-Neutral/Unknown</option>
                             <option value="6">6</option>
                             <option value="7">7</option>
                             <option value="8">8</option>
                             <option value="9">9</option>
-                            <option value="10">10 - Very supportive</option>
+                            <option value="10">10-Very supportive</option>
                         </select>
                     </div>
 
@@ -1305,21 +1306,19 @@
                     </div>
 
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Wildlife Benefit Priority <span class="info-icon">i<span class="info-tooltip">How much you want this tree to support pollinators, birds, and other wildlife (nectar, fruit/seed, nesting habitat) versus prioritizing other traits. Native species generally provide the highest wildlife value in St. Louis.</span></span></label>
-                        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
-                            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                                <input type="checkbox" id="wildlifeHigh" style="flex-shrink: 0; width: 16px; height: 16px;">
-                                <span style="font-weight: normal; margin: 0; font-size: 13px; color: var(--text);">High (pollinators, birds, habitat)</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                                <input type="checkbox" id="wildlifeModerate" style="flex-shrink: 0; width: 16px; height: 16px;">
-                                <span style="font-weight: normal; margin: 0; font-size: 13px; color: var(--text);">Moderate Support</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                                <input type="checkbox" id="wildlifeLow" style="flex-shrink: 0; width: 16px; height: 16px;">
-                                <span style="font-weight: normal; margin: 0; font-size: 13px; color: var(--text);">Not a Priority</span>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label>Wildlife Benefit Priority <span class="info-icon">i<span class="info-tooltip">How much you want this tree to support pollinators, birds, and other wildlife (nectar, fruit/seed, nesting habitat) versus prioritizing other traits. Native species generally provide the highest wildlife value in St. Louis.</span></span></label>
+                        <select id="wildlifePriority">
+                            <option value="">No preference</option>
+                            <option value="high">Prioritize wildlife benefit</option>
+                            <option value="low">Other traits more important</option>
+                        </select>
+                    </div>
+
+                    <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 12px; color: var(--text);">SHOW ONLY NATIVE ST. LOUIS SPECIES? <span class="info-icon">i<span class="info-tooltip">Native species are adapted to St. Louis climate and soil. They support local wildlife and require less maintenance than non-native species.</span></span></label>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <input type="checkbox" id="nativeOnly" style="flex-shrink: 0; width: 16px; height: 16px;">
+                        <span style="font-size: 13px; color: var(--text);">Yes</span>
                     </div>
 
                     <div class="form-group">
@@ -1344,7 +1343,7 @@
                         </select>
                     </div>
 
-                    <button class="btn" onclick="runRecommender()" style="margin-top: 24px;">Get Recommendations</button>
+                    <button class="btn" onclick="runRecommender()" style="margin-top: 24px;">Find Trees</button>
 
                     <div class="species-results" id="speciesResults"></div>
                 </div>
@@ -1672,13 +1671,13 @@
             },
             height: {
                 title: "Height",
-                formula: "H = Hmax × (1 - e^(-kh × DBH))\n\nLogistic curve saturates at species max\nUsed for visualization and windthrow risk",
+                formula: "H = Hmax × (1-e^(-kh × DBH))\n\nLogistic curve saturates at species max\nUsed for visualization and windthrow risk",
                 inputs: ["future_dbh", "species"],
                 outputs: []
             },
             crown: {
                 title: "Crown Width",
-                formula: "CW = CWmax × (1 - e^(-kc × DBH))\n\nDrives most ecosystem services\nCanopy area = π(CW/2)²",
+                formula: "CW = CWmax × (1-e^(-kc × DBH))\n\nDrives most ecosystem services\nCanopy area = π(CW/2)²",
                 inputs: ["future_dbh", "species"],
                 outputs: ["canopy"]
             },
@@ -1714,7 +1713,7 @@
             },
             annual_seq: {
                 title: "Annual Sequestration",
-                formula: "Cseq = C_t - C_(t-1)\n\nYear-by-year difference\nRequires temporal calculation",
+                formula: "Cseq = C_t-C_(t-1)\n\nYear-by-year difference\nRequires temporal calculation",
                 inputs: ["carbon_stored"],
                 outputs: ["expected"]
             },
@@ -1750,7 +1749,7 @@
             },
             mortality: {
                 title: "Survival Probability",
-                formula: "Psurvive = (1 - m)^t\n\nm = annual mortality (0.02)\nt = year\nExample: P(30yr) = 0.55 (55% survival)",
+                formula: "Psurvive = (1-m)^t\n\nm = annual mortality (0.02)\nt = year\nExample: P(30yr) = 0.55 (55% survival)",
                 inputs: ["age"],
                 outputs: ["expected"]
             },
@@ -1773,13 +1772,13 @@
         function estimateHeight(dbh, species) {
             const hMax = SPECIES[species].max_height;
             const kH = SPECIES[species].k_h;
-            return hMax * (1 - Math.exp(-kH * dbh));
+            return hMax * (1-Math.exp(-kH * dbh));
         }
 
         function estimateCrown(dbh, species) {
             const cwMax = SPECIES[species].max_crown;
             const kC = SPECIES[species].k_c;
-            return cwMax * (1 - Math.exp(-kC * dbh));
+            return cwMax * (1-Math.exp(-kC * dbh));
         }
 
         function canopyArea(crownWidth) {
@@ -1801,7 +1800,7 @@
         }
 
         function annualSequestration(carbon_t, carbon_t1) {
-            return Math.max(0, carbon_t - carbon_t1);
+            return Math.max(0, carbon_t-carbon_t1);
         }
 
         function stormwaterInterception(canopyArea, rainfall = 1.067, condition = 1.0, ki = 0.18) {
@@ -1833,7 +1832,7 @@
         }
 
         function mortalityProbability(year, annualMortality = 0.02) {
-            return Math.pow(1 - annualMortality, year);
+            return Math.pow(1-annualMortality, year);
         }
 
         function calculateYearByYear(species, dbh0Inches, age, condition, sun) {
@@ -2201,7 +2200,7 @@
                 stormwater: "Rainfall captured by canopy before reaching ground. Formula: Canopy Area × LAI × Rainfall × 0.18 interception factor.",
                 pollution: "Air pollutants (PM2.5, O₃, NO₂) filtered by foliage. Based on leaf surface area × species capture efficiency (0.5 kg/m²/year).",
                 energy: "Electricity avoided through shade cooling and windbreak heating reduction. Formula: (Canopy Area × 0.6 × 50 kWh/m²/year) ÷ 3.",
-                survival: "Probability tree survives to projected year. Calculated as: (1 - mortality_rate)^age, adjusted for site conditions."
+                survival: "Probability tree survives to projected year. Calculated as: (1-mortality_rate)^age, adjusted for site conditions."
             };
 
             const html = `
@@ -2429,18 +2428,18 @@
 
                 Object.values(nodeBoxes).forEach(box => {
                     const rect = box.getBoundingClientRect();
-                    minX = Math.min(minX, rect.left - wrapperRect.left);
-                    maxX = Math.max(maxX, rect.right - wrapperRect.left);
-                    minY = Math.min(minY, rect.top - wrapperRect.top);
-                    maxY = Math.max(maxY, rect.bottom - wrapperRect.top);
+                    minX = Math.min(minX, rect.left-wrapperRect.left);
+                    maxX = Math.max(maxX, rect.right-wrapperRect.left);
+                    minY = Math.min(minY, rect.top-wrapperRect.top);
+                    maxY = Math.max(maxY, rect.bottom-wrapperRect.top);
                 });
 
-                const svgWidth = maxX - minX + 40;
-                const svgHeight = maxY - minY + 40;
+                const svgWidth = maxX-minX + 40;
+                const svgHeight = maxY-minY + 40;
 
                 svg.setAttribute('width', svgWidth);
                 svg.setAttribute('height', svgHeight);
-                svg.setAttribute('viewBox', `${minX - 20} ${minY - 20} ${svgWidth} ${svgHeight}`);
+                svg.setAttribute('viewBox', `${minX-20} ${minY-20} ${svgWidth} ${svgHeight}`);
 
                 FLOWCHART_CONNECTIONS.forEach(([fromId, toId]) => {
                     const fromBox = nodeBoxes[fromId];
@@ -2451,10 +2450,10 @@
                     const fromRect = fromBox.getBoundingClientRect();
                     const toRect = toBox.getBoundingClientRect();
 
-                    const x1 = fromRect.right - wrapperRect.left;
-                    const y1 = fromRect.top - wrapperRect.top + fromRect.height / 2;
-                    const x2 = toRect.left - wrapperRect.left;
-                    const y2 = toRect.top - wrapperRect.top + toRect.height / 2;
+                    const x1 = fromRect.right-wrapperRect.left;
+                    const y1 = fromRect.top-wrapperRect.top + fromRect.height / 2;
+                    const x2 = toRect.left-wrapperRect.left;
+                    const y2 = toRect.top-wrapperRect.top + toRect.height / 2;
 
                     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                     path.classList.add('arrow');
@@ -2512,7 +2511,7 @@
 
             const rect = e.target.getBoundingClientRect();
             tooltip.style.left = (rect.right + 10) + 'px';
-            tooltip.style.top = (rect.top - 50) + 'px';
+            tooltip.style.top = (rect.top-50) + 'px';
         }
 
         function hideTooltip() {
@@ -2522,7 +2521,7 @@
         function estimateSpeciesBenefits(species) {
             const s = SPECIES[species];
             const dbh30 = 15 + (s.growth_rate * 30 * 0.8); // Estimate DBH at 30 years
-            const crownW = s.max_crown * (1 - Math.exp(-s.k_c * dbh30));
+            const crownW = s.max_crown * (1-Math.exp(-s.k_c * dbh30));
             const ca = Math.PI * Math.pow(crownW / 2, 2);
             const biomass = s.biomass_a * Math.pow(dbh30, s.biomass_b);
             const carbon = biomass * 0.5;
@@ -2580,11 +2579,8 @@
             const priority = document.getElementById('priority1').value;
             const maintenance = document.getElementById('recMaintenance').value;
             const aesthetic = document.getElementById('aestheticPref').value;
-            const wildlifeChecked = {
-                high: document.getElementById('wildlifeHigh').checked,
-                moderate: document.getElementById('wildlifeModerate').checked,
-                low: document.getElementById('wildlifeLow').checked
-            };
+            const prioritizeWildlife = document.getElementById('wildlifePriority').value === 'high';
+            const nativeOnly = document.getElementById('nativeOnly').checked;
 
             // Check required fields
             const requiredFields = {
@@ -2754,17 +2750,12 @@
                     }
 
                     // Wildlife benefit priority (10 pts max)
-                    if (wildlifeChecked.high && SPECIES[sp].wildlife_value >= 8) {
+                    if (prioritizeWildlife && SPECIES[sp].wildlife_value >= 8) {
                         score += 10;
                         reasons.push('Excellent wildlife habitat');
-                    }
-                    if (wildlifeChecked.moderate && SPECIES[sp].wildlife_value >= 6) {
+                    } else if (prioritizeWildlife && SPECIES[sp].wildlife_value >= 6) {
                         score += 5;
                         reasons.push('Good pollinator/bird support');
-                    }
-                    if (wildlifeChecked.low) {
-                        score += 3;
-                        reasons.push('Low-maintenance species');
                     }
 
                     score *= sentimentMult;
@@ -2773,7 +2764,7 @@
                     benefits[sp] = estimateSpeciesBenefits(sp);
                 });
 
-            const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const ranked = Object.entries(scores).sort((a, b) => b[1]-a[1]).slice(0, 10);
 
             let html = '';
 
