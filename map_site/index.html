@@ -537,16 +537,22 @@
         }
 
         .info-icon {
-            display: inline-block;
-            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            font-size: 11px;
             color: var(--accent);
+            border: 1.5px solid var(--accent);
+            border-radius: 50%;
             cursor: pointer;
             vertical-align: super;
             position: relative;
             margin-left: 4px;
             user-select: none;
             font-style: italic;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .info-icon .info-tooltip {
