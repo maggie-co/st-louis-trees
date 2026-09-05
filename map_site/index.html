@@ -1,771 +1,2658 @@
-﻿<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>St. Louis Flood &amp; Canopy Infrastructure</title>
-<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-<style>
-  :root {
-    --bg: #161616;
-    --panel: #1a1a1a;
-    --border: #3a3a3a;
-    --text: #e8e8e8;
-    --muted: #999999;
-    --accent: #f7d03c;
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0;
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Times New Roman', Times, serif;
-  }
-  #map { position: absolute; inset: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>St. Louis Canopy Calculator</title>
 
-  #panel {
-    position: absolute;
-    top: 16px;
-    left: 16px;
-    width: 290px;
-    max-height: calc(100% - 32px);
-    overflow-y: auto;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    padding: 16px;
-    z-index: 2;
-  }
-  #panel h1 {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    margin: 0 0 4px;
-  }
-  #panel .subtitle {
-    font-size: 12px;
-    font-style: italic;
-    color: var(--muted);
-    margin: 0 0 16px;
-  }
-  .group-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    margin: 16px 0 4px;
-    font-weight: 600;
-  }
-  .group-label:first-of-type { margin-top: 0; }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
-  .layer-row {
-    padding: 6px 0;
-    border-top: 1px solid var(--border);
-    font-size: 13.5px;
-    position: relative;
-  }
-  .group-label + .layer-row { border-top: none; }
-  .layer-row .row-main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .layer-row label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-  }
-  .swatch {
-    width: 10px;
-    height: 10px;
-    flex: none;
-    border-radius: 2px;
-  }
-  .layer-row input[type="checkbox"] {
-    accent-color: var(--accent);
-  }
-  .info-btn {
-    width: 16px;
-    height: 16px;
-    flex: none;
-    border-radius: 50%;
-    border: 1px solid var(--muted);
-    background: transparent;
-    color: var(--muted);
-    font-size: 11px;
-    font-family: 'Times New Roman', Times, serif;
-    line-height: 14px;
-    text-align: center;
-    cursor: pointer;
-    padding: 0;
-  }
-  .info-btn.active {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .info-popover {
-    display: none;
-    margin-top: 6px;
-    background: #111111;
-    border: 1px solid var(--border);
-    padding: 10px;
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-  .info-popover.open { display: block; }
-  .info-popover strong { color: var(--text); display: block; margin-bottom: 4px; }
-  .info-popover .cite {
-    display: block;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px solid var(--border);
-    font-style: italic;
-    font-size: 11px;
-  }
 
-  .maplibregl-popup-content {
-    background: var(--panel);
-    color: var(--text);
-    border: 1px solid var(--border);
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 13px;
-    padding: 10px 12px;
-    max-width: 260px;
-  }
-  .maplibregl-popup-tip { border-top-color: var(--panel) !important; }
-  .maplibregl-popup-close-button { color: var(--muted); }
-</style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #496677;
+            --text: #371203;
+            --light: #f5f1eb;
+            --border: #d4cfc5;
+            --accent: #0F8BCD;
+            --secondary: #b8b968;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            background: var(--light);
+            color: var(--text);
+        }
+
+        .screen {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        #landingScreen {
+            justify-content: center;
+            align-items: center;
+            padding: 80px 40px;
+        }
+
+        .landing-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .landing-header h1 {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+
+        .landing-header p {
+            font-size: 14px;
+            color: #999;
+            letter-spacing: 0.5px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            padding: 40px 32px;
+            border-radius: 2px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .card:hover {
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+            transform: translateY(-4px);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+
+        .card p {
+            font-size: 13px;
+            color: #777;
+            line-height: 1.8;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 24px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            color: var(--primary);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        .back-btn:hover {
+            color: var(--primary);
+        }
+
+        .main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        .main.full {
+            grid-template-columns: 1fr;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 40px;
+            background: var(--light);
+        }
+
+        .panel h2 {
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel h3 {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            font-size: 13px;
+            font-family: inherit;
+            background: white;
+        }
+
+        .form-group input[type="range"] {
+            padding: 0;
+        }
+
+        .year-display {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 12px 0;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: inherit;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .benefit-card {
+            background: white;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--primary);
+            border-radius: 2px;
+        }
+
+        .benefit-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .benefit-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .benefit-unit {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .trees-list {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 0;
+            max-height: 280px;
+            overflow-y: auto;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        .tree-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tree-item:hover {
+            background: #f9f8f6;
+        }
+
+        .tree-item.selected {
+            background: #f0f7ff;
+            border-left: 3px solid var(--accent);
+            padding-left: 9px;
+        }
+
+        .tree-item:last-child {
+            border-bottom: none;
+        }
+
+        .tree-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .tree-stats {
+            font-size: 11px;
+            color: #777;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .tree-stat {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tree-stat-label {
+            color: #999;
+        }
+
+        .tree-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .tree-btn {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            border-radius: 2px;
+            font-size: 10px;
+            cursor: pointer;
+            color: #777;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tree-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .tree-btn.remove {
+            color: #d00;
+            border-color: #d00;
+        }
+
+        .tree-btn.remove:hover {
+            background: #d00;
+            color: white;
+        }
+
+        /* Data Flow Diagram */
+        .flowchart-container {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            overflow-x: auto;
+            padding: 20px;
+            background: linear-gradient(90deg, #fafaf8 0%, #f5f1eb 100%);
+            border-radius: 3px;
+            margin-bottom: 32px;
+        }
+
+        .flowchart-tier {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 160px;
+            flex-shrink: 0;
+        }
+
+        .tier-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #999;
+            font-weight: 700;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .tier-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .legend-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 16px;
+            font-size: 11px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .metrics-guide {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 20px;
+            margin-bottom: 24px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .metrics-guide h3 {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .metrics-guide p {
+            margin: 8px 0;
+            color: var(--text);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 2px;
+            margin-right: 12px;
+            border: 2px solid;
+            flex-shrink: 0;
+        }
+
+        .legend-color.input {
+            background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+            border-color: #0F8BCD;
+        }
+
+        .legend-color.intermediate {
+            background: linear-gradient(135deg, #f9f8f6 0%, #ffffff 100%);
+            border-color: #496677;
+        }
+
+        .legend-color.output {
+            background: linear-gradient(135deg, #fefdf8 0%, #ffffff 100%);
+            border-color: #b8b968;
+        }
+
+        .legend-label {
+            color: var(--text);
+            font-size: 11px;
+        }
+
+        .calc-box {
+            background: white;
+            border: 2.5px solid var(--primary);
+            border-radius: 3px;
+            padding: 18px;
+            min-width: 140px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            text-align: center;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .calc-box:hover {
+            background: white;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-width: 3px;
+        }
+
+        /* SVG Arrow Styling */
+        .flowchart-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .flowchart-svg .arrow {
+            stroke: #c0c0c0;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+            opacity: 0.6;
+            transition: opacity 0.2s, stroke 0.2s;
+        }
+
+        .flowchart-svg .arrow.active {
+            stroke: var(--accent);
+            opacity: 1;
+            stroke-width: 3;
+        }
+
+        .calc-box {
+            position: relative;
+            z-index: 1;
+        }
+
+        .calc-box.input {
+            border-color: #0F8BCD;
+            color: #0F8BCD;
+            background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+        }
+
+        .calc-box.intermediate {
+            border-color: #496677;
+            color: #496677;
+            background: linear-gradient(135deg, #f9f8f6 0%, #ffffff 100%);
+        }
+
+        .calc-box.output {
+            border-color: #b8b968;
+            color: #b8b968;
+            background: linear-gradient(135deg, #fefdf8 0%, #ffffff 100%);
+        }
+
+        .calc-box.active-flow {
+            background: white;
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(15, 139, 205, 0.1);
+        }
+
+        .tooltip-popup {
+            display: none;
+        }
+
+        .formula-display {
+            background: white;
+            border: 2px solid var(--accent);
+            border-radius: 3px;
+            padding: 28px;
+            margin-top: 48px;
+            display: none;
+        }
+
+        .formula-display.active {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .formula-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .formula-chain {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .formula-text {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            color: var(--text);
+            background: #f9f8f6;
+            padding: 16px;
+            border-radius: 2px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .tooltip {
+            position: fixed;
+            background: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 2px;
+            font-size: 10px;
+            font-weight: normal;
+            z-index: 1000;
+            pointer-events: none;
+            max-width: 280px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            white-space: normal;
+            line-height: 1.4;
+        }
+
+        .tooltip.active {
+            display: block;
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 6px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* System-style sentiment warning popup */
+        .sentiment-warning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .sentiment-warning-popup {
+            background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+            border: 1px solid #555;
+            border-radius: 3px;
+            width: 420px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        .sentiment-warning-header {
+            background: linear-gradient(90deg, #2a6999 0%, #1a4d7a 100%);
+            padding: 12px 16px;
+            border-bottom: 1px solid #1a3a5a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sentiment-warning-icon {
+            width: 24px;
+            height: 24px;
+            background: #ffd700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .sentiment-warning-title {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .sentiment-warning-body {
+            padding: 16px;
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .sentiment-warning-body strong {
+            color: #ffd700;
+        }
+
+        .sentiment-warning-bullet {
+            margin-left: 16px;
+            margin-bottom: 6px;
+        }
+
+        .sentiment-warning-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #444;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            background: linear-gradient(180deg, #333 0%, #2a2a2a 100%);
+        }
+
+        .sentiment-warning-btn {
+            padding: 6px 20px;
+            border: 1px solid #666;
+            border-radius: 2px;
+            background: linear-gradient(180deg, #4a7ba7 0%, #2a5a87 100%);
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .sentiment-warning-btn:hover {
+            background: linear-gradient(180deg, #5a8bb7 0%, #3a6a97 100%);
+        }
+
+        .sentiment-warning-btn.cancel {
+            background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 100%);
+        }
+
+        .sentiment-warning-btn.cancel:hover {
+            background: linear-gradient(180deg, #6a6a6a 0%, #4a4a4a 100%);
+        }
+
+        .recommender-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .species-results {
+            display: grid;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .species-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 16px;
+        }
+
+        .species-name {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .score-bar {
+            width: 100%;
+            height: 6px;
+            background: #e8e8e8;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: var(--secondary);
+        }
+
+        .score-text {
+            font-size: 10px;
+            color: #999;
+        }
+
+        .species-benefits {
+            display: grid;
+            gap: 10px;
+            margin-top: 12px;
+            font-size: 10px;
+        }
+
+        .benefit-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 40px;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .benefit-label {
+            font-size: 10px;
+            color: #777;
+            font-weight: 500;
+        }
+
+        .benefit-bar-container {
+            height: 6px;
+            background: #e8e8e8;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .benefit-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--secondary) 100%);
+            border-radius: 2px;
+        }
+
+        .benefit-value {
+            text-align: right;
+            color: #999;
+            font-size: 9px;
+        }
+
+        .compare-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+
+        .compare-btn:hover {
+            background: #a8a858;
+            transform: translateY(-2px);
+        }
+
+        .comparison-table {
+            margin-top: 24px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background: white;
+            display: none;
+        }
+
+        .comparison-table.active {
+            display: block;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .comparison-table th {
+            background: var(--primary);
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .comparison-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-table tr:hover {
+            background: #f9f8f6;
+        }
+
+        .comparison-table .metric {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .comparison-table .score-cell {
+            text-align: right;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        @media (max-width: 1024px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main {
+                grid-template-columns: 1fr;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recommender-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .flowchart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Landing -->
+    <div class="screen active" id="landingScreen">
+        <div class="landing-header">
+            <h1>St. Louis Canopy Calculator</h1>
+            <p>Community-informed tree recommendation engine</p>
+        </div>
 
-<div id="map"></div>
+        <div class="cards-grid">
+            <div class="card" onclick="goToScreen('recommenderScreen')">
+                <h2>Recommend Species</h2>
+                <p>Find the best species for your site based on constraints and environmental goals.</p>
+            </div>
 
-<div id="panel">
-  <h1>St. Louis Flood &amp; Canopy Infrastructure</h1>
-  <button id="export-btn" style="width:100%; padding:8px; margin-bottom:12px; background:#2a2a2a; color:#ccc; border:1px solid #666; cursor:pointer; font-family:inherit; font-size:12px;">📥 Export Visible Layers</button>
-  <div id="layer-list"></div>
-</div>
+            <div class="card" onclick="goToScreen('evaluateScreen')">
+                <h2>Evaluate Trees</h2>
+                <p>Model multiple trees placed on your map. See aggregated ecosystem benefits over time.</p>
+            </div>
 
-<script>
-/*
- * Inferno colormap approximation (matplotlib "inferno"), sampled at 10
- * canonical stops and linearly interpolated in RGB space for arbitrary t.
- * Used to give each layer group its own band of the palette.
- */
-const INFERNO_STOPS = [
-  '#000004', '#1b0c41', '#4a0c6b', '#781c6d', '#a52c60',
-  '#cf4446', '#ed6925', '#fb9a06', '#f7d03c', '#fcffa4'
-];
-function hexToRgb(hex) {
-  const n = parseInt(hex.slice(1), 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
-function rgbToHex(rgb) {
-  return '#' + rgb.map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
-}
-function infernoColor(t) {
-  t = Math.max(0, Math.min(1, t));
-  const scaled = t * (INFERNO_STOPS.length - 1);
-  const i = Math.floor(scaled);
-  const frac = scaled - i;
-  if (i >= INFERNO_STOPS.length - 1) return INFERNO_STOPS[INFERNO_STOPS.length - 1];
-  const a = hexToRgb(INFERNO_STOPS[i]);
-  const b = hexToRgb(INFERNO_STOPS[i + 1]);
-  return rgbToHex(a.map((v, idx) => v + (b[idx] - v) * frac));
-}
-/* Assign each group a band of the colormap; layers within a group are
- * spread evenly across that band. Ordered dark -> bright, deliberately
- * pushed toward the extremes for contrast against the dark canvas:
- * water (deep indigo/black) -> hydrology history (violet) -> flood risk
- * (magenta-red) -> MSD infrastructure (orange) -> canopy (sole bright
- * pale-yellow highlight, reserved for this one layer only). */
-function bandColors(start, end, count) {
-  if (count === 1) return [infernoColor((start + end) / 2)];
-  const colors = [];
-  for (let i = 0; i < count; i++) {
-    colors.push(infernoColor(start + (end - start) * (i / (count - 1))));
-  }
-  return colors;
-}
-/*
- * Layer config. Each entry describes one source/layer pair.
- * geomType drives which MapLibre layer type + paint we build.
- * showInfo controls whether the group gets a clickable info icon.
- * source/detail are shown in the click-triggered info popover as the
- * short description + cited source.
- *
- * Six-group color ramp (top of legend -> bottom), per requested palette:
- * Proposed Redesign Site, Tornado, MSD, FEMA flood, Water & Canopy, City Boundary.
- */
-/* mako-inspired ramp (dark purple -> blue -> teal -> pale green),
- * ordered top-of-legend (darkest/most purple) to bottom (lightest). */
-const SITE_COLOR = '#2a1a4d';
-const TORNADO_COLOR = '#817f9f';
-const MSD_COLOR = '#2f6b8a';
-const FEMA_COLOR = '#3a9188';
-const WATERCANOPY_COLOR = '#8fcf9f';
-const BOUNDARY_COLOR = '#6b6b6b';
-
-const LAYERS = [
-  {
-    id: 'proposed-redesign-site', file: 'newstead_ave_site.json', geomType: 'polygon', group: null, showInfo: false,
-    label: 'Proposed Redesign Site', color: '#808080', opacity: 0.55, defaultOn: true,
-    source: 'Newstead Ave (Kossuth to Carter Ave)',
-    detail: 'Site boundary for proposed green infrastructure redesign.',
-    noPopup: true
-  },
-  {
-    id: 'tornado-path', file: 'tornado_path_2025.json', geomType: 'polygon', group: 'May 2025 Tornado', showInfo: true,
-    label: 'Tornado path (EF-3)', color: TORNADO_COLOR, opacity: 0.7, defaultOn: true,
-    source: 'City of St. Louis / National Weather Service',
-    detail: 'May 16, 2025 EF-3 tornado track. Path width: 3,168 yards (1.8 miles). Survey date: June 2, 2025. Revised assessment with 10,000+ damage points published June 2026. (2025)',
-    popup: f => `<strong>EF-${f.ef_rank} Tornado — May 16, 2025</strong><br>Structures exposed: ${f.structures_exposed || 'n/a'}`
-  },
-  {
-    id: 'msd-ownership', file: 'msd_ownership.json', geomType: 'polygon', group: 'MSD infrastructure', showInfo: true,
-    label: 'MSD-owned parcels', color: '#abe0ab', opacity: 0.78, defaultOn: true,
-    source: 'Metropolitan St. Louis Sewer District (MSD_OWNERSHIP)',
-    detail: '292 parcels owned by MSD. (2020)',
-    popup: f => `<strong>${f.Address || 'MSD parcel'}</strong><br>${f.Owner_1 || ''}`
-  },
-  {
-    id: 'msd-stormwater-projects', file: 'msd_large_stormwater_projects.json', geomType: 'polygon', group: 'MSD infrastructure', showInfo: true,
-    label: 'MSD large stormwater projects', color: '#8cc08c', opacity: 0.82, defaultOn: true,
-    source: 'Metropolitan St. Louis Sewer District (MSD_LargeScale_Stormwater_Projects)',
-    detail: '262 parcels within large-scale MSD stormwater project footprints. (2020)',
-    popup: f => `<strong>${(f.address || '').trim() || 'Stormwater project parcel'}</strong><br>${f.subtype || ''} ${f.poly_type || ''}<br>${f.notes || ''}`
-  },
-  {
-    id: 'msd-problem-areas', file: 'msd_problem_areas.json', geomType: 'polygon', group: 'MSD infrastructure', showInfo: true,
-    label: 'MSD problem areas', color: '#6a8c6a', opacity: 0.88, defaultOn: true,
-    source: 'Metropolitan St. Louis Sewer District (MSD_ProblemAreas)',
-    detail: '77 known stormwater/sewer problem areas identified by MSD. (2020)',
-    popup: f => `<strong>MSD problem area</strong><br>${f.PROBAREA || ''}`
-  },
-  {
-    id: 'modern-hydro', file: 'modern_hydro_flow_routes.json', geomType: 'line', group: 'Water & Canopy', showInfo: true,
-    label: 'Modern flow routes', color: '#6d97b8', strokeWidth: 1.8, strokeOpacity: 0.7, defaultOn: true,
-    source: 'City of St. Louis Flood Risk Map (ModernHydroFlowRoutes)',
-    detail: 'Modeled current-day surface flow paths, derived hydrology. 136 features. (2020)',
-    popup: f => `<strong>Modeled flow route</strong>`
-  },
-  {
-    id: 'rivers-lakes', file: 'rivers_and_lakes.json', geomType: 'polygon', group: 'Water & Canopy', showInfo: true,
-    label: 'Rivers and Lakes', color: '#7797ad', opacity: 0.25, defaultOn: true,
-    source: 'City of St. Louis Flood Risk Map (STLOUIS RIVERS + HistoricLakes)',
-    detail: 'Named rivers and lakes, merged into one layer. 27 features: 25 rivers, 2 lakes (one no longer open water). (2020)',
-    popup: f => `<strong>${f.name || f.kind}</strong><br>${f.kind}${f.municipality ? ' — ' + f.municipality + ', ' + f.state : ''}${f.source_detail ? '<br>Source: ' + f.source_detail : ''}`
-  },
-  {
-    id: 'floodplain', file: 'stl_floodplain.json', geomType: 'polygon', group: 'Water & Canopy', showInfo: true,
-    label: 'FEMA floodplain', color: '#6d97ad', opacity: 0.5, defaultOn: true,
-    source: 'City of St. Louis Flood Risk Map (STL_Floodplain)',
-    detail: 'FLD_ZONE / SFHA_TF classification, 329 features. City-maintained FEMA-derived layer. (2020)',
-    popup: f => `<strong>Flood zone ${f.FLD_ZONE || ''}</strong><br>SFHA: ${f.SFHA_TF === 'T' ? 'Yes' : 'No'}<br>Floodway: ${f.FLOODWAY || 'n/a'}`
-  },
-  {
-    id: 'trees', file: 'trees_slim.json', geomType: 'point', group: 'Water & Canopy', showInfo: true,
-    label: 'Trees', color: '#b8b8b8', defaultOn: true,
-    source: 'City of St. Louis Tree Inventory',
-    detail: 'Point shapefile, reprojected from NAD83 StatePlane MO East (ftUS) to WGS84. DBH = diameter at breast height (trunk diameter measured 4.5ft above ground), the standard forestry measure of tree size. (2020)',
-    popup: f => `<strong>${f.species || 'Unknown species'}</strong><br>DBH: ${f.dbh}"<br>Condition: ${f.condition || 'n/a'}<br>${f.address || ''}`
-  },
-  {
-    id: 'stl-boundary', file: 'st_louis_city_boundary.json', geomType: 'polygon', group: null, showInfo: false,
-    label: 'St. Louis City Boundary', color: '#000000', opacity: 0, strokeWidth: 1.5, strokeOpacity: 0.8, defaultOn: true, outlineOnly: true,
-    source: 'City of St. Louis',
-    detail: 'Municipal boundary outline.',
-    popup: f => `<strong>St. Louis City Boundary</strong>`
-  },
-  {
-    id: 'bounding-box', geomType: 'line', group: null, showInfo: false,
-    label: 'Bounding Box', color: '#000000', opacity: 1, strokeWidth: 1.5, strokeOpacity: 0.8, defaultOn: true,
-    source: 'Map Extent',
-    detail: 'St. Louis city boundary rectangle',
-    geom: {
-      type: 'FeatureCollection',
-      features: [{
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: [
-            [-90.330, 38.520],
-            [-90.157, 38.520],
-            [-90.157, 38.785],
-            [-90.330, 38.785],
-            [-90.330, 38.520]
-          ]
-        }
-      }]
-    }
-  },
-];
-
-const panel = document.getElementById('layer-list');
-
-let lastGroup = null;
-const HATCH_CSS = {
-  'hatch-45': 'repeating-linear-gradient(45deg, ' + MSD_COLOR + ' 0 2px, transparent 2px 6px)',
-  'hatch-neg45': 'repeating-linear-gradient(-45deg, ' + MSD_COLOR + ' 0 2px, transparent 2px 6px)',
-  'hatch-cross': 'repeating-linear-gradient(45deg, ' + MSD_COLOR + ' 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, ' + MSD_COLOR + ' 0 2px, transparent 2px 6px)'
-};
-LAYERS.forEach(l => {
-  if (l.group !== lastGroup) {
-    if (l.group) {
-      const gl = document.createElement('div');
-      gl.className = 'group-label';
-      gl.textContent = l.group;
-      panel.appendChild(gl);
-    }
-    lastGroup = l.group;
-  }
-  const swatchStyle = l.pattern ? `background:${HATCH_CSS[l.pattern]}` : `background:${l.color}`;
-  const row = document.createElement('div');
-  row.className = 'layer-row';
-  row.innerHTML = `
-    <div class="row-main">
-      <label>
-        <input type="checkbox" id="toggle-${l.id}" ${l.defaultOn ? 'checked' : ''}>
-        <span class="swatch" style="${swatchStyle}"></span>
-        ${l.label}
-      </label>
-      ${l.showInfo ? `<button type="button" class="info-btn" id="info-btn-${l.id}">i</button>` : ''}
+            <div class="card" onclick="goToScreen('methodologyScreen')" style="border-left: 3px solid var(--secondary); padding-left: 28px;">
+                <h2>Framework</h2>
+                <p>Explore all 25 calculation formulas. Hover over any node to see the math.</p>
+            </div>
+        </div>
     </div>
-    ${l.showInfo ? `
-      <div class="info-popover" id="info-popover-${l.id}">
-        <strong>${l.label}</strong>
-        ${l.detail}
-        <span class="cite">Source: ${l.source}</span>
-      </div>
-    ` : ''}
-  `;
-  panel.appendChild(row);
-});
 
-// Basemap toggle (not part of LAYERS — controls the raster tiles/background/mask, not a data source).
-// Placed last so it renders as the lowest/bottom row in the legend, matching its position as the lowest map layer.
-const basemapRow = document.createElement('div');
-basemapRow.className = 'layer-row';
-basemapRow.innerHTML = `
-  <div class="row-main">
-    <label>
-      <input type="checkbox" id="toggle-basemap" checked>
-      <span class="swatch" style="background:#6b6b6b"></span>
-      Basemap
-    </label>
-  </div>
-`;
-panel.appendChild(basemapRow);
+    <!-- Evaluate Screen -->
+    <div class="screen" id="evaluateScreen">
+        <div class="container">
+            <div class="header">
+                <h1>Evaluate Trees on Your Site</h1>
+                <button class="back-btn" onclick="goToScreen('landingScreen')">Back</button>
+            </div>
 
-// Click-to-toggle info popovers; clicking elsewhere or the same icon closes them.
-document.querySelectorAll('.info-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const id = btn.id.replace('info-btn-', '');
-    const pop = document.getElementById(`info-popover-${id}`);
-    const isOpen = pop.classList.contains('open');
-    document.querySelectorAll('.info-popover.open').forEach(p => p.classList.remove('open'));
-    document.querySelectorAll('.info-btn.active').forEach(b => b.classList.remove('active'));
-    if (!isOpen) {
-      pop.classList.add('open');
-      btn.classList.add('active');
-    }
-  });
-});
-document.addEventListener('click', () => {
-  document.querySelectorAll('.info-popover.open').forEach(p => p.classList.remove('open'));
-  document.querySelectorAll('.info-btn.active').forEach(b => b.classList.remove('active'));
-});
+            <div class="main">
+                <div id="map"></div>
 
-// Export visible layers as separate vector SVG files, one per layer, all cropped to the
-// same Bounding Box extent/canvas so they register perfectly when stacked. Illustrator/
-// Photoshop only reliably treat SEPARATE FILES as separate layers — a single SVG with
-// multiple top-level <g> elements still gets flattened into one layer/group by both apps'
-// importers, so a single combined file can't satisfy "each layer as its own Photoshop layer."
-document.getElementById('export-btn').addEventListener('click', async () => {
-  const anyChecked = Array.from(document.querySelectorAll('.layer-row input[type="checkbox"]')).some(cb => cb.checked);
-  if (!anyChecked) {
-    alert('Select at least one layer to export');
-    return;
-  }
+                <div class="panel">
+                    <h2>Trees on Site</h2>
 
-  const btn = document.getElementById('export-btn');
-  btn.disabled = true;
+                    <div class="trees-list" id="treesList" style="min-height: 120px;">
+                        <p style="color: #999; font-style: italic; padding: 16px; text-align: center;">No trees placed yet. Click "Add Tree" and then click on the map.</p>
+                    </div>
 
-  try {
-    const visibleLayerIds = Array.from(document.querySelectorAll('.layer-row input[type="checkbox"]:checked'))
-      .map(cb => cb.id.replace('toggle-', ''))
-      .filter(id => id && id !== 'basemap' && LAYERS.find(l => l.id === id));
+                    <h3 style="margin-top: 24px;">Add New Tree</h3>
 
-    btn.textContent = '📥 Loading data...';
+                    <div class="form-group">
+                        <label>Species</label>
+                        <select id="species"></select>
+                    </div>
 
-    // Fetch real GeoJSON for every visible layer — map sources only expose the raw
-    // URL/geom they were constructed with, not the parsed features, so re-fetch fresh.
-    const layerData = await Promise.all(visibleLayerIds.map(async id => {
-      const layer = LAYERS.find(l => l.id === id);
-      let geojson = layer.geom;
-      if (!geojson && layer.file) {
-        try {
-          geojson = await fetch(`data/${layer.file}`).then(r => r.json());
-        } catch (e) {
-          console.error('Export: failed to load', layer.id, e);
-          geojson = null;
+                    <div class="form-group">
+                        <label>Diameter (inches)</label>
+                        <input type="number" id="dbh" min="1" max="200" value="12" step="0.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Age (years)</label>
+                        <input type="number" id="age" min="1" max="100" value="5" step="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sun Exposure</label>
+                        <select id="sun">
+                            <option value="">Select</option>
+                            <option value="1.0">Full Sun</option>
+                            <option value="0.8">Partial Sun</option>
+                            <option value="0.5">Shade</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Health (0.3–1.0)</label>
+                        <input type="number" id="condition" min="0.3" max="1.0" value="0.8" step="0.1">
+                    </div>
+
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn" onclick="placedTree()" style="flex: 1;">Add Tree to Map</button>
+                        <button class="btn" onclick="clearAllTrees()" style="flex: 1; background: #c0504d;">Clear All Trees</button>
+                    </div>
+
+                    <h3 style="margin-top: 32px;">Projection</h3>
+
+                    <div class="form-group">
+                        <label>Years into Future</label>
+                        <input type="range" id="yearSlider" min="0" max="50" value="30" oninput="updateProjection(this.value)">
+                        <div class="year-display"><span id="yearDisplay">30</span> years</div>
+                    </div>
+
+                    <div class="benefits-grid" id="benefitsDisplay"></div>
+
+                    <h3 style="margin-top: 32px;">Benefit Metrics Explained</h3>
+                    <div style="background: #faf9f7; border: 1px solid #e8e8e8; border-radius: 3px; padding: 16px; font-size: 11px; line-height: 1.6;">
+                        <div style="margin-bottom: 16px;">
+                            <strong>Total Stored Carbon (kg)</strong><br/>
+                            Cumulative carbon locked in tree biomass. Calculated using allometric equation: Biomass = a(DBH)^b, where DBH is diameter at breast height. Carbon = Biomass × 0.5 (carbon comprises ~50% of dry biomass).
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <strong>Annual Sequestration (kg/year)</strong><br/>
+                            How much carbon the tree removes from atmosphere yearly. Based on annual growth rate and species productivity coefficients. This represents new biomass accumulation minus natural decay.
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <strong>Stormwater Intercepted (gal/year)</strong><br/>
+                            Rainfall captured by leaves and bark before reaching ground. Estimated as: Canopy Area × Leaf Area Index × Annual Rainfall × 0.18 interception factor × 264.172 (conversion to gallons). Reduces urban runoff and flooding.
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <strong>Pollution Removed (kg/year)</strong><br/>
+                            Air pollutants (particulates, ozone, NO₂, PM2.5) filtered by foliage. Based on leaf surface area and species-specific capture efficiency: Pollution = Leaf Area × 0.5 kg/m²/year. Improves air quality.
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <strong>Energy Savings (kWh/year)</strong><br/>
+                            Electricity avoided through shade (cooling) and windbreaks (heating reduction). Formula: (Canopy Area × 0.6 shade factor × 50 kWh/m²/year) ÷ 3 building efficiency factor. Reduces HVAC load.
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <strong>Survival Probability (%)</strong><br/>
+                            Likelihood tree survives to projected year. Calculated using: Survival = (1 - mortality_rate)^age, adjusted for site conditions (health, sentiment, infrastructure conflicts). Lower survival = higher risk investment.
+                        </div>
+                        <div style="color: #777; font-size: 10px; margin-top: 12px;">
+                            <strong>Sources:</strong> USDA Forest Service iTree Eco Model • ISO 14067 Carbon Footprinting • NWCC Stormwater Interception Tables • US EPA Air Quality Benefits Database • Nowak et al. (2013)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommender Screen -->
+    <div class="screen" id="recommenderScreen">
+        <div class="container">
+            <div class="header">
+                <h1>Recommend Species</h1>
+                <button class="back-btn" onclick="goToScreen('landingScreen')">Back</button>
+            </div>
+
+            <div class="main full">
+                <div class="panel">
+                    <h2>Find Recommended Species</h2>
+
+                    <div style="background: #f9f8f6; padding: 12px; border-radius: 2px; margin-bottom: 24px; font-size: 11px; color: #777;">
+                        <strong>*</strong> = Required • Answer all required questions for best results
+                    </div>
+
+                    <!-- Site & Physical -->
+                    <h3>Site Location <span style="color: var(--accent); font-weight: 700;">*</span></h3>
+                    <div class="form-group">
+                        <label>Where is this tree going?</label>
+                        <select id="recLocation" required>
+                            <option value="">Select</option>
+                            <option value="street">Street/Public ROW</option>
+                            <option value="residential">Residential Yard</option>
+                            <option value="park">Park/Greenspace</option>
+                            <option value="commercial">Commercial Property</option>
+                            <option value="flood">Floodplain/Wetland</option>
+                        </select>
+                    </div>
+
+                    <!-- Infrastructure -->
+                    <h3>Infrastructure & Constraints <span style="color: var(--accent); font-weight: 700;">*</span></h3>
+                    <div class="form-group">
+                        <label>Proximity to Building</label>
+                        <select id="recProximity" required>
+                            <option value="">Select</option>
+                            <option value="0">Within 20 feet</option>
+                            <option value="1">20–40 feet</option>
+                            <option value="2">Over 40 feet</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Underground Utilities</label>
+                        <select id="recUtilities" required>
+                            <option value="">Select</option>
+                            <option value="0">Yes, directly above</option>
+                            <option value="1">Nearby</option>
+                            <option value="2">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Overhead Power Lines</label>
+                        <select id="recPowerLines" required>
+                            <option value="">Select</option>
+                            <option value="0">Yes, directly above</option>
+                            <option value="1">Nearby</option>
+                            <option value="2">No</option>
+                        </select>
+                    </div>
+
+                    <!-- Environmental -->
+                    <h3>Environmental Conditions <span style="color: var(--accent); font-weight: 700;">*</span></h3>
+                    <div class="form-group">
+                        <label>Sun Exposure</label>
+                        <select id="recSun" required>
+                            <option value="">Select</option>
+                            <option value="full">Full Sun (6+ hrs)</option>
+                            <option value="partial">Partial (3–6 hrs)</option>
+                            <option value="shade">Shade (&lt;3 hrs)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Soil Drainage</label>
+                        <select id="recDrainage" required>
+                            <option value="">Select</option>
+                            <option value="poor">Poor (wet/clay)</option>
+                            <option value="moderate">Moderate (mixed)</option>
+                            <option value="good">Good (sandy/well-draining)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Annual Rainfall Available <span style="color: var(--accent); font-weight: 700;">*</span></label>
+                        <select id="recRainfall" required>
+                            <option value="">Select</option>
+                            <option value="low">Low (&lt;30 in/yr) - needs irrigation</option>
+                            <option value="moderate">Moderate (30-45 in/yr) - St. Louis avg</option>
+                            <option value="high">High (&gt;45 in/yr) - flood-tolerant needed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Water Budget (irrigation access)</label>
+                        <select id="recWater">
+                            <option value="">Optional</option>
+                            <option value="high">Regular irrigation available</option>
+                            <option value="moderate">Occasional watering possible</option>
+                            <option value="low">Drought-tolerant only</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Wind Exposure</label>
+                        <select id="recWind">
+                            <option value="">Optional</option>
+                            <option value="high">High (exposed area)</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="low">Low (protected)</option>
+                        </select>
+                    </div>
+
+                    <!-- Social/Community -->
+                    <h3>Community & Social <span style="color: var(--accent); font-weight: 700;">*</span></h3>
+                    <div class="form-group">
+                        <label>Maintenance Capacity *</label>
+                        <select id="recMaintenance" required>
+                            <option value="">Select</option>
+                            <option value="high">High (volunteers/staff available)</option>
+                            <option value="moderate">Moderate (occasional care)</option>
+                            <option value="low">Low (minimal intervention only)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Neighborhood Sentiment Towards Trees (1-10)</label>
+                        <select id="recSentiment" required>
+                            <option value="">Select</option>
+                            <option value="1">1 - Very opposed</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5 - Neutral/Unknown</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10 - Very supportive</option>
+                        </select>
+                    </div>
+
+                    <!-- Goals (Optional) -->
+                    <h3>Priorities (Optional)</h3>
+                    <div class="form-group">
+                        <label>Aesthetic Preference</label>
+                        <select id="aestheticPref">
+                            <option value="">Any</option>
+                            <option value="ornamental">Ornamental (spring blooms, fall color)</option>
+                            <option value="shade">Shade Trees (large canopy, structure)</option>
+                            <option value="mixed">Mixed Appeal</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 8px;">Wildlife Benefit Priority</label>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="display: flex; align-items: center; font-weight: normal; margin: 0;"><input type="checkbox" id="wildlifeHigh" style="margin-right: 8px;"> High (pollinators, birds, habitat)</label>
+                            <label style="display: flex; align-items: center; font-weight: normal; margin: 0;"><input type="checkbox" id="wildlifeModerate" style="margin-right: 8px;"> Moderate Support</label>
+                            <label style="display: flex; align-items: center; font-weight: normal; margin: 0;"><input type="checkbox" id="wildlifeLow" style="margin-right: 8px;"> Not a Priority</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Primary Goal</label>
+                        <select id="priority1">
+                            <option value="">Any</option>
+                            <option value="carbon">Carbon Sequestration</option>
+                            <option value="stormwater">Stormwater Interception</option>
+                            <option value="pollution">Pollution Removal</option>
+                            <option value="shade">Shade / Energy Savings</option>
+                            <option value="aesthetics">Aesthetics (Fall Color, Bloom)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mature Height</label>
+                        <select id="recHeight">
+                            <option value="">Any</option>
+                            <option value="small">Small (&lt;30 ft)</option>
+                            <option value="medium">Medium (30–50 ft)</option>
+                            <option value="large">Large (&gt;50 ft)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn" onclick="runRecommender()" style="margin-top: 24px;">Get Recommendations</button>
+
+                    <div class="species-results" id="speciesResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Methodology Screen -->
+    <div class="screen" id="methodologyScreen">
+        <div class="container">
+            <div class="header">
+                <h1>Calculation Framework</h1>
+                <button class="back-btn" onclick="goToScreen('landingScreen')">Back</button>
+            </div>
+
+            <div class="main full" style="overflow-y: auto;">
+                <div style="padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%;">
+                    <div id="flowchartDisplay"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // ============================================================================
+        // SPECIES DATABASE (25 species)
+        // ============================================================================
+
+        // St. Louis native/adapted species only
+        const SPECIES = {
+            "Red Maple": {
+                max_height: 22, max_crown: 14, growth_rate: 0.8,
+                biomass_a: 0.10, biomass_b: 2.45, k_h: 0.028, k_c: 0.034, lai: 4.5,
+                utilities: 0.7, power_lines: 0.8, wind: 0.7, drainage: "moderate", sun: "full",
+                mature_h: "medium", fall_color: true,
+                aesthetic_type: "ornamental", wildlife_value: 7, maintenance: "low", iconic_appeal: 8
+            },
+            "White Oak": {
+                max_height: 28, max_crown: 22, growth_rate: 0.55,
+                biomass_a: 0.12, biomass_b: 2.48, k_h: 0.025, k_c: 0.030, lai: 4.2,
+                utilities: 0.9, power_lines: 0.9, wind: 0.8, drainage: "good", sun: "full",
+                mature_h: "large", fall_color: true,
+                aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 9
+            },
+            "Bald Cypress": {
+                max_height: 30, max_crown: 16, growth_rate: 0.85,
+                biomass_a: 0.09, biomass_b: 2.42, k_h: 0.026, k_c: 0.032, lai: 4.0,
+                utilities: 0.6, power_lines: 0.7, wind: 0.6, drainage: "poor", sun: "full",
+                mature_h: "large", deciduous: false,
+                aesthetic_type: "ornamental", wildlife_value: 6, maintenance: "medium", iconic_appeal: 7
+            },
+            "Black Gum": {
+                max_height: 25, max_crown: 18, growth_rate: 0.7,
+                biomass_a: 0.10, biomass_b: 2.45, k_h: 0.027, k_c: 0.033, lai: 4.3,
+                utilities: 0.75, power_lines: 0.8, wind: 0.7, drainage: "poor", sun: "full",
+                mature_h: "medium", fall_color: true,
+                aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 6
+            },
+            "Pin Oak": {
+                max_height: 20, max_crown: 15, growth_rate: 0.75,
+                biomass_a: 0.10, biomass_b: 2.45, k_h: 0.029, k_c: 0.034, lai: 4.3,
+                utilities: 0.85, power_lines: 0.85, wind: 0.75, drainage: "moderate", sun: "full",
+                mature_h: "medium", fall_color: true,
+                aesthetic_type: "shade", wildlife_value: 8, maintenance: "low", iconic_appeal: 6
+            },
+            "Willow Oak": {
+                max_height: 23, max_crown: 16, growth_rate: 0.8,
+                biomass_a: 0.10, biomass_b: 2.44, k_h: 0.028, k_c: 0.034, lai: 4.6,
+                utilities: 0.75, power_lines: 0.75, wind: 0.6, drainage: "poor", sun: "full",
+                mature_h: "medium", form: "distinctive",
+                aesthetic_type: "shade", wildlife_value: 7, maintenance: "low", iconic_appeal: 5
+            },
+            "Red Oak": {
+                max_height: 27, max_crown: 20, growth_rate: 0.8,
+                biomass_a: 0.11, biomass_b: 2.46, k_h: 0.026, k_c: 0.031, lai: 4.2,
+                utilities: 0.8, power_lines: 0.8, wind: 0.75, drainage: "good", sun: "full",
+                mature_h: "large", fall_color: true,
+                aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 8
+            },
+            "Black Oak": {
+                max_height: 26, max_crown: 19, growth_rate: 0.75,
+                biomass_a: 0.11, biomass_b: 2.46, k_h: 0.027, k_c: 0.032, lai: 4.1,
+                utilities: 0.8, power_lines: 0.8, wind: 0.75, drainage: "good", sun: "full",
+                mature_h: "large", fall_color: true,
+                aesthetic_type: "shade", wildlife_value: 8, maintenance: "low", iconic_appeal: 7
+            },
+            "Serviceberry": {
+                max_height: 16, max_crown: 10, growth_rate: 0.5,
+                biomass_a: 0.08, biomass_b: 2.40, k_h: 0.032, k_c: 0.038, lai: 4.7,
+                utilities: 0.95, power_lines: 0.95, wind: 0.85, drainage: "moderate", sun: "partial",
+                mature_h: "small", spring_bloom: true,
+                aesthetic_type: "ornamental", wildlife_value: 9, maintenance: "low", iconic_appeal: 7
+            },
+            "Redbud": {
+                max_height: 14, max_crown: 11, growth_rate: 0.55,
+                biomass_a: 0.08, biomass_b: 2.39, k_h: 0.033, k_c: 0.039, lai: 4.5,
+                utilities: 0.95, power_lines: 0.95, wind: 0.8, drainage: "good", sun: "partial",
+                mature_h: "small", spring_bloom: true,
+                aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 8
+            },
+            "Hackberry": {
+                max_height: 24, max_crown: 18, growth_rate: 0.7,
+                biomass_a: 0.10, biomass_b: 2.44, k_h: 0.027, k_c: 0.033, lai: 4.3,
+                utilities: 0.7, power_lines: 0.7, wind: 0.85, drainage: "good", sun: "full",
+                mature_h: "medium", form: "distinctive",
+                aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 6
+            },
+            "Honey Locust": {
+                max_height: 25, max_crown: 17, growth_rate: 0.85,
+                biomass_a: 0.09, biomass_b: 2.42, k_h: 0.028, k_c: 0.034, lai: 3.5,
+                utilities: 0.75, power_lines: 0.75, wind: 0.8, drainage: "good", sun: "full",
+                mature_h: "medium", deciduous: true,
+                aesthetic_type: "shade", wildlife_value: 5, maintenance: "medium", iconic_appeal: 5
+            },
+            "Kentucky Coffeetree": {
+                max_height: 26, max_crown: 16, growth_rate: 0.65,
+                biomass_a: 0.10, biomass_b: 2.45, k_h: 0.027, k_c: 0.033, lai: 3.2,
+                utilities: 0.75, power_lines: 0.75, wind: 0.9, drainage: "good", sun: "full",
+                mature_h: "large", form: "distinctive",
+                aesthetic_type: "shade", wildlife_value: 6, maintenance: "medium", iconic_appeal: 4
+            },
+            "Black Walnut": {
+                max_height: 28, max_crown: 20, growth_rate: 0.6,
+                biomass_a: 0.12, biomass_b: 2.48, k_h: 0.025, k_c: 0.030, lai: 4.0,
+                utilities: 0.6, power_lines: 0.6, wind: 0.8, drainage: "good", sun: "full",
+                mature_h: "large", allelopathic: true,
+                aesthetic_type: "shade", wildlife_value: 7, maintenance: "high", iconic_appeal: 5
+            },
+            "Sycamore": {
+                max_height: 32, max_crown: 24, growth_rate: 0.9,
+                biomass_a: 0.13, biomass_b: 2.50, k_h: 0.024, k_c: 0.029, lai: 4.1,
+                utilities: 0.5, power_lines: 0.5, wind: 0.7, drainage: "poor", sun: "full",
+                mature_h: "large", form: "distinctive",
+                aesthetic_type: "shade", wildlife_value: 8, maintenance: "high", iconic_appeal: 6
+            },
+            "Tulip Tree": {
+                max_height: 30, max_crown: 18, growth_rate: 0.95,
+                biomass_a: 0.11, biomass_b: 2.47, k_h: 0.025, k_c: 0.030, lai: 4.3,
+                utilities: 0.7, power_lines: 0.7, wind: 0.6, drainage: "good", sun: "full",
+                mature_h: "large", spring_bloom: true,
+                aesthetic_type: "ornamental", wildlife_value: 6, maintenance: "medium", iconic_appeal: 7
+            },
+            "Sweet Gum": {
+                max_height: 28, max_crown: 19, growth_rate: 0.8,
+                biomass_a: 0.11, biomass_b: 2.46, k_h: 0.026, k_c: 0.031, lai: 4.2,
+                utilities: 0.65, power_lines: 0.65, wind: 0.7, drainage: "moderate", sun: "full",
+                mature_h: "large", fall_color: true,
+                aesthetic_type: "ornamental", wildlife_value: 7, maintenance: "medium", iconic_appeal: 6
+            },
+            "American Elm": {
+                max_height: 29, max_crown: 21, growth_rate: 0.85,
+                biomass_a: 0.12, biomass_b: 2.48, k_h: 0.025, k_c: 0.030, lai: 4.4,
+                utilities: 0.7, power_lines: 0.7, wind: 0.75, drainage: "moderate", sun: "full",
+                mature_h: "large", disease: "elm_decline",
+                aesthetic_type: "shade", wildlife_value: 8, maintenance: "high", iconic_appeal: 7
+            },
+            "Green Ash": {
+                max_height: 24, max_crown: 16, growth_rate: 0.75,
+                biomass_a: 0.10, biomass_b: 2.45, k_h: 0.028, k_c: 0.034, lai: 4.3,
+                utilities: 0.8, power_lines: 0.8, wind: 0.75, drainage: "good", sun: "full",
+                mature_h: "medium", disease: "eab_risk",
+                aesthetic_type: "shade", wildlife_value: 6, maintenance: "medium", iconic_appeal: 5
+            },
+            "Pawpaw": {
+                max_height: 12, max_crown: 9, growth_rate: 0.45,
+                biomass_a: 0.07, biomass_b: 2.38, k_h: 0.035, k_c: 0.041, lai: 4.8,
+                utilities: 0.95, power_lines: 0.95, wind: 0.8, drainage: "moderate", sun: "shade",
+                mature_h: "small", native: true,
+                aesthetic_type: "ornamental", wildlife_value: 9, maintenance: "low", iconic_appeal: 4
+            },
+            "Mulberry": {
+                max_height: 20, max_crown: 14, growth_rate: 0.8,
+                biomass_a: 0.09, biomass_b: 2.42, k_h: 0.030, k_c: 0.035, lai: 4.6,
+                utilities: 0.85, power_lines: 0.85, wind: 0.8, drainage: "good", sun: "full",
+                mature_h: "medium", messy_fruit: true,
+                aesthetic_type: "mixed", wildlife_value: 10, maintenance: "medium", iconic_appeal: 6
+            },
+            "Hickory": {
+                max_height: 26, max_crown: 18, growth_rate: 0.55,
+                biomass_a: 0.12, biomass_b: 2.48, k_h: 0.026, k_c: 0.031, lai: 4.1,
+                utilities: 0.85, power_lines: 0.85, wind: 0.9, drainage: "good", sun: "full",
+                mature_h: "large", native: true,
+                aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 5
+            }
+        };
+
+        // ============================================================================
+        // FORMULAS
+        // ============================================================================
+
+        const FORMULAS = {
+            dbh: {
+                title: "Diameter at Breast Height",
+                formula: "User input: diameter at breast height (1.3m height)\nUsed as primary driver of growth",
+                inputs: [],
+                outputs: ["future_dbh", "biomass", "height", "crown"]
+            },
+            age: {
+                title: "Age",
+                formula: "Years since establishment\nUsed to predict survival probability",
+                inputs: [],
+                outputs: ["mortality"]
+            },
+            species: {
+                title: "Species Coefficients",
+                formula: "Provides species-specific values:\n- Max height, crown width\n- Growth rate, biomass equation (a,b)\n- Leaf area index, survival curves",
+                inputs: [],
+                outputs: ["future_dbh", "height", "crown", "biomass", "leaf_area", "pollution"]
+            },
+            condition: {
+                title: "Health Factor (C)",
+                formula: "Scale: 0.3 (poor) to 1.0 (excellent)\nMultiplies annual growth rate:\nGrowth_year = Gs × C × S",
+                inputs: [],
+                outputs: ["future_dbh", "stormwater"]
+            },
+            sun: {
+                title: "Sun Exposure (S)",
+                formula: "Full sun (1.0) to shade (0.5)\nMultiplies growth rate annually",
+                inputs: [],
+                outputs: ["future_dbh"]
+            },
+            future_dbh: {
+                title: "Future Diameter",
+                formula: "DBH_future = DBH₀ + (Gs × t × C × S)\n\nGS = species growth rate (cm/year)\nt = years\nAsymptotically approaches max DBH",
+                inputs: ["dbh", "species", "condition", "sun"],
+                outputs: ["height", "crown", "biomass"]
+            },
+            height: {
+                title: "Height",
+                formula: "H = Hmax × (1 - e^(-kh × DBH))\n\nLogistic curve saturates at species max\nUsed for visualization and windthrow risk",
+                inputs: ["future_dbh", "species"],
+                outputs: []
+            },
+            crown: {
+                title: "Crown Width",
+                formula: "CW = CWmax × (1 - e^(-kc × DBH))\n\nDrives most ecosystem services\nCanopy area = π(CW/2)²",
+                inputs: ["future_dbh", "species"],
+                outputs: ["canopy"]
+            },
+            canopy: {
+                title: "Canopy Area",
+                formula: "CA = π × (CW/2)²\n\nThis is THE key variable for all ecosystem services",
+                inputs: ["crown"],
+                outputs: ["stormwater", "leaf_area", "shade"]
+            },
+            biomass: {
+                title: "Biomass",
+                formula: "B = a × (DBH)^b\n\nAllometric equation specific to species\nExample: B = 0.10 × (33)^2.45 = 155 kg",
+                inputs: ["future_dbh", "species"],
+                outputs: ["carbon_stored"]
+            },
+            leaf_area: {
+                title: "Leaf Area Index",
+                formula: "LA = CA × LAI\n\nLAI = species-specific leaf area index\nDrives pollution removal and ET",
+                inputs: ["canopy", "species"],
+                outputs: ["pollution"]
+            },
+            carbon_stored: {
+                title: "Stored Carbon",
+                formula: "C = B × 0.5\n\nCarbon is ~50% of dry biomass\nDO NOT confuse with annual sequestration",
+                inputs: ["biomass"],
+                outputs: ["co2_eq"]
+            },
+            co2_eq: {
+                title: "CO₂ Equivalent",
+                formula: "CO₂ = C × 3.667\n\nMolecular weight: 44/12 = 3.667\nTotal stored carbon as CO₂",
+                inputs: ["carbon_stored"],
+                outputs: ["annual_seq"]
+            },
+            annual_seq: {
+                title: "Annual Sequestration",
+                formula: "Cseq = C_t - C_(t-1)\n\nYear-by-year difference\nRequires temporal calculation",
+                inputs: ["carbon_stored"],
+                outputs: ["expected"]
+            },
+            stormwater: {
+                title: "Stormwater Interception",
+                formula: "I = CA × P × Ki × C\n\nCA = canopy area (m²)\nP = rainfall (1.07 m/yr)\nKi = 0.18 (interception coefficient)\nC = condition factor",
+                inputs: ["canopy", "condition"],
+                outputs: []
+            },
+            pollution: {
+                title: "Pollution Removal",
+                formula: "R = LA × Mp\n\nLA = leaf area (CA × LAI)\nMp = pollutant removal rate per m²\nDepends on species leaf traits",
+                inputs: ["leaf_area", "species"],
+                outputs: []
+            },
+            shade: {
+                title: "Shade Area",
+                formula: "Ashade = CA × 0.6\n\nApproximate fraction of usable shade\nMore precise: 3D geometry + solar position",
+                inputs: ["canopy"],
+                outputs: ["energy"]
+            },
+            energy: {
+                title: "Energy Savings",
+                formula: "E = (Ashade × 50) / COP\n\n50 W/m² = typical cooling load\nCOP = 3 (air conditioning efficiency)\nkWh/year saved",
+                inputs: ["shade"],
+                outputs: ["avoided_co2"]
+            },
+            avoided_co2: {
+                title: "Avoided CO₂ from Energy",
+                formula: "CO₂avoided = E × EFgrid\n\nE = energy savings (kWh)\nEFgrid = 0.35 kg CO₂/kWh (St. Louis grid)",
+                inputs: ["energy"],
+                outputs: ["expected"]
+            },
+            mortality: {
+                title: "Survival Probability",
+                formula: "Psurvive = (1 - m)^t\n\nm = annual mortality (0.02)\nt = year\nExample: P(30yr) = 0.55 (55% survival)",
+                inputs: ["age"],
+                outputs: ["expected"]
+            },
+            expected: {
+                title: "Expected Benefit",
+                formula: "Benefit_expected = Benefit × Psurvive\n\nAdjusts all ecosystem services\nfor probability tree survives to given year",
+                inputs: ["annual_seq", "mortality"],
+                outputs: []
+            }
+        };
+
+        // ============================================================================
+        // CALCULATION ENGINE
+        // ============================================================================
+
+        function growDbh(dbh0cm, gs, t, c, s) {
+            return Math.min(dbh0cm + (gs * t * c * s), dbh0cm * 3);
         }
-      }
-      return { layer, geojson };
-    }));
 
-    // Crop to the Bounding Box layer's own coordinates (matches the original PNG export's
-    // behavior) rather than the union of all data extents — some layers (e.g. floodplain)
-    // extend past the box, and we want a clean crop, not a stretched canvas.
-    const bboxLayer = LAYERS.find(l => l.id === 'bounding-box');
-    const bboxCoords = bboxLayer.geom.features[0].geometry.coordinates;
-    const bounds = {
-      minLon: Math.min(...bboxCoords.map(c => c[0])),
-      maxLon: Math.max(...bboxCoords.map(c => c[0])),
-      minLat: Math.min(...bboxCoords.map(c => c[1])),
-      maxLat: Math.max(...bboxCoords.map(c => c[1]))
-    };
-
-    const latMid = (bounds.minLat + bounds.maxLat) / 2;
-    const aspect = ((bounds.maxLon - bounds.minLon) * Math.cos(latMid * Math.PI / 180)) / (bounds.maxLat - bounds.minLat);
-    const width = 3600, height = Math.round(width / aspect);
-
-    const toXY = (lon, lat) => ({
-      x: ((lon - bounds.minLon) / (bounds.maxLon - bounds.minLon)) * width,
-      y: ((bounds.maxLat - lat) / (bounds.maxLat - bounds.minLat)) * height
-    });
-
-    // Draws any GeoJSON geometry type (including Multi* variants) into the svg parts array
-    function drawGeometry(parts, geom, color, opacity, strokeOpacity) {
-      const type = geom.type;
-      if (type === 'Point') {
-        const pt = toXY(geom.coordinates[0], geom.coordinates[1]);
-        parts.push(`<circle cx="${pt.x}" cy="${pt.y}" r="8" fill="${color}" opacity="${opacity}"/>`);
-      } else if (type === 'MultiPoint') {
-        geom.coordinates.forEach(c => drawGeometry(parts, { type: 'Point', coordinates: c }, color, opacity, strokeOpacity));
-      } else if (type === 'LineString') {
-        const pts = geom.coordinates.map(c => toXY(c[0], c[1]));
-        parts.push(`<polyline points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" stroke="${color}" stroke-width="2.5" fill="none" opacity="${strokeOpacity}"/>`);
-      } else if (type === 'MultiLineString') {
-        geom.coordinates.forEach(line => drawGeometry(parts, { type: 'LineString', coordinates: line }, color, opacity, strokeOpacity));
-      } else if (type === 'Polygon') {
-        geom.coordinates.forEach(ring => {
-          const pts = ring.map(c => toXY(c[0], c[1]));
-          parts.push(`<polygon points="${pts.map(p => `${p.x},${p.y}`).join(' ')}" fill="${color}" opacity="${opacity}" stroke="${color}" stroke-width="1"/>`);
-        });
-      } else if (type === 'MultiPolygon') {
-        geom.coordinates.forEach(poly => drawGeometry(parts, { type: 'Polygon', coordinates: poly }, color, opacity, strokeOpacity));
-      }
-    }
-
-    function buildSingleLayerSvg(label, parts) {
-      return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">`
-        + `<title>${label}</title>`
-        + `<defs><clipPath id="crop"><rect x="0" y="0" width="${width}" height="${height}"/></clipPath></defs>`
-        + `<g clip-path="url(#crop)">${parts.join('')}</g>`
-        + `</svg>`;
-    }
-
-    function downloadSvg(filename, svgString) {
-      const blob = new Blob([svgString], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    const exportable = layerData.filter(({ geojson }) => geojson && geojson.features);
-
-    // One file per layer, numbered to preserve stacking order — drag/load all of them into
-    // Photoshop (File > Scripts > Load Files into Stack) or Illustrator (each file placed on
-    // its own layer) to reconstruct the full stack as separate, individually named layers.
-    for (let i = 0; i < exportable.length; i++) {
-      const { layer, geojson } = exportable[i];
-      btn.textContent = `📥 Exporting ${i + 1}/${exportable.length}...`;
-      const color = layer.color || '#e8e8e8';
-      const opacity = layer.opacity ?? 1;
-      const strokeOpacity = layer.strokeOpacity ?? 1;
-      const parts = [];
-      geojson.features.forEach(f => f.geometry && drawGeometry(parts, f.geometry, color, opacity, strokeOpacity));
-      const num = String(i + 1).padStart(2, '0');
-      const safeName = layer.label.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase();
-      downloadSvg(`${num}-${safeName}.svg`, buildSingleLayerSvg(layer.label, parts));
-      // Small delay between downloads — browsers can silently drop rapid-fire programmatic
-      // downloads triggered back-to-back in the same tick.
-      await new Promise(r => setTimeout(r, 250));
-    }
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '📥 Export Visible Layers';
-  }
-});
-
-window.map = new maplibregl.Map({
-  container: 'map',
-  style: {
-    version: 8,
-    sources: {
-      'dark-basemap': {
-  type: 'raster',
-  tiles: [
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-  ],
-  tileSize: 256,
-  maxzoom: 16,
-  attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
-},
-    },
-    layers: [
-      {
-        id: 'background',
-        type: 'background',
-        paint: { 'background-color': '#e8e8e8' }
-      },
-      {
-        id: 'dark-basemap-layer',
-        type: 'raster',
-        source: 'dark-basemap',
-        paint: { 'raster-opacity': 1, 'raster-contrast': 0.15, 'raster-saturation': 0.1 }
-      }
-    ]
-  },
-  center: [-90.25, 38.63],
-  zoom: 11.5,
-  maxZoom: 16,
-  preserveDrawingBuffer: true
-});
-
-map.addControl(new maplibregl.NavigationControl(), 'top-right');
-
-const BASEMAP_LAYER_IDS = ['background', 'dark-basemap-layer', 'street-labels', 'city-mask-layer', 'city-emphasis-layer'];
-
-map.on('load', () => {
-  document.getElementById('toggle-basemap').addEventListener('change', (e) => {
-    const vis = e.target.checked ? 'visible' : 'none';
-    BASEMAP_LAYER_IDS.forEach(id => {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
-    });
-  });
-
-  map.addSource('osm-labels', {
-    type: 'vector',
-    tiles: ['https://tile.openstreetmap.org/data/v3/{z}/{x}/{y}.pbf'],
-    minzoom: 0,
-    maxzoom: 14
-  });
-  
-  map.addLayer({
-    id: 'street-labels',
-    type: 'symbol',
-    source: 'osm-labels',
-    'source-layer': 'transportation',
-    layout: {
-      'text-field': ['get', 'name'],
-      'text-size': 12,
-      'text-max-width': 12,
-      'visibility': ['case', ['>=', ['zoom'], 14], 'visible', 'none']
-    },
-    paint: {
-      'text-color': '#4a4a4a',
-      'text-halo-color': '#e8e8e8',
-      'text-halo-width': 1
-    }
-  }, 'trees'); // Insert before trees layer
-
-  const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true });
-
-  /* Generate diagonal-hatch pattern tiles so same-color polygon layers
-   * (MSD infrastructure) stay visually distinct without extra colors. */
-  function makeHatchPattern(color, angleDeg, cross) {
-    const size = 16;
-    const canvas = document.createElement('canvas');
-    canvas.width = size; canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, size, size);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    ctx.globalAlpha = 0.9;
-    const draw = (deg) => {
-      ctx.save();
-      ctx.translate(size / 2, size / 2);
-      ctx.rotate(deg * Math.PI / 180);
-      ctx.beginPath();
-      ctx.moveTo(-size, 0);
-      ctx.lineTo(size, 0);
-      ctx.stroke();
-      ctx.restore();
-    };
-    draw(angleDeg);
-    if (cross) draw(angleDeg + 90);
-    return ctx.getImageData(0, 0, size, size);
-  }
-  map.addImage('hatch-45', makeHatchPattern(MSD_COLOR, 45, false));
-  map.addImage('hatch-neg45', makeHatchPattern(MSD_COLOR, -45, false));
-  map.addImage('hatch-cross', makeHatchPattern(MSD_COLOR, 45, true));
-
-  /* Inverted city-boundary mask: darkens everything OUTSIDE the city limits. */
-  fetch('data/st_louis_city_boundary.json')
-    .then(r => r.json())
-    .then(cityData => {
-      const cityRing = cityData.features[0].geometry.coordinates[0];
-      const worldRing = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
-      const maskGeoJSON = {
-        type: 'FeatureCollection',
-        features: [{
-          type: 'Feature',
-          properties: {},
-          geometry: { type: 'Polygon', coordinates: [worldRing, cityRing] }
-        }]
-      };
-      map.addSource('city-mask', { type: 'geojson', data: maskGeoJSON });
-      /* Hard clip outside city limits — fully hides the basemap beyond the boundary (matches the
-         page's basemap background color so it reads as a clean cutoff, not a visible grey block).
-         Inserted below the first data layer (this fetch resolves after LAYERS.forEach has already run)
-         so it only hides the basemap — data layers like the Bounding Box stay unaffected even where
-         they extend past the city limits. */
-      const firstDataLayerId = map.getLayer('proposed-redesign-site-fill') ? 'proposed-redesign-site-fill' : undefined;
-      map.addLayer({
-        id: 'city-mask-layer', type: 'fill', source: 'city-mask',
-        layout: { visibility: 'visible' },
-        paint: { 'fill-color': '#e8e8e8', 'fill-opacity': 1 }
-      }, firstDataLayerId);
-
-      /* Subtle dark overlay INSIDE the city limits — deepens/sharpens the basemap there for
-         visual emphasis, playing against the hard clip outside for stronger inside/outside contrast. */
-      const cityPolyFeature = turf.polygon([cityRing]);
-      const cityFillGeoJSON = {
-        type: 'FeatureCollection',
-        features: [{ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [cityRing] } }]
-      };
-      map.addSource('city-fill', { type: 'geojson', data: cityFillGeoJSON });
-      map.addLayer({
-        id: 'city-emphasis-layer', type: 'fill', source: 'city-fill',
-        layout: { visibility: 'visible' },
-        paint: { 'fill-color': '#000000', 'fill-opacity': 0.14 }
-      }, firstDataLayerId);
-
-      /* Clip the tornado path to the city limits too — cut its geometry down to the
-         portion inside St. Louis instead of just visually masking it. */
-      fetch('data/tornado_path_2025.json')
-        .then(r => r.json())
-        .then(tornadoData => {
-          const clipped = { type: 'FeatureCollection', features: [] };
-          tornadoData.features.forEach(f => {
-            try {
-              const intersection = turf.intersect(f, cityPolyFeature);
-              if (intersection) {
-                intersection.properties = f.properties;
-                clipped.features.push(intersection);
-              }
-            } catch (e) { /* skip features that fail to intersect */ }
-          });
-          const tornadoSource = map.getSource('tornado-path');
-          if (tornadoSource) tornadoSource.setData(clipped);
-        });
-    });
-
-  LAYERS.forEach(l => {
-    if (l.id === 'city-boundary') return; // handled by the inverted mask above
-    const sourceData = l.geom ? l.geom : `data/${l.file}`;
-    map.addSource(l.id, { type: 'geojson', data: sourceData });
-
-    if (l.geomType === 'point') {
-      map.addLayer({
-        id: l.id, type: 'circle', source: l.id,
-        layout: { visibility: l.defaultOn ? 'visible' : 'none' },
-        paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 0.2, 14, 1.1, 17, 3.8, 20, 7],
-          'circle-color': l.color,
-          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.4, 12, 0.7, 20, 0.9],
-          'circle-stroke-width': 0
+        function estimateHeight(dbh, species) {
+            const hMax = SPECIES[species].max_height;
+            const kH = SPECIES[species].k_h;
+            return hMax * (1 - Math.exp(-kH * dbh));
         }
-      });
-    } else if (l.geomType === 'line') {
-      map.addLayer({
-        id: l.id, type: 'line', source: l.id,
-        layout: { visibility: l.defaultOn ? 'visible' : 'none' },
-        paint: {
-          'line-color': l.color,
-          'line-width': l.strokeWidth || 1.2,
-          'line-opacity': l.strokeOpacity !== undefined ? l.strokeOpacity : 0.85
+
+        function estimateCrown(dbh, species) {
+            const cwMax = SPECIES[species].max_crown;
+            const kC = SPECIES[species].k_c;
+            return cwMax * (1 - Math.exp(-kC * dbh));
         }
-      });
-    } else {
-      // Outline-only polygons (no fill)
-      if (l.outlineOnly) {
-        map.addLayer({
-          id: l.id + '-line', type: 'line', source: l.id,
-          layout: { visibility: l.defaultOn ? 'visible' : 'none' },
-          paint: { 'line-color': l.color, 'line-width': l.strokeWidth || 2, 'line-opacity': l.strokeOpacity !== undefined ? l.strokeOpacity : 1 }
-        });
-      } else {
-        const fillPaint = { 'fill-color': l.color, 'fill-opacity': l.opacity !== undefined ? l.opacity : 0.3 };
-        map.addLayer({
-          id: l.id + '-fill', type: 'fill', source: l.id,
-          layout: { visibility: l.defaultOn ? 'visible' : 'none' },
-          paint: fillPaint
-        });
-        map.addLayer({
-          id: l.id + '-line', type: 'line', source: l.id,
-          layout: { visibility: l.defaultOn ? 'visible' : 'none' },
-          paint: { 'line-color': l.color, 'line-width': 0.6, 'line-opacity': 0.7 }
-        });
-      }
-    }
 
-    const clickLayerId = l.geomType === 'polygon' ? (l.outlineOnly ? l.id + '-line' : l.id + '-fill') : l.id;
-    if (!l.noPopup && l.id !== 'bounding-box') {
-      map.on('click', clickLayerId, (e) => {
-        const f = e.features[0].properties;
-        popup.setLngLat(e.lngLat).setHTML(l.popup(f)).addTo(map);
-      });
-    }
+        function canopyArea(crownWidth) {
+            return Math.PI * Math.pow(crownWidth / 2, 2);
+        }
 
-    // Click to zoom (skip bounding box)
-    if (l.id !== 'bounding-box') {
-      map.on('click', clickLayerId, (e) => {
-        const bounds = turf.bbox(e.features[0]);
-        map.fitBounds(bounds, { padding: 100, duration: 1000 });
-      });
-    }
-    map.on('mouseenter', clickLayerId, () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', clickLayerId, () => {
-      map.getCanvas().style.cursor = '';
-    });
+        function estimateBiomass(dbh, species) {
+            const a = SPECIES[species].biomass_a;
+            const b = SPECIES[species].biomass_b;
+            return a * Math.pow(dbh, b);
+        }
 
-    document.getElementById(`toggle-${l.id}`).addEventListener('change', (e) => {
-      const vis = e.target.checked ? 'visible' : 'none';
-      if (l.outlineOnly) {
-        map.setLayoutProperty(l.id + '-line', 'visibility', vis);
-      } else if (l.geomType === 'polygon') {
-        map.setLayoutProperty(l.id + '-fill', 'visibility', vis);
-        map.setLayoutProperty(l.id + '-line', 'visibility', vis);
-      } else {
-        map.setLayoutProperty(l.id, 'visibility', vis);
-      }
-    });
-  });
+        function storedCarbon(biomass) {
+            return biomass * 0.5;
+        }
 
-  // Render the tornado path above Trees, independent of its position in the legend/LAYERS array.
-  if (map.getLayer('tornado-path-fill') && map.getLayer('stl-boundary-line')) {
-    map.moveLayer('tornado-path-fill', 'stl-boundary-line');
-    map.moveLayer('tornado-path-line', 'stl-boundary-line');
-  }
-});
-</script>
+        function co2Equivalent(carbon) {
+            return carbon * 3.667;
+        }
 
+        function annualSequestration(carbon_t, carbon_t1) {
+            return Math.max(0, carbon_t - carbon_t1);
+        }
+
+        function stormwaterInterception(canopyArea, rainfall = 1.067, condition = 1.0, ki = 0.18) {
+            return canopyArea * rainfall * ki * condition;
+        }
+
+        function leafArea(canopyArea, species) {
+            return canopyArea * SPECIES[species].lai;
+        }
+
+        function pollutionRemoval(leafArea, pollutantRate = 0.5) {
+            return leafArea * pollutantRate;
+        }
+
+        function evapotranspiration(leafArea, et_rate = 0.5) {
+            return leafArea * et_rate;
+        }
+
+        function shadeArea(canopyArea, fraction = 0.6) {
+            return canopyArea * fraction;
+        }
+
+        function energySavings(shadeArea, cop = 3) {
+            return (shadeArea * 50) / cop;
+        }
+
+        function avoidedCo2FromEnergy(energySavings, efGrid = 0.35) {
+            return energySavings * efGrid;
+        }
+
+        function mortalityProbability(year, annualMortality = 0.02) {
+            return Math.pow(1 - annualMortality, year);
+        }
+
+        function calculateYearByYear(species, dbh0Inches, age, condition, sun) {
+            const dbh0 = dbh0Inches * 2.54;
+            const gs = SPECIES[species].growth_rate;
+
+            const results = [];
+            let previousCarbon = 0;
+
+            for (let year = 0; year <= 50; year++) {
+                const dbh = growDbh(dbh0, gs, year, condition, sun);
+                const height = estimateHeight(dbh, species);
+                const crownW = estimateCrown(dbh, species);
+                const ca = canopyArea(crownW);
+
+                const biomass = estimateBiomass(dbh, species);
+                const carbon = storedCarbon(biomass);
+                const co2Eq = co2Equivalent(carbon);
+                const seq = annualSequestration(carbon, previousCarbon);
+                const co2SeqEq = co2Equivalent(seq);
+
+                const waterIntercepted = stormwaterInterception(ca, 1.067, condition);
+                const waterGallons = waterIntercepted * 264.172;
+
+                const la = leafArea(ca, species);
+                const pollutionRemoved = pollutionRemoval(la, 0.5);
+
+                const shade = shadeArea(ca);
+                const energySaved = energySavings(shade);
+                const avoidedCo2Energy = avoidedCo2FromEnergy(energySaved);
+
+                const survival = mortalityProbability(year);
+
+                results.push({
+                    year, dbh: dbh.toFixed(1), carbon: Math.round(carbon),
+                    co2_eq: Math.round(co2Eq), seq: Math.round(seq),
+                    water_gal: Math.round(waterGallons), pollution: pollutionRemoved.toFixed(1),
+                    energy_kwh: Math.round(energySaved), avoided_co2: Math.round(avoidedCo2Energy),
+                    survival: (survival * 100).toFixed(0)
+                });
+
+                previousCarbon = carbon;
+            }
+
+            return results;
+        }
+
+        // ============================================================================
+        // UI
+        // ============================================================================
+
+        let map, placedTrees = [];
+
+        function goToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+
+            if (screenId === 'evaluateScreen' && !map) {
+                setTimeout(initMap, 150);
+            }
+
+            if (screenId === 'methodologyScreen') {
+                setTimeout(() => {
+                    renderFlowchart();
+                }, 200);
+            }
+
+            if (screenId === 'recommenderScreen') {
+                populateRecommenderSelects();
+                setTimeout(() => initRecLocationMap(), 200);
+            }
+        }
+
+        function initMap() {
+            if (map) return;
+            const stLouis = L.latLngBounds([[38.3, -90.5], [38.85, -89.7]]);
+            map = L.map('map', { maxBounds: stLouis, maxBoundsViscosity: 1.0 }).setView([38.6270, -90.1994], 11);
+            map.fitBounds(stLouis);
+
+            // Strict bounds enforcement
+            map.setMaxBounds(stLouis);
+            map.on('moveend', function() {
+                if (!stLouis.contains(map.getCenter())) {
+                    map.fitBounds(stLouis);
+                }
+            });
+
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Esri', maxZoom: 18,
+            }).addTo(map);
+            map.on('click', onMapClick);
+            populateSpeciesSelects();
+        }
+
+        function populateSpeciesSelects() {
+            ['species', 'recSpecies'].forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                select.innerHTML = '';
+                Object.keys(SPECIES).sort().forEach(sp => {
+                    const option = document.createElement('option');
+                    option.value = sp;
+                    option.textContent = sp;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function populateRecommenderSelects() {
+            populateSpeciesSelects();
+        }
+
+        // Location-based environmental data for St. Louis neighborhoods
+        const ST_LOUIS_LOCATIONS = {
+            "Downtown/Central": { lat: 38.627, lng: -90.199, drainage: "moderate", rainfall: "moderate", wind: "moderate" },
+            "North City": { lat: 38.680, lng: -90.210, drainage: "poor", rainfall: "moderate", wind: "low" },
+            "South City": { lat: 38.585, lng: -90.200, drainage: "good", rainfall: "moderate", wind: "moderate" },
+            "East STL": { lat: 38.620, lng: -90.100, drainage: "poor", rainfall: "high", wind: "high" },
+            "Clayton/Central West": { lat: 38.640, lng: -90.310, drainage: "good", rainfall: "moderate", wind: "low" },
+            "Forest Park Area": { lat: 38.660, lng: -90.280, drainage: "moderate", rainfall: "moderate", wind: "moderate" }
+        };
+
+        let locMapInstance = null;
+        let autoFilledFields = {};
+
+        function initRecLocationMap() {
+            if (locMapInstance) return;
+            const stLouis = L.latLngBounds([[38.3, -90.5], [38.85, -89.7]]);
+            locMapInstance = L.map('locMap', { maxBounds: stLouis, maxBoundsViscosity: 1.0 }).setView([38.627, -90.199], 11);
+            locMapInstance.fitBounds(stLouis);
+
+            // Strict bounds enforcement
+            locMapInstance.setMaxBounds(stLouis);
+            locMapInstance.on('moveend', function() {
+                if (!stLouis.contains(locMapInstance.getCenter())) {
+                    locMapInstance.fitBounds(stLouis);
+                }
+            });
+
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Esri', maxZoom: 14
+            }).addTo(locMapInstance);
+
+            // Add markers for each location
+            Object.entries(ST_LOUIS_LOCATIONS).forEach(([name, data]) => {
+                const marker = L.circleMarker([data.lat, data.lng], {
+                    radius: 10, fillColor: '#0F8BCD', color: '#371203', weight: 2, fillOpacity: 0.8
+                }).addTo(locMapInstance);
+
+                marker.bindPopup(`<strong>${name}</strong><br/>Click to select`);
+                marker.on('click', () => autoFillFromLocation(name, data));
+            });
+        }
+
+        function autoFillFromLocation(locName, data) {
+            const drainageMap = { "poor": "poor", "moderate": "moderate", "good": "good" };
+            const rainfallMap = { "poor": "low", "moderate": "moderate", "good": "high" };
+            const windMap = { "low": "low", "moderate": "moderate", "high": "high" };
+
+            document.getElementById('recDrainage').value = data.drainage;
+            document.getElementById('recRainfall').value = data.rainfall;
+            document.getElementById('recWind').value = data.wind;
+
+            autoFilledFields = { recDrainage: true, recRainfall: true, recWind: true };
+
+            // Add visual indicator
+            ['recDrainage', 'recRainfall', 'recWind'].forEach(id => {
+                const el = document.getElementById(id);
+                el.style.backgroundColor = '#e8f4f8';
+                el.title = `Auto-filled from ${locName}`;
+            });
+
+            alert(`Location "${locName}" selected!\n\nAuto-filled:\n• Soil Drainage: ${data.drainage}\n• Annual Rainfall: ${data.rainfall}\n• Wind Exposure: ${data.wind}`);
+        }
+
+        function onMapClick(e) {
+            const species = document.getElementById('species').value;
+            const dbh = parseFloat(document.getElementById('dbh').value);
+            const age = parseInt(document.getElementById('age').value);
+            const condition = parseFloat(document.getElementById('condition').value);
+            const sun = parseFloat(document.getElementById('sun').value);
+
+            if (!species) {
+                alert('Select a species');
+                return;
+            }
+
+            if (!sun) {
+                alert('Select sun exposure');
+                return;
+            }
+
+            if (isNaN(dbh) || dbh < 1) {
+                alert('Enter valid diameter');
+                return;
+            }
+
+            const tree = {
+                id: Math.random(),
+                lat: e.latlng.lat, lng: e.latlng.lng,
+                species, dbh, age, condition, sun,
+                data: calculateYearByYear(species, dbh, age, condition, sun)
+            };
+
+            placedTrees.push(tree);
+
+            const marker = L.circleMarker([tree.lat, tree.lng], {
+                radius: 8, fillColor: '#496677', color: '#371203', weight: 2, fillOpacity: 0.8,
+            }).addTo(map);
+
+            const popupHtml = `
+                <div style="font-family: 'Times New Roman', serif; font-size: 12px;">
+                    <strong>${species}</strong><br/>
+                    Diameter: ${dbh}″<br/>
+                    Age: ${age} years<br/>
+                    Sun: ${sun === '1.0' ? 'Full' : sun === '0.8' ? 'Partial' : 'Shade'}<br/>
+                    Health: ${(condition * 100).toFixed(0)}%
+                </div>
+            `;
+            marker.bindPopup(popupHtml);
+            marker.on('mouseover', function() { this.openPopup(); });
+            marker.on('mouseout', function() { this.closePopup(); });
+
+            updateTreesList();
+            updateProjection(document.getElementById('yearSlider').value);
+        }
+
+        function placedTree() {
+            const species = document.getElementById('species').value;
+            const sun = document.getElementById('sun').value;
+
+            if (!species) {
+                alert('Select a species first');
+                return;
+            }
+
+            if (!sun) {
+                alert('Select sun exposure first');
+                return;
+            }
+
+            map.once('click', onMapClick);
+        }
+
+        let selectedTreeIdx = null;
+
+        function updateTreesList() {
+            const list = document.getElementById('treesList');
+            if (placedTrees.length === 0) {
+                list.innerHTML = '<p style="color: #999; font-style: italic; padding: 16px; text-align: center;">No trees placed yet. Click "Add Tree to Map" then click on the map.</p>';
+                return;
+            }
+
+            list.innerHTML = placedTrees.map((t, i) => `
+                <div class="tree-item ${selectedTreeIdx === i ? 'selected' : ''}" onclick="selectTree(${i})">
+                    <div class="tree-header">
+                        <span>${t.species}</span>
+                        <div class="tree-actions">
+                            <button class="tree-btn" onclick="editTree(${i}); event.stopPropagation();">Edit</button>
+                            <button class="tree-btn remove" onclick="removeTree(${i}); event.stopPropagation();">×</button>
+                        </div>
+                    </div>
+                    <div class="tree-stats">
+                        <div class="tree-stat">
+                            <span class="tree-stat-label">Diameter:</span>
+                            <span>${t.dbh}″</span>
+                        </div>
+                        <div class="tree-stat">
+                            <span class="tree-stat-label">Age:</span>
+                            <span>${t.age}y</span>
+                        </div>
+                        <div class="tree-stat">
+                            <span class="tree-stat-label">Sun:</span>
+                            <span>${t.sun === '1.0' ? 'Full' : t.sun === '0.8' ? 'Partial' : 'Shade'}</span>
+                        </div>
+                        <div class="tree-stat">
+                            <span class="tree-stat-label">Health:</span>
+                            <span>${(parseFloat(t.condition) * 100).toFixed(0)}%</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectTree(idx) {
+            selectedTreeIdx = selectedTreeIdx === idx ? null : idx;
+            updateTreesList();
+        }
+
+        function editTree(idx) {
+            const t = placedTrees[idx];
+            document.getElementById('species').value = t.species;
+            document.getElementById('dbh').value = t.dbh;
+            document.getElementById('age').value = t.age;
+            document.getElementById('sun').value = t.sun;
+            document.getElementById('condition').value = t.condition;
+
+            removeTree(idx);
+
+            // Scroll to form
+            document.querySelector('.panel').scrollTop = 0;
+        }
+
+        function removeTree(idx) {
+            if (confirm(`Remove ${placedTrees[idx].species} (${placedTrees[idx].dbh}″)?`)) {
+                placedTrees.splice(idx, 1);
+                if (selectedTreeIdx === idx) selectedTreeIdx = null;
+                updateTreesList();
+                updateProjection(document.getElementById('yearSlider').value);
+            }
+        }
+
+        function clearAllTrees() {
+            if (placedTrees.length === 0) {
+                alert('No trees to clear');
+                return;
+            }
+            if (confirm(`Remove all ${placedTrees.length} tree(s)? This cannot be undone.`)) {
+                placedTrees = [];
+                selectedTreeIdx = null;
+                updateTreesList();
+                updateProjection(document.getElementById('yearSlider').value);
+                // Remove all markers from map
+                map.eachLayer((layer) => {
+                    if (layer instanceof L.CircleMarker) {
+                        map.removeLayer(layer);
+                    }
+                });
+            }
+        }
+
+        function toggleBenefitDef(id) {
+            const el = document.getElementById('def-' + id);
+            if (el) {
+                el.style.display = el.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function updateProjection(year) {
+            year = parseInt(year);
+            document.getElementById('yearDisplay').textContent = year;
+
+            if (placedTrees.length === 0) {
+                document.getElementById('benefitsDisplay').innerHTML = '';
+                return;
+            }
+
+            let totalCarbon = 0, totalSeq = 0, totalWater = 0, totalPollution = 0, totalEnergy = 0, avgSurvival = 0;
+
+            placedTrees.forEach(t => {
+                const r = t.data[year];
+                totalCarbon += parseInt(r.carbon);
+                totalSeq += parseInt(r.seq);
+                totalWater += parseInt(r.water_gal);
+                totalPollution += parseFloat(r.pollution);
+                totalEnergy += parseInt(r.energy_kwh);
+                avgSurvival += parseInt(r.survival);
+            });
+
+            avgSurvival = Math.round(avgSurvival / placedTrees.length);
+
+            const benefitDefs = {
+                carbon: "Cumulative carbon locked in tree biomass using allometric equations. Biomass = a(DBH)^b, where carbon comprises 50% of dry mass.",
+                sequestration: "Annual carbon removal from atmosphere through new biomass growth. Based on species growth rate and productivity.",
+                stormwater: "Rainfall captured by canopy before reaching ground. Formula: Canopy Area × LAI × Rainfall × 0.18 interception factor.",
+                pollution: "Air pollutants (PM2.5, O₃, NO₂) filtered by foliage. Based on leaf surface area × species capture efficiency (0.5 kg/m²/year).",
+                energy: "Electricity avoided through shade cooling and windbreak heating reduction. Formula: (Canopy Area × 0.6 × 50 kWh/m²/year) ÷ 3.",
+                survival: "Probability tree survives to projected year. Calculated as: (1 - mortality_rate)^age, adjusted for site conditions."
+            };
+
+            const html = `
+                <div class="benefit-card">
+                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('carbon')">Total Stored Carbon</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                    <div id="def-carbon" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.carbon}</div>
+                    <div class="benefit-value">${totalCarbon.toLocaleString()}</div>
+                    <div class="benefit-unit">kg</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('seq')">Annual Sequestration</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                    <div id="def-seq" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.sequestration}</div>
+                    <div class="benefit-value">${totalSeq.toLocaleString()}</div>
+                    <div class="benefit-unit">kg/year</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('water')">Stormwater Intercepted</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                    <div id="def-water" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.stormwater}</div>
+                    <div class="benefit-value">${totalWater.toLocaleString()}</div>
+                    <div class="benefit-unit">gallons/year</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('pollution')">Pollution Removed</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                    <div id="def-pollution" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.pollution}</div>
+                    <div class="benefit-value">${totalPollution.toFixed(0)}</div>
+                    <div class="benefit-unit">kg/year</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('energy')">Energy Savings</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                    <div id="def-energy" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.energy}</div>
+                    <div class="benefit-value">${totalEnergy.toLocaleString()}</div>
+                    <div class="benefit-unit">kWh/year</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('survival')">Avg. Survival</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                    <div id="def-survival" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.survival}</div>
+                    <div class="benefit-value">${avgSurvival}%</div>
+                    <div class="benefit-unit">likely to survive</div>
+                </div>
+            `;
+
+            document.getElementById('benefitsDisplay').innerHTML = html;
+        }
+
+        // Data connections for arrow flow
+        const FLOWCHART_CONNECTIONS = [
+            // Growth connections
+            ['dbh', 'future_dbh'], ['species', 'future_dbh'], ['condition', 'future_dbh'], ['sun', 'future_dbh'],
+            ['future_dbh', 'height'], ['species', 'height'],
+            ['future_dbh', 'crown'], ['species', 'crown'],
+            // Canopy connections
+            ['crown', 'canopy'],
+            // Biomass connections
+            ['future_dbh', 'biomass'], ['species', 'biomass'],
+            ['biomass', 'carbon_stored'],
+            ['carbon_stored', 'co2_eq'],
+            ['co2_eq', 'annual_seq'],
+            // Leaf area connections
+            ['canopy', 'leaf_area'], ['species', 'leaf_area'],
+            // Service connections
+            ['canopy', 'stormwater'], ['condition', 'stormwater'],
+            ['leaf_area', 'pollution'],
+            ['canopy', 'shade'],
+            ['shade', 'energy'],
+            ['energy', 'avoided_co2'],
+            // Life cycle connections
+            ['age', 'mortality'],
+            ['annual_seq', 'expected'], ['mortality', 'expected']
+        ];
+
+        // Data Flow Diagram: Left to Right
+        const FLOWCHART_DATA = [
+            {
+                tier: 'Inputs',
+                nodes: [
+                    { id: 'dbh', label: 'Diameter', type: 'input', chain: 'Current tree size' },
+                    { id: 'species', label: 'Species', type: 'input', chain: 'Growth potential' },
+                    { id: 'condition', label: 'Health', type: 'input', chain: 'Growth factor' },
+                    { id: 'sun', label: 'Sun', type: 'input', chain: 'Growth factor' },
+                    { id: 'age', label: 'Age', type: 'input', chain: 'Survival risk' }
+                ]
+            },
+            {
+                tier: 'Growth',
+                nodes: [
+                    { id: 'future_dbh', label: 'Future DBH', type: 'intermediate', chain: 'Size trajectory' },
+                    { id: 'height', label: 'Height', type: 'intermediate', chain: 'Geometry' },
+                    { id: 'crown', label: 'Crown Width', type: 'intermediate', chain: 'Crown expansion' }
+                ]
+            },
+            {
+                tier: 'Canopy',
+                nodes: [
+                    { id: 'canopy', label: 'Canopy Area', type: 'intermediate', chain: 'KEY: π(CW/2)²' },
+                    { id: 'biomass', label: 'Biomass', type: 'intermediate', chain: 'Dry mass' },
+                    { id: 'leaf_area', label: 'Leaf Area', type: 'intermediate', chain: 'CA × LAI' }
+                ]
+            },
+            {
+                tier: 'Carbon',
+                nodes: [
+                    { id: 'carbon_stored', label: 'Stored C', type: 'intermediate', chain: 'B × 0.5' },
+                    { id: 'co2_eq', label: 'CO₂ Total', type: 'intermediate', chain: 'C × 3.667' },
+                    { id: 'annual_seq', label: 'C Seq/Yr', type: 'output', chain: 'Annual gain' }
+                ]
+            },
+            {
+                tier: 'Services',
+                nodes: [
+                    { id: 'stormwater', label: 'Stormwater', type: 'output', chain: 'Interception' },
+                    { id: 'pollution', label: 'Pollution', type: 'output', chain: 'Air cleaning' },
+                    { id: 'shade', label: 'Shade Area', type: 'intermediate', chain: 'CA × 0.6' }
+                ]
+            },
+            {
+                tier: 'Energy',
+                nodes: [
+                    { id: 'energy', label: 'Energy Saved', type: 'intermediate', chain: 'kWh/year' },
+                    { id: 'avoided_co2', label: 'Avoided CO₂', type: 'output', chain: 'Grid factor' }
+                ]
+            },
+            {
+                tier: 'Life Cycle',
+                nodes: [
+                    { id: 'mortality', label: 'Survival', type: 'intermediate', chain: '(1-m)^t' },
+                    { id: 'expected', label: 'Expected Benefit', type: 'output', chain: 'Adjusted total' }
+                ]
+            }
+        ];
+
+        function renderFlowchart() {
+            const display = document.getElementById('flowchartDisplay');
+            display.innerHTML = '';
+
+            // Add metrics guide at top
+            const metricsGuide = document.createElement('div');
+            metricsGuide.className = 'metrics-guide';
+            metricsGuide.innerHTML = `
+                <h3>How It Works</h3>
+                <p><strong>Inputs:</strong> Provide basic tree information (diameter, species, health, sun exposure, age).</p>
+                <p><strong>Growth Calculations:</strong> Model future size using allometric equations and species growth rates.</p>
+                <p><strong>Canopy Metrics:</strong> Estimate canopy area, biomass, and leaf area from crown dimensions.</p>
+                <p><strong>Carbon Storage:</strong> Calculate total and annual carbon sequestration over time.</p>
+                <p><strong>Ecosystem Services:</strong> Quantify stormwater interception, pollution removal, energy savings, and shade.</p>
+                <p><strong>Life Cycle Adjustment:</strong> Account for tree survival probability to get expected benefits.</p>
+            `;
+            display.appendChild(metricsGuide);
+
+            // Add legend (floating in bottom right via CSS)
+            const legendBox = document.createElement('div');
+            legendBox.className = 'legend-box';
+            legendBox.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 12px; color: var(--primary);">Color Key</div>
+                <div class="legend-item">
+                    <div class="legend-color input"></div>
+                    <div class="legend-label">Input: You provide</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color intermediate"></div>
+                    <div class="legend-label">Calculate: Internal step</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color output"></div>
+                    <div class="legend-label">Output: Final result</div>
+                </div>
+            `;
+            document.body.appendChild(legendBox);
+
+            // Wrapper div for horizontal container
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.width = '100%';
+
+            // Create SVG overlay FIRST, positioned absolutely
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.classList.add('flowchart-svg');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.width = '100%';
+            svg.style.pointerEvents = 'none';
+            svg.innerHTML = '<defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><polygon points="0 0, 10 3, 0 6" fill="#0F8BCD"/></marker></defs>';
+            wrapper.appendChild(svg);
+
+            // Horizontal container for columns
+            const containerDiv = document.createElement('div');
+            containerDiv.className = 'flowchart-container';
+            containerDiv.style.position = 'relative';
+            containerDiv.style.zIndex = '1';
+
+            const nodeBoxes = {};
+
+            FLOWCHART_DATA.forEach(tier => {
+                const tierDiv = document.createElement('div');
+                tierDiv.className = 'flowchart-tier';
+
+                const title = document.createElement('div');
+                title.className = 'tier-title';
+                title.textContent = tier.tier;
+                tierDiv.appendChild(title);
+
+                tier.nodes.forEach(nodeData => {
+                    const box = document.createElement('div');
+                    box.className = `calc-box ${nodeData.type}`;
+                    box.id = `node_${nodeData.id}`;
+                    box.textContent = nodeData.label;
+
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip-popup';
+                    tooltip.textContent = FORMULAS[nodeData.id]?.formula?.split('\n')[0] || nodeData.chain;
+                    box.appendChild(tooltip);
+
+                    box.addEventListener('mouseenter', () => {
+                        showFormula(nodeData.id, nodeData.chain);
+                        highlightFlow(nodeData.id);
+                    });
+
+                    box.addEventListener('mouseleave', () => {
+                        clearHighlightFlow();
+                    });
+
+                    tierDiv.appendChild(box);
+                    nodeBoxes[nodeData.id] = box;
+                });
+
+                containerDiv.appendChild(tierDiv);
+            });
+
+            wrapper.appendChild(containerDiv);
+            display.appendChild(wrapper);
+
+            // Draw arrows after rendering
+            setTimeout(() => {
+                const displayRect = display.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+
+                // Get the actual bounds of all nodes to size SVG appropriately
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+
+                Object.values(nodeBoxes).forEach(box => {
+                    const rect = box.getBoundingClientRect();
+                    minX = Math.min(minX, rect.left - wrapperRect.left);
+                    maxX = Math.max(maxX, rect.right - wrapperRect.left);
+                    minY = Math.min(minY, rect.top - wrapperRect.top);
+                    maxY = Math.max(maxY, rect.bottom - wrapperRect.top);
+                });
+
+                const svgWidth = maxX - minX + 40;
+                const svgHeight = maxY - minY + 40;
+
+                svg.setAttribute('width', svgWidth);
+                svg.setAttribute('height', svgHeight);
+                svg.setAttribute('viewBox', `${minX - 20} ${minY - 20} ${svgWidth} ${svgHeight}`);
+
+                FLOWCHART_CONNECTIONS.forEach(([fromId, toId]) => {
+                    const fromBox = nodeBoxes[fromId];
+                    const toBox = nodeBoxes[toId];
+
+                    if (!fromBox || !toBox) return;
+
+                    const fromRect = fromBox.getBoundingClientRect();
+                    const toRect = toBox.getBoundingClientRect();
+
+                    const x1 = fromRect.right - wrapperRect.left;
+                    const y1 = fromRect.top - wrapperRect.top + fromRect.height / 2;
+                    const x2 = toRect.left - wrapperRect.left;
+                    const y2 = toRect.top - wrapperRect.top + toRect.height / 2;
+
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.classList.add('arrow');
+                    path.setAttribute('id', `arrow_${fromId}_${toId}`);
+                    path.setAttribute('d', `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1} ${x2} ${y2}`);
+                    svg.appendChild(path);
+                });
+            }, 100);
+
+            // Add formula display
+            const formulaDiv = document.createElement('div');
+            formulaDiv.id = 'formulaArea';
+            formulaDiv.className = 'formula-display';
+            display.appendChild(formulaDiv);
+        }
+
+        function highlightFlow(nodeId) {
+            const allArrows = document.querySelectorAll('.arrow');
+            allArrows.forEach(arrow => arrow.classList.remove('active'));
+
+            FLOWCHART_CONNECTIONS.forEach(([fromId, toId]) => {
+                if (toId === nodeId || fromId === nodeId) {
+                    const arrow = document.getElementById(`arrow_${fromId}_${toId}`);
+                    if (arrow) arrow.classList.add('active');
+                }
+            });
+        }
+
+        function clearHighlightFlow() {
+            const allArrows = document.querySelectorAll('.arrow');
+            allArrows.forEach(arrow => arrow.classList.remove('active'));
+        }
+
+        function showFormula(nodeId, chain) {
+            const formula = FORMULAS[nodeId];
+            const area = document.getElementById('formulaArea');
+
+            if (formula) {
+                area.innerHTML = `
+                    <div class="formula-title">${formula.title}</div>
+                    <div class="formula-chain">${chain}</div>
+                    <div class="formula-text">${formula.formula}</div>
+                `;
+                area.classList.add('active');
+            }
+        }
+
+        function showTooltip(e, formulaId) {
+            const f = FORMULAS[formulaId];
+            if (!f) return;
+
+            const tooltip = document.getElementById('tooltip');
+            tooltip.innerHTML = `<div class="tooltip-title">${f.title}</div><div>${f.formula}</div>`;
+            tooltip.classList.add('active');
+
+            const rect = e.target.getBoundingClientRect();
+            tooltip.style.left = (rect.right + 10) + 'px';
+            tooltip.style.top = (rect.top - 50) + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.remove('active');
+        }
+
+        function estimateSpeciesBenefits(species) {
+            const s = SPECIES[species];
+            const dbh30 = 15 + (s.growth_rate * 30 * 0.8); // Estimate DBH at 30 years
+            const crownW = s.max_crown * (1 - Math.exp(-s.k_c * dbh30));
+            const ca = Math.PI * Math.pow(crownW / 2, 2);
+            const biomass = s.biomass_a * Math.pow(dbh30, s.biomass_b);
+            const carbon = biomass * 0.5;
+            const leafArea = ca * s.lai;
+            const pollutionRemoval = leafArea * 0.5;
+
+            return {
+                carbon: Math.round(carbon),
+                stormwater: Math.round(ca * 1.067 * 0.18 * 264.172), // gallons
+                pollution: Math.round(pollutionRemoval),
+                energy: Math.round((ca * 0.6 * 50) / 3),
+                growth: Math.round(s.growth_rate * 100),
+                wind: Math.round(s.wind * 100),
+                crownSize: Math.round(crownW)
+            };
+        }
+
+        function createSentimentWarningPanel(sentiment) {
+            return `
+                <div style="background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%); border-left: 4px solid #ffd700; padding: 16px; margin-bottom: 20px; border-radius: 2px;">
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                        <div style="font-size: 24px; color: #ffd700;">⚠</div>
+                        <div style="flex: 1; color: white; font-family: 'Times New Roman', serif;">
+                            <div style="font-weight: 600; margin-bottom: 8px; color: #ffd700;">Low Community Sentiment (${sentiment}/10)</div>
+                            <div style="font-size: 12px; line-height: 1.5; margin-bottom: 12px;">
+                                This site has low community support for tree planting. Success will require careful species selection and engagement strategies.
+                            </div>
+                            <div style="font-size: 11px; color: #ccc;">
+                                <strong>Risks:</strong> Vandalism • Reduced maintenance • Community objections • Lower survival rates<br/>
+                                <strong>Mitigation:</strong> Select hardy, low-maintenance species • Community engagement • Tree protection • Smaller trees
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function runRecommender() {
+            const location = document.getElementById('recLocation').value;
+            const proximity = document.getElementById('recProximity').value;
+            const utilities = document.getElementById('recUtilities').value;
+            const powerLines = document.getElementById('recPowerLines').value;
+            const sun = document.getElementById('recSun').value;
+            const drainage = document.getElementById('recDrainage').value;
+            const rainfall = document.getElementById('recRainfall').value;
+            const water = document.getElementById('recWater').value;
+            const sentiment = parseInt(document.getElementById('recSentiment').value);
+            const height = document.getElementById('recHeight').value;
+            const wind = document.getElementById('recWind').value;
+            const priority = document.getElementById('priority1').value;
+            const maintenance = document.getElementById('recMaintenance').value;
+            const aesthetic = document.getElementById('aestheticPref').value;
+            const wildlifeChecked = {
+                high: document.getElementById('wildlifeHigh').checked,
+                moderate: document.getElementById('wildlifeModerate').checked,
+                low: document.getElementById('wildlifeLow').checked
+            };
+
+            // Check required fields
+            if (!location || !proximity || !utilities || !powerLines || !sun || !drainage || !rainfall || !sentiment || !maintenance) {
+                alert('Please answer all required questions (marked with *)');
+                return;
+            }
+
+            const doRecommendation = () => {
+                const scores = {};
+                const reasoning = {};
+                const benefits = {};
+
+                Object.keys(SPECIES).forEach(sp => {
+                    let score = 0;
+                    let reasons = [];
+
+                    // Sun exposure match (25 pts max)
+                    if (sun === 'full' && SPECIES[sp].sun === 'full') {
+                        score += 25;
+                        reasons.push('Thrives in full sun');
+                    }
+                    else if (sun === 'partial' && (SPECIES[sp].sun === 'partial' || SPECIES[sp].sun === 'full')) {
+                        score += 20;
+                        reasons.push('Well-adapted to partial sun');
+                    }
+                    else if (sun === 'shade' && SPECIES[sp].sun === 'shade') {
+                        score += 18;
+                        reasons.push('Shade-tolerant species');
+                    } else {
+                        score += 5;
+                    }
+
+                    // Drainage match (20 pts max)
+                    if (drainage === 'poor' && SPECIES[sp].drainage === 'poor') {
+                        score += 20;
+                        reasons.push('Tolerates poor drainage/wet soil');
+                    }
+                    else if (drainage === 'moderate' && SPECIES[sp].drainage === 'moderate') {
+                        score += 20;
+                        reasons.push('Adapted to moderate soil');
+                    }
+                    else if (drainage === 'good' && SPECIES[sp].drainage === 'good') {
+                        score += 20;
+                        reasons.push('Prefers well-drained soil');
+                    } else {
+                        score += 8;
+                    }
+
+                    // Infrastructure compatibility (20 pts max)
+                    if (proximity === '0') {
+                        score += (SPECIES[sp].utilities * 15);
+                        if (SPECIES[sp].utilities > 0.8) reasons.push('Excellent for confined spaces');
+                    }
+                    else if (proximity === '1') {
+                        score += (SPECIES[sp].utilities * 12);
+                    }
+                    else {
+                        score += 10;
+                    }
+
+                    if (powerLines === '0') {
+                        score += (SPECIES[sp].power_lines * 8);
+                        if (SPECIES[sp].power_lines > 0.85) reasons.push('Safe from power line conflicts');
+                    }
+                    else if (powerLines === '1') {
+                        score += (SPECIES[sp].power_lines * 5);
+                    }
+
+                    // Rainfall/water fit (15 pts max)
+                    if (rainfall === 'moderate' || rainfall === 'high') {
+                        score += 15;
+                    }
+                    else if (water === 'high') {
+                        score += 12;
+                        reasons.push('Works with irrigation');
+                    }
+                    else {
+                        score += 3;
+                    }
+
+                    // Location-specific (10 pts max)
+                    if (location === 'street' && SPECIES[sp].utilities > 0.75) {
+                        score += 10;
+                        reasons.push('Ideal street tree');
+                    }
+                    if (location === 'floodplain' && SPECIES[sp].drainage === 'poor') {
+                        score += 8;
+                        reasons.push('Flood-tolerant');
+                    }
+
+                    // Wind tolerance (8 pts max)
+                    if (wind === 'high' && SPECIES[sp].wind > 0.8) {
+                        score += 8;
+                        reasons.push('Wind-resistant');
+                    }
+                    else if (wind === 'low' && SPECIES[sp].wind > 0.7) {
+                        score += 5;
+                    }
+
+                    // Size preference (8 pts)
+                    if (height && SPECIES[sp].mature_h === height) {
+                        score += 8;
+                        reasons.push(`Reaches ${height} mature height`);
+                    }
+
+                    // Priority goal bonus (12 pts max)
+                    if (priority === 'carbon' && SPECIES[sp].growth_rate > 0.7) {
+                        score += 12;
+                        reasons.push('Strong carbon sequestration');
+                    }
+                    else if (priority === 'stormwater' && SPECIES[sp].max_crown > 17) {
+                        score += 12;
+                        reasons.push('Large canopy for stormwater');
+                    }
+                    else if (priority === 'pollution' && SPECIES[sp].lai > 4.4) {
+                        score += 12;
+                        reasons.push('Dense foliage filters air');
+                    }
+                    else if (priority === 'shade' && SPECIES[sp].max_height > 22) {
+                        score += 12;
+                        reasons.push('Substantial shade provider');
+                    }
+
+                    // Sentiment adjustment
+                    let sentimentMult = 1.0;
+                    if (sentiment <= 5) {
+                        if (SPECIES[sp].wind > 0.8) score += 4;
+                        sentimentMult = 0.7 + (sentiment / 10) * 0.3;
+                        if (sentiment <= 3) reasons.push('Hardy for high-risk areas');
+                    }
+
+                    // Social factors (new)
+                    // Maintenance capacity (10 pts max)
+                    if (maintenance === 'high' && SPECIES[sp].maintenance !== 'high') {
+                        score += 10;
+                        reasons.push('Low maintenance species');
+                    }
+                    else if (maintenance === 'moderate' && SPECIES[sp].maintenance !== 'high') {
+                        score += 5;
+                    }
+
+                    // Aesthetic preference (8 pts max)
+                    if (aesthetic === 'ornamental' && SPECIES[sp].aesthetic_type === 'ornamental') {
+                        score += 8;
+                        reasons.push('Ornamental appeal (blooms, color)');
+                    }
+                    else if (aesthetic === 'shade' && SPECIES[sp].aesthetic_type === 'shade') {
+                        score += 8;
+                        reasons.push('Strong shade tree');
+                    }
+                    else if (aesthetic === 'mixed' && SPECIES[sp].aesthetic_type !== 'ornamental') {
+                        score += 5;
+                    }
+
+                    // Wildlife benefit priority (10 pts max)
+                    if (wildlifeChecked.high && SPECIES[sp].wildlife_value >= 8) {
+                        score += 10;
+                        reasons.push('Excellent wildlife habitat');
+                    }
+                    if (wildlifeChecked.moderate && SPECIES[sp].wildlife_value >= 6) {
+                        score += 5;
+                        reasons.push('Good pollinator/bird support');
+                    }
+                    if (wildlifeChecked.low) {
+                        score += 3;
+                        reasons.push('Low-maintenance species');
+                    }
+
+                    score *= sentimentMult;
+                    scores[sp] = Math.min(100, Math.max(0, score));
+                    reasoning[sp] = reasons.length > 0 ? reasons : ['Basic site compatibility'];
+                    benefits[sp] = estimateSpeciesBenefits(sp);
+                });
+
+            const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+            let html = '';
+
+            // Add sentiment warning panel if needed
+            if (sentiment <= 5) {
+                html += createSentimentWarningPanel(sentiment);
+            }
+
+            html += `<p style="font-size: 12px; color: #666; margin-bottom: 16px;">Top ${ranked.length} recommended species for your site:</p>`;
+
+            html += ranked.map(([sp, score]) => {
+                const b = benefits[sp];
+                const maxCarbon = 800;
+                const maxStormwater = 2000;
+                const maxPollution = 500;
+                const maxEnergy = 400;
+
+                return `
+                    <div class="species-card">
+                        <div class="species-name">${sp}</div>
+                        <div class="species-reason" style="font-size: 11px; color: #777; margin-bottom: 12px; line-height: 1.3;">
+                            ${reasoning[sp].join(' • ')}
+                        </div>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${score}%"></div>
+                        </div>
+                        <div class="score-text">Suitability: ${Math.round(score)}%</div>
+
+                        <div class="species-benefits">
+                            <div style="font-weight: 600; color: var(--primary); margin-bottom: 6px; font-size: 10px;">Est. Benefits @ 30 years</div>
+
+                            <div class="benefit-row">
+                                <div class="benefit-label">Carbon Storage</div>
+                                <div class="benefit-bar-container">
+                                    <div class="benefit-bar-fill" style="width: ${Math.min(100, (b.carbon / maxCarbon) * 100)}%"></div>
+                                </div>
+                                <div class="benefit-value">${b.carbon} kg</div>
+                            </div>
+
+                            <div class="benefit-row">
+                                <div class="benefit-label">Stormwater</div>
+                                <div class="benefit-bar-container">
+                                    <div class="benefit-bar-fill" style="width: ${Math.min(100, (b.stormwater / maxStormwater) * 100)}%"></div>
+                                </div>
+                                <div class="benefit-value">${b.stormwater} gal</div>
+                            </div>
+
+                            <div class="benefit-row">
+                                <div class="benefit-label">Pollution Filter</div>
+                                <div class="benefit-bar-container">
+                                    <div class="benefit-bar-fill" style="width: ${Math.min(100, (b.pollution / maxPollution) * 100)}%"></div>
+                                </div>
+                                <div class="benefit-value">${b.pollution} kg</div>
+                            </div>
+
+                            <div class="benefit-row">
+                                <div class="benefit-label">Energy Savings</div>
+                                <div class="benefit-bar-container">
+                                    <div class="benefit-bar-fill" style="width: ${Math.min(100, (b.energy / maxEnergy) * 100)}%"></div>
+                                </div>
+                                <div class="benefit-value">${b.energy} kWh</div>
+                            </div>
+
+                            <div class="benefit-row">
+                                <div class="benefit-label">Growth Rate</div>
+                                <div class="benefit-bar-container">
+                                    <div class="benefit-bar-fill" style="width: ${b.growth}%"></div>
+                                </div>
+                                <div class="benefit-value">${(b.growth / 100).toFixed(2)}</div>
+                            </div>
+
+                            <div class="benefit-row">
+                                <div class="benefit-label">Wind Resist</div>
+                                <div class="benefit-bar-container">
+                                    <div class="benefit-bar-fill" style="width: ${b.wind}%"></div>
+                                </div>
+                                <div class="benefit-value">${(b.wind / 100).toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+                document.getElementById('speciesResults').innerHTML = html;
+            };
+
+            doRecommendation();
+        }
+
+    </script>
 </body>
 </html>
