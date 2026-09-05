@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -6,6 +6,7 @@
 <title>St. Louis Flood &amp; Canopy Infrastructure</title>
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 <style>
   :root {
     --bg: #161616;
@@ -146,6 +147,7 @@
 
 <div id="panel">
   <h1>St. Louis Flood &amp; Canopy Infrastructure</h1>
+  <button id="export-btn" style="width:100%; padding:8px; margin-bottom:12px; background:#2a2a2a; color:#ccc; border:1px solid #666; cursor:pointer; font-family:inherit; font-size:12px;">📥 Export Visible Layers</button>
   <div id="layer-list"></div>
 </div>
 
@@ -203,7 +205,7 @@ function bandColors(start, end, count) {
 /* mako-inspired ramp (dark purple -> blue -> teal -> pale green),
  * ordered top-of-legend (darkest/most purple) to bottom (lightest). */
 const SITE_COLOR = '#2a1a4d';
-const TORNADO_COLOR = '#3d3a6b';
+const TORNADO_COLOR = '#817f9f';
 const MSD_COLOR = '#2f6b8a';
 const FEMA_COLOR = '#3a9188';
 const WATERCANOPY_COLOR = '#8fcf9f';
@@ -211,85 +213,102 @@ const BOUNDARY_COLOR = '#6b6b6b';
 
 const LAYERS = [
   {
-    id: 'bounding-box', file: null, geomType: 'line', group: null, showInfo: false,
-    label: 'Isometric Bounding Box', color: '#666666', opacity: 1, defaultOn: true,
-    source: 'Manual definition',
-    detail: 'Rectangular bounds for isometric visualization.',
-    noPopup: true, inline: true
-  },
-  {
     id: 'proposed-redesign-site', file: 'newstead_ave_site.json', geomType: 'polygon', group: null, showInfo: false,
-    label: 'Proposed Redesign Site', color: '#ffffff', opacity: 0.35, defaultOn: true,
+    label: 'Proposed Redesign Site', color: '#808080', opacity: 0.55, defaultOn: true,
     source: 'Newstead Ave (Kossuth to Carter Ave)',
     detail: 'Site boundary for proposed green infrastructure redesign.',
     noPopup: true
   },
   {
-    id: 'tornado-tree-damage', file: 'tornado_tree_damage_2025.json', geomType: 'point', group: 'May 2025 Tornado', showInfo: true,
-    label: 'Tree damage points', color: TORNADO_COLOR, opacity: 0.8, defaultOn: true,
-    source: 'National Weather Service Damage Assessment Toolkit',
-    detail: '441 tree-damage points: uprooted, snapped trunks, branch breaks. Surveyed June 2, 2025 onward. Part of 852 total damage points in revised assessment. (2025)',
-    popup: f => `<strong>${f.dod_txt || 'Tree damage'}</strong><br>EF Scale: ${f.efscale || 'n/a'}<br>Damage degree: ${f.damage_txt || 'n/a'}`
-  },
-  {
     id: 'tornado-path', file: 'tornado_path_2025.json', geomType: 'polygon', group: 'May 2025 Tornado', showInfo: true,
-    label: 'Tornado path (EF-3)', color: TORNADO_COLOR, opacity: 0.4, defaultOn: true,
+    label: 'Tornado path (EF-3)', color: TORNADO_COLOR, opacity: 0.7, defaultOn: true,
     source: 'City of St. Louis / National Weather Service',
     detail: 'May 16, 2025 EF-3 tornado track. Path width: 3,168 yards (1.8 miles). Survey date: June 2, 2025. Revised assessment with 10,000+ damage points published June 2026. (2025)',
     popup: f => `<strong>EF-${f.ef_rank} Tornado — May 16, 2025</strong><br>Structures exposed: ${f.structures_exposed || 'n/a'}`
   },
   {
     id: 'msd-ownership', file: 'msd_ownership.json', geomType: 'polygon', group: 'MSD infrastructure', showInfo: true,
-    label: 'MSD-owned parcels', color: MSD_COLOR, pattern: 'hatch-cross', defaultOn: true,
+    label: 'MSD-owned parcels', color: '#abe0ab', opacity: 0.78, defaultOn: true,
     source: 'Metropolitan St. Louis Sewer District (MSD_OWNERSHIP)',
     detail: '292 parcels owned by MSD. (2020)',
     popup: f => `<strong>${f.Address || 'MSD parcel'}</strong><br>${f.Owner_1 || ''}`
   },
   {
     id: 'msd-stormwater-projects', file: 'msd_large_stormwater_projects.json', geomType: 'polygon', group: 'MSD infrastructure', showInfo: true,
-    label: 'MSD large stormwater projects', color: MSD_COLOR, pattern: 'hatch-neg45', defaultOn: true,
+    label: 'MSD large stormwater projects', color: '#8cc08c', opacity: 0.82, defaultOn: true,
     source: 'Metropolitan St. Louis Sewer District (MSD_LargeScale_Stormwater_Projects)',
     detail: '262 parcels within large-scale MSD stormwater project footprints. (2020)',
     popup: f => `<strong>${(f.address || '').trim() || 'Stormwater project parcel'}</strong><br>${f.subtype || ''} ${f.poly_type || ''}<br>${f.notes || ''}`
   },
   {
     id: 'msd-problem-areas', file: 'msd_problem_areas.json', geomType: 'polygon', group: 'MSD infrastructure', showInfo: true,
-    label: 'MSD problem areas', color: MSD_COLOR, pattern: 'hatch-45', defaultOn: true,
+    label: 'MSD problem areas', color: '#6a8c6a', opacity: 0.88, defaultOn: true,
     source: 'Metropolitan St. Louis Sewer District (MSD_ProblemAreas)',
     detail: '77 known stormwater/sewer problem areas identified by MSD. (2020)',
     popup: f => `<strong>MSD problem area</strong><br>${f.PROBAREA || ''}`
   },
   {
     id: 'modern-hydro', file: 'modern_hydro_flow_routes.json', geomType: 'line', group: 'Water & Canopy', showInfo: true,
-    label: 'Modern flow routes', color: WATERCANOPY_COLOR, defaultOn: true,
+    label: 'Modern flow routes', color: '#6d97b8', strokeWidth: 1.8, strokeOpacity: 0.7, defaultOn: true,
     source: 'City of St. Louis Flood Risk Map (ModernHydroFlowRoutes)',
     detail: 'Modeled current-day surface flow paths, derived hydrology. 136 features. (2020)',
     popup: f => `<strong>Modeled flow route</strong>`
   },
   {
     id: 'rivers-lakes', file: 'rivers_and_lakes.json', geomType: 'polygon', group: 'Water & Canopy', showInfo: true,
-    label: 'Rivers and Lakes', color: WATERCANOPY_COLOR, opacity: 0.5, defaultOn: true,
+    label: 'Rivers and Lakes', color: '#7797ad', opacity: 0.25, defaultOn: true,
     source: 'City of St. Louis Flood Risk Map (STLOUIS RIVERS + HistoricLakes)',
     detail: 'Named rivers and lakes, merged into one layer. 27 features: 25 rivers, 2 lakes (one no longer open water). (2020)',
     popup: f => `<strong>${f.name || f.kind}</strong><br>${f.kind}${f.municipality ? ' — ' + f.municipality + ', ' + f.state : ''}${f.source_detail ? '<br>Source: ' + f.source_detail : ''}`
   },
   {
     id: 'floodplain', file: 'stl_floodplain.json', geomType: 'polygon', group: 'Water & Canopy', showInfo: true,
-    label: 'FEMA floodplain', color: WATERCANOPY_COLOR, opacity: 0.4, defaultOn: true,
+    label: 'FEMA floodplain', color: '#6d97ad', opacity: 0.5, defaultOn: true,
     source: 'City of St. Louis Flood Risk Map (STL_Floodplain)',
     detail: 'FLD_ZONE / SFHA_TF classification, 329 features. City-maintained FEMA-derived layer. (2020)',
     popup: f => `<strong>Flood zone ${f.FLD_ZONE || ''}</strong><br>SFHA: ${f.SFHA_TF === 'T' ? 'Yes' : 'No'}<br>Floodway: ${f.FLOODWAY || 'n/a'}`
   },
   {
     id: 'trees', file: 'trees_slim.json', geomType: 'point', group: 'Water & Canopy', showInfo: true,
-    label: 'Trees', color: '#ffffff', defaultOn: true,
+    label: 'Trees', color: '#b8b8b8', defaultOn: true,
     source: 'City of St. Louis Tree Inventory',
     detail: 'Point shapefile, reprojected from NAD83 StatePlane MO East (ftUS) to WGS84. DBH = diameter at breast height (trunk diameter measured 4.5ft above ground), the standard forestry measure of tree size. (2020)',
     popup: f => `<strong>${f.species || 'Unknown species'}</strong><br>DBH: ${f.dbh}"<br>Condition: ${f.condition || 'n/a'}<br>${f.address || ''}`
   },
+  {
+    id: 'stl-boundary', file: 'st_louis_city_boundary.json', geomType: 'polygon', group: null, showInfo: false,
+    label: 'St. Louis City Boundary', color: '#000000', opacity: 0, strokeWidth: 1.5, strokeOpacity: 0.8, defaultOn: true, outlineOnly: true,
+    source: 'City of St. Louis',
+    detail: 'Municipal boundary outline.',
+    popup: f => `<strong>St. Louis City Boundary</strong>`
+  },
+  {
+    id: 'bounding-box', geomType: 'line', group: null, showInfo: false,
+    label: 'Bounding Box', color: '#000000', opacity: 1, strokeWidth: 1.5, strokeOpacity: 0.8, defaultOn: true,
+    source: 'Map Extent',
+    detail: 'St. Louis city boundary rectangle',
+    geom: {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [-90.330, 38.520],
+            [-90.157, 38.520],
+            [-90.157, 38.785],
+            [-90.330, 38.785],
+            [-90.330, 38.520]
+          ]
+        }
+      }]
+    }
+  },
 ];
 
 const panel = document.getElementById('layer-list');
+
 let lastGroup = null;
 const HATCH_CSS = {
   'hatch-45': 'repeating-linear-gradient(45deg, ' + MSD_COLOR + ' 0 2px, transparent 2px 6px)',
@@ -329,6 +348,21 @@ LAYERS.forEach(l => {
   panel.appendChild(row);
 });
 
+// Basemap toggle (not part of LAYERS — controls the raster tiles/background/mask, not a data source).
+// Placed last so it renders as the lowest/bottom row in the legend, matching its position as the lowest map layer.
+const basemapRow = document.createElement('div');
+basemapRow.className = 'layer-row';
+basemapRow.innerHTML = `
+  <div class="row-main">
+    <label>
+      <input type="checkbox" id="toggle-basemap" checked>
+      <span class="swatch" style="background:#6b6b6b"></span>
+      Basemap
+    </label>
+  </div>
+`;
+panel.appendChild(basemapRow);
+
 // Click-to-toggle info popovers; clicking elsewhere or the same icon closes them.
 document.querySelectorAll('.info-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
@@ -349,6 +383,139 @@ document.addEventListener('click', () => {
   document.querySelectorAll('.info-btn.active').forEach(b => b.classList.remove('active'));
 });
 
+// Export visible layers (and basemap, if checked) as a PNG cropped to the Bounding Box
+document.getElementById('export-btn').addEventListener('click', async () => {
+  const anyChecked = Array.from(document.querySelectorAll('.layer-row input[type="checkbox"]')).some(cb => cb.checked);
+  if (!anyChecked) {
+    alert('Select at least one layer to export');
+    return;
+  }
+
+  const btn = document.getElementById('export-btn');
+  btn.disabled = true;
+  btn.textContent = '📥 Exporting...';
+
+  // Basemap visibility already reflects the Basemap checkbox — export as-is.
+
+  // Crop exactly to the Bounding Box layer's coordinates
+  const bboxLayer = LAYERS.find(l => l.id === 'bounding-box');
+  const bboxCoords = bboxLayer.geom.features[0].geometry.coordinates;
+  const lons = bboxCoords.map(c => c[0]);
+  const lats = bboxCoords.map(c => c[1]);
+  const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const latMid = (minLat + maxLat) / 2;
+  const realAspect = ((maxLon - minLon) * Math.cos(latMid * Math.PI / 180)) / (maxLat - minLat);
+
+  // Temporarily size the map container to match the bounding box aspect ratio for an exact crop
+  const container = map.getContainer();
+  const targetWidth = 3600;
+  const targetHeight = Math.round(targetWidth / realAspect);
+  const origWidth = container.style.width;
+  const origHeight = container.style.height;
+  const origCenter = map.getCenter();
+  const origZoom = map.getZoom();
+  container.style.width = targetWidth + 'px';
+  container.style.height = targetHeight + 'px';
+  map.resize();
+  map.fitBounds([[minLon, minLat], [maxLon, maxLat]], { padding: 0, duration: 0, animate: false });
+
+  // Thicken lines/dots/polygon outlines for export only — the live map is untouched by these restores.
+  // Circle radius uses a flat literal (not a multiplier) because the interpolated on-screen
+  // value at the export's fitBounds zoom is tiny (~1-2px) — 2x of tiny is still tiny.
+  const EXPORT_LINE_SCALE = 2.5;
+  const EXPORT_CIRCLE_RADIUS = 8;
+  // Boundary/extent reference lines get extra emphasis on export — flat width + full opacity.
+  const EXPORT_EMPHASIS_LINES = { 'stl-boundary-line': 7, 'bounding-box': 7, 'modern-hydro': 12 };
+  const scaledPaint = [];
+  map.getStyle().layers.forEach(sl => {
+    if (sl.type === 'circle') {
+      const orig = map.getPaintProperty(sl.id, 'circle-radius');
+      if (orig !== undefined) {
+        map.setPaintProperty(sl.id, 'circle-radius', EXPORT_CIRCLE_RADIUS);
+        scaledPaint.push({ id: sl.id, prop: 'circle-radius', orig });
+      }
+    } else if (sl.type === 'line') {
+      const origWidth = map.getPaintProperty(sl.id, 'line-width');
+      if (origWidth !== undefined) {
+        if (EXPORT_EMPHASIS_LINES[sl.id] !== undefined) {
+          map.setPaintProperty(sl.id, 'line-width', EXPORT_EMPHASIS_LINES[sl.id]);
+          const origOpacity = map.getPaintProperty(sl.id, 'line-opacity');
+          map.setPaintProperty(sl.id, 'line-opacity', 1);
+          scaledPaint.push({ id: sl.id, prop: 'line-opacity', orig: origOpacity });
+        } else {
+          map.setPaintProperty(sl.id, 'line-width', ['*', origWidth, EXPORT_LINE_SCALE]);
+        }
+        scaledPaint.push({ id: sl.id, prop: 'line-width', orig: origWidth });
+      }
+    }
+  });
+
+  try {
+    // Wait for the map to repaint at the new size. The export container is much larger than the
+    // on-screen map, so it requests far more basemap tiles than usual — give it real time to land
+    // instead of racing a short fallback timer (which caused patchy/half-loaded basemap tiles).
+    await new Promise(resolve => {
+      map.once('idle', resolve);
+      map.triggerRepaint();
+      setTimeout(resolve, 6000); // generous fallback in case idle never fires
+    });
+    // Extra safety: keep polling until the basemap raster source itself reports fully loaded.
+    const waitStart = Date.now();
+    while (!map.isSourceLoaded('dark-basemap') && Date.now() - waitStart < 5000) {
+      await new Promise(r => setTimeout(r, 150));
+    }
+
+    // The long wait above occasionally lands on a fully blank WebGL frame (backgrounded tab,
+    // dropped GPU context, etc.) — detect that and force a fresh repaint before giving up.
+    function isCanvasBlank(canvas) {
+      const probeCtx = document.createElement('canvas').getContext('2d');
+      probeCtx.canvas.width = canvas.width;
+      probeCtx.canvas.height = canvas.height;
+      probeCtx.drawImage(canvas, 0, 0);
+      const { data } = probeCtx.getImageData(0, 0, canvas.width, canvas.height);
+      for (let i = 3; i < data.length; i += 4 * 977) {
+        if (data[i] !== 0) return false;
+      }
+      return true;
+    }
+
+    let mapCanvas = map.getCanvas();
+    let attempts = 0;
+    while (isCanvasBlank(mapCanvas) && attempts < 3) {
+      attempts++;
+      map.resize();
+      await new Promise(resolve => {
+        map.once('idle', resolve);
+        map.triggerRepaint();
+        setTimeout(resolve, 2000);
+      });
+      mapCanvas = map.getCanvas();
+    }
+
+    const dataUrl = mapCanvas.toDataURL('image/png');
+
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'stl-layers.png';
+    a.click();
+  } finally {
+    // Restore original line/circle widths
+    scaledPaint.forEach(({ id, prop, orig }) => {
+      if (map.getLayer(id)) map.setPaintProperty(id, prop, orig);
+    });
+
+    // Restore original size and view
+    container.style.width = origWidth;
+    container.style.height = origHeight;
+    map.resize();
+    map.jumpTo({ center: origCenter, zoom: origZoom });
+
+    btn.disabled = false;
+    btn.textContent = '📥 Export Visible Layers';
+  }
+});
+
 window.map = new maplibregl.Map({
   container: 'map',
   style: {
@@ -357,9 +524,10 @@ window.map = new maplibregl.Map({
       'dark-basemap': {
   type: 'raster',
   tiles: [
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
   ],
   tileSize: 256,
+  maxzoom: 16,
   attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
 },
     },
@@ -367,30 +535,41 @@ window.map = new maplibregl.Map({
       {
         id: 'background',
         type: 'background',
-        paint: { 'background-color': '#161616' }
+        paint: { 'background-color': '#e8e8e8' }
       },
       {
         id: 'dark-basemap-layer',
         type: 'raster',
         source: 'dark-basemap',
-        paint: { 'raster-opacity': 0.9, 'raster-brightness-max': 0.45 }
+        paint: { 'raster-opacity': 1, 'raster-contrast': 0.15, 'raster-saturation': 0.1 }
       }
     ]
   },
   center: [-90.25, 38.63],
-  zoom: 11.5
+  zoom: 11.5,
+  maxZoom: 16,
+  preserveDrawingBuffer: true
 });
 
 map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
+const BASEMAP_LAYER_IDS = ['background', 'dark-basemap-layer', 'street-labels', 'city-mask-layer', 'city-emphasis-layer'];
+
 map.on('load', () => {
+  document.getElementById('toggle-basemap').addEventListener('change', (e) => {
+    const vis = e.target.checked ? 'visible' : 'none';
+    BASEMAP_LAYER_IDS.forEach(id => {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
+    });
+  });
+
   map.addSource('osm-labels', {
     type: 'vector',
     tiles: ['https://tile.openstreetmap.org/data/v3/{z}/{x}/{y}.pbf'],
     minzoom: 0,
     maxzoom: 14
   });
-
+  
   map.addLayer({
     id: 'street-labels',
     type: 'symbol',
@@ -403,8 +582,8 @@ map.on('load', () => {
       'visibility': ['case', ['>=', ['zoom'], 14], 'visible', 'none']
     },
     paint: {
-      'text-color': '#999999',
-      'text-halo-color': '#161616',
+      'text-color': '#4a4a4a',
+      'text-halo-color': '#e8e8e8',
       'text-halo-width': 1
     }
   }, 'trees'); // Insert before trees layer
@@ -455,87 +634,88 @@ map.on('load', () => {
         }]
       };
       map.addSource('city-mask', { type: 'geojson', data: maskGeoJSON });
-      const boundaryLayerConfig = LAYERS.find(l => l.id === 'city-boundary');
+      /* Hard clip outside city limits — fully hides the basemap beyond the boundary (matches the
+         page's basemap background color so it reads as a clean cutoff, not a visible grey block).
+         Inserted below the first data layer (this fetch resolves after LAYERS.forEach has already run)
+         so it only hides the basemap — data layers like the Bounding Box stay unaffected even where
+         they extend past the city limits. */
+      const firstDataLayerId = map.getLayer('proposed-redesign-site-fill') ? 'proposed-redesign-site-fill' : undefined;
       map.addLayer({
         id: 'city-mask-layer', type: 'fill', source: 'city-mask',
         layout: { visibility: 'visible' },
-        paint: { 'fill-color': boundaryLayerConfig.color, 'fill-opacity': boundaryLayerConfig.opacity }
-      });
-      document.getElementById('toggle-city-boundary')?.addEventListener('change', (e) => {
-        map.setLayoutProperty('city-mask-layer', 'visibility', e.target.checked ? 'visible' : 'none');
-        map.setLayoutProperty('city-mask-layer-top', 'visibility', e.target.checked ? 'visible' : 'none');
-      });
+        paint: { 'fill-color': '#e8e8e8', 'fill-opacity': 1 }
+      }, firstDataLayerId);
 
-      /* Opaque top mask layer to actually clip/hide data extending past the boundary */
+      /* Subtle dark overlay INSIDE the city limits — deepens/sharpens the basemap there for
+         visual emphasis, playing against the hard clip outside for stronger inside/outside contrast. */
+      const cityPolyFeature = turf.polygon([cityRing]);
+      const cityFillGeoJSON = {
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [cityRing] } }]
+      };
+      map.addSource('city-fill', { type: 'geojson', data: cityFillGeoJSON });
       map.addLayer({
-        id: 'city-mask-layer-top', type: 'fill', source: 'city-mask',
+        id: 'city-emphasis-layer', type: 'fill', source: 'city-fill',
         layout: { visibility: 'visible' },
-        paint: { 'fill-color': '#161616', 'fill-opacity': 1 }
-      });
-    });
+        paint: { 'fill-color': '#000000', 'fill-opacity': 0.14 }
+      }, firstDataLayerId);
 
-  // Create bounding box GeoJSON
-  const boundingBoxData = {
-    type: 'FeatureCollection',
-    features: [{
-      type: 'Feature',
-      properties: { name: 'Isometric bounds' },
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [-90.330, 38.520],
-          [-90.157, 38.520],
-          [-90.157, 38.785],
-          [-90.330, 38.785],
-          [-90.330, 38.520]
-        ]
-      }
-    }]
-  };
+      /* Clip the tornado path to the city limits too — cut its geometry down to the
+         portion inside St. Louis instead of just visually masking it. */
+      fetch('data/tornado_path_2025.json')
+        .then(r => r.json())
+        .then(tornadoData => {
+          const clipped = { type: 'FeatureCollection', features: [] };
+          tornadoData.features.forEach(f => {
+            try {
+              const intersection = turf.intersect(f, cityPolyFeature);
+              if (intersection) {
+                intersection.properties = f.properties;
+                clipped.features.push(intersection);
+              }
+            } catch (e) { /* skip features that fail to intersect */ }
+          });
+          const tornadoSource = map.getSource('tornado-path');
+          if (tornadoSource) tornadoSource.setData(clipped);
+        });
+    });
 
   LAYERS.forEach(l => {
     if (l.id === 'city-boundary') return; // handled by the inverted mask above
+    const sourceData = l.geom ? l.geom : `data/${l.file}`;
+    map.addSource(l.id, { type: 'geojson', data: sourceData });
 
-    if (l.id === 'bounding-box') {
-      map.addSource('bounding-box', { type: 'geojson', data: boundingBoxData });
+    if (l.geomType === 'point') {
       map.addLayer({
-        id: 'bounding-box', type: 'line', source: 'bounding-box',
+        id: l.id, type: 'circle', source: l.id,
+        layout: { visibility: l.defaultOn ? 'visible' : 'none' },
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 0.2, 14, 1.1, 17, 3.8, 20, 7],
+          'circle-color': l.color,
+          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.4, 12, 0.7, 20, 0.9],
+          'circle-stroke-width': 0
+        }
+      });
+    } else if (l.geomType === 'line') {
+      map.addLayer({
+        id: l.id, type: 'line', source: l.id,
         layout: { visibility: l.defaultOn ? 'visible' : 'none' },
         paint: {
           'line-color': l.color,
-          'line-width': 2,
-          'line-dasharray': [5, 5],
-          'line-opacity': 0.8
+          'line-width': l.strokeWidth || 1.2,
+          'line-opacity': l.strokeOpacity !== undefined ? l.strokeOpacity : 0.85
         }
       });
     } else {
-      map.addSource(l.id, { type: 'geojson', data: `data/${l.file}` });
-
-      if (l.geomType === 'point') {
+      // Outline-only polygons (no fill)
+      if (l.outlineOnly) {
         map.addLayer({
-          id: l.id, type: 'circle', source: l.id,
+          id: l.id + '-line', type: 'line', source: l.id,
           layout: { visibility: l.defaultOn ? 'visible' : 'none' },
-          paint: {
-            'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 0.25, 14, 1.5, 17, 7, 20, 15],
-            'circle-color': l.color,
-            'circle-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.4, 12, 0.7, 20, 0.9],
-            'circle-stroke-width': 0
-          }
-        });
-      } else if (l.geomType === 'line') {
-        map.addLayer({
-          id: l.id, type: 'line', source: l.id,
-          layout: { visibility: l.defaultOn ? 'visible' : 'none' },
-          paint: {
-            'line-color': l.color,
-            'line-width': 1.2,
-            'line-opacity': 0.85
-          }
+          paint: { 'line-color': l.color, 'line-width': l.strokeWidth || 2, 'line-opacity': l.strokeOpacity !== undefined ? l.strokeOpacity : 1 }
         });
       } else {
-        const fillPaint = l.pattern
-          ? { 'fill-pattern': l.pattern, 'fill-opacity': 0.9 }
-          : { 'fill-color': l.color, 'fill-opacity': l.opacity !== undefined ? l.opacity : 0.3 };
+        const fillPaint = { 'fill-color': l.color, 'fill-opacity': l.opacity !== undefined ? l.opacity : 0.3 };
         map.addLayer({
           id: l.id + '-fill', type: 'fill', source: l.id,
           layout: { visibility: l.defaultOn ? 'visible' : 'none' },
@@ -547,25 +727,35 @@ map.on('load', () => {
           paint: { 'line-color': l.color, 'line-width': 0.6, 'line-opacity': 0.7 }
         });
       }
+    }
 
-      const clickLayerId = l.geomType === 'polygon' ? l.id + '-fill' : l.id;
-      if (!l.noPopup) {
-        map.on('click', clickLayerId, (e) => {
-          const f = e.features[0].properties;
-          popup.setLngLat(e.lngLat).setHTML(l.popup(f)).addTo(map);
-        });
-      }
-      map.on('mouseenter', clickLayerId, () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-      map.on('mouseleave', clickLayerId, () => {
-        map.getCanvas().style.cursor = '';
+    const clickLayerId = l.geomType === 'polygon' ? (l.outlineOnly ? l.id + '-line' : l.id + '-fill') : l.id;
+    if (!l.noPopup && l.id !== 'bounding-box') {
+      map.on('click', clickLayerId, (e) => {
+        const f = e.features[0].properties;
+        popup.setLngLat(e.lngLat).setHTML(l.popup(f)).addTo(map);
       });
     }
 
+    // Click to zoom (skip bounding box)
+    if (l.id !== 'bounding-box') {
+      map.on('click', clickLayerId, (e) => {
+        const bounds = turf.bbox(e.features[0]);
+        map.fitBounds(bounds, { padding: 100, duration: 1000 });
+      });
+    }
+    map.on('mouseenter', clickLayerId, () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', clickLayerId, () => {
+      map.getCanvas().style.cursor = '';
+    });
+
     document.getElementById(`toggle-${l.id}`).addEventListener('change', (e) => {
       const vis = e.target.checked ? 'visible' : 'none';
-      if (l.geomType === 'polygon') {
+      if (l.outlineOnly) {
+        map.setLayoutProperty(l.id + '-line', 'visibility', vis);
+      } else if (l.geomType === 'polygon') {
         map.setLayoutProperty(l.id + '-fill', 'visibility', vis);
         map.setLayoutProperty(l.id + '-line', 'visibility', vis);
       } else {
@@ -573,6 +763,12 @@ map.on('load', () => {
       }
     });
   });
+
+  // Render the tornado path above Trees, independent of its position in the legend/LAYERS array.
+  if (map.getLayer('tornado-path-fill') && map.getLayer('stl-boundary-line')) {
+    map.moveLayer('tornado-path-fill', 'stl-boundary-line');
+    map.moveLayer('tornado-path-line', 'stl-boundary-line');
+  }
 });
 </script>
 
