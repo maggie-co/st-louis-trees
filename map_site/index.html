@@ -25,8 +25,10 @@
             --secondary: #b8b968;
         }
 
+        @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@300;400;500;700&display=swap');
+
         body {
-            font-family: 'Times New Roman', serif;
+            font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--light);
             color: var(--text);
         }
@@ -1430,6 +1432,55 @@
                 utilities: 0.85, power_lines: 0.85, wind: 0.9, drainage: "good", sun: "full",
                 mature_h: "large", native: true,
                 aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 5
+            },
+            "Sugar Maple": {
+                max_height: 27, max_crown: 20, growth_rate: 0.6,
+                biomass_a: 0.11, biomass_b: 2.46, k_h: 0.026, k_c: 0.031, lai: 4.4,
+                utilities: 0.8, power_lines: 0.8, wind: 0.85, drainage: "good", sun: "full",
+                mature_h: "large", fall_color: true, native: true,
+                aesthetic_type: "shade", wildlife_value: 8, maintenance: "low", iconic_appeal: 9
+            },
+            "Ginkgo": {
+                max_height: 25, max_crown: 14, growth_rate: 0.65,
+                biomass_a: 0.10, biomass_b: 2.44, k_h: 0.027, k_c: 0.033, lai: 3.9,
+                utilities: 0.95, power_lines: 0.95, wind: 0.95, drainage: "good", sun: "full",
+                mature_h: "large", fall_color: true,
+                aesthetic_type: "ornamental", wildlife_value: 4, maintenance: "low", iconic_appeal: 8
+            },
+            "Zelkova": {
+                max_height: 24, max_crown: 16, growth_rate: 0.7,
+                biomass_a: 0.10, biomass_b: 2.44, k_h: 0.028, k_c: 0.033, lai: 4.2,
+                utilities: 0.85, power_lines: 0.85, wind: 0.8, drainage: "good", sun: "full",
+                mature_h: "medium", fall_color: true,
+                aesthetic_type: "shade", wildlife_value: 5, maintenance: "low", iconic_appeal: 6
+            },
+            "Sweetbay Magnolia": {
+                max_height: 18, max_crown: 12, growth_rate: 0.6,
+                biomass_a: 0.08, biomass_b: 2.40, k_h: 0.031, k_c: 0.036, lai: 4.7,
+                utilities: 0.9, power_lines: 0.9, wind: 0.7, drainage: "poor", sun: "partial",
+                mature_h: "medium", native: true, deciduous: false,
+                aesthetic_type: "ornamental", wildlife_value: 7, maintenance: "medium", iconic_appeal: 8
+            },
+            "Fringe Tree": {
+                max_height: 12, max_crown: 10, growth_rate: 0.5,
+                biomass_a: 0.06, biomass_b: 2.35, k_h: 0.034, k_c: 0.040, lai: 4.5,
+                utilities: 0.95, power_lines: 0.95, wind: 0.8, drainage: "moderate", sun: "partial",
+                mature_h: "small", native: true,
+                aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 7
+            },
+            "Ironwood": {
+                max_height: 14, max_crown: 11, growth_rate: 0.45,
+                biomass_a: 0.07, biomass_b: 2.38, k_h: 0.033, k_c: 0.039, lai: 4.4,
+                utilities: 0.95, power_lines: 0.95, wind: 0.85, drainage: "moderate", sun: "shade",
+                mature_h: "small", native: true,
+                aesthetic_type: "mixed", wildlife_value: 7, maintenance: "low", iconic_appeal: 5
+            },
+            "Cornelian Cherry": {
+                max_height: 16, max_crown: 12, growth_rate: 0.55,
+                biomass_a: 0.07, biomass_b: 2.39, k_h: 0.032, k_c: 0.037, lai: 4.3,
+                utilities: 0.9, power_lines: 0.9, wind: 0.8, drainage: "good", sun: "full",
+                mature_h: "small", native: false,
+                aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 7
             }
         };
 
@@ -2172,7 +2223,7 @@
                     <div class="legend-label">Output: Final result</div>
                 </div>
             `;
-            document.body.appendChild(legendBox);
+            display.appendChild(legendBox);
 
             // Wrapper div for horizontal container
             const wrapper = document.createElement('div');
