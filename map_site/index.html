@@ -34,16 +34,25 @@
         }
 
         .screen {
-            display: none;
+            display: none !important;
             height: 100vh;
             flex-direction: column;
-            position: relative;
-            z-index: 0;
+            position: fixed;
+            top: -9999px;
+            left: 0;
+            width: 100%;
+            z-index: -100;
+            visibility: hidden;
+            pointer-events: none;
         }
 
         .screen.active {
-            display: flex;
+            display: flex !important;
+            position: relative;
+            top: auto;
             z-index: 10;
+            visibility: visible;
+            pointer-events: auto;
         }
 
         #landingScreen {
@@ -1785,6 +1794,12 @@
                 formula: "Benefit_expected = Benefit × Psurvive\n\nAdjusts all ecosystem services\nfor probability tree survives to given year",
                 inputs: ["annual_seq", "mortality"],
                 outputs: []
+            },
+            lifecycle_cost: {
+                title: "Lifecycle Cost",
+                formula: "Cost_total = Establish + (Maintain × years)\n\nEstablish = $100 + ($50 × DBH)\nMaintain = $30 + ($5 × DBH) annually\nBased on iTree Design methodology",
+                inputs: ["dbh", "age"],
+                outputs: []
             }
         };
 
@@ -1893,12 +1908,17 @@
 
                 const survival = mortalityProbability(year);
 
+                // Lifecycle cost calculation (iTree Design methodology)
+                const establishmentCost = 100 + (50 * dbh0Inches); // Base + size factor
+                const annualMaintenanceCost = 30 + (5 * dbh0Inches); // Annual upkeep
+                const lifecycleCost = Math.round(establishmentCost + (annualMaintenanceCost * year));
+
                 results.push({
                     year, dbh: dbh.toFixed(1), carbon: Math.round(carbon),
                     co2_eq: Math.round(co2Eq), seq: Math.round(seq),
                     water_gal: Math.round(waterGallons), pollution: pollutionRemoved.toFixed(1),
                     energy_kwh: Math.round(energySaved), avoided_co2: Math.round(avoidedCo2Energy),
-                    survival: (survival * 100).toFixed(0)
+                    survival: (survival * 100).toFixed(0), lifecycle_cost: lifecycleCost
                 });
 
                 previousCarbon = carbon;
@@ -2207,7 +2227,7 @@
                 return;
             }
 
-            let totalCarbon = 0, totalSeq = 0, totalWater = 0, totalPollution = 0, totalEnergy = 0, avgSurvival = 0;
+            let totalCarbon = 0, totalSeq = 0, totalWater = 0, totalPollution = 0, totalEnergy = 0, avgSurvival = 0, totalCost = 0;
 
             placedTrees.forEach(t => {
                 const r = t.data[year];
@@ -2216,6 +2236,7 @@
                 totalWater += parseInt(r.water_gal);
                 totalPollution += parseFloat(r.pollution);
                 totalEnergy += parseInt(r.energy_kwh);
+                totalCost += parseInt(r.lifecycle_cost);
                 avgSurvival += parseInt(r.survival);
             });
 
@@ -2227,45 +2248,57 @@
                 stormwater: "Rainfall captured by canopy before reaching ground. Formula: Canopy Area × LAI × Rainfall × 0.18 interception factor.",
                 pollution: "Air pollutants (PM2.5, O₃, NO₂) filtered by foliage. Based on leaf surface area × species capture efficiency (0.5 kg/m²/year).",
                 energy: "Electricity avoided through shade cooling and windbreak heating reduction. Formula: (Canopy Area × 0.6 × 50 kWh/m²/year) ÷ 3.",
-                survival: "Probability tree survives to projected year. Calculated as: (1-mortality_rate)^age, adjusted for site conditions."
+                survival: "Probability tree survives to projected year. Calculated as: (1-mortality_rate)^age, adjusted for site conditions.",
+                cost: "Cumulative tree lifecycle cost including establishment and maintenance. Formula: Establishment ($100 + $50×DBH) + Annual maintenance ($30 + $5×DBH) × years. Based on iTree Design methodology."
             };
 
             const html = `
-                <div class="benefit-card">
-                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('carbon')">Total Stored Carbon</u> <span style="font-size: 10px; color: #999;">▼</span></div>
-                    <div id="def-carbon" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.carbon}</div>
-                    <div class="benefit-value">${totalCarbon.toLocaleString()}</div>
-                    <div class="benefit-unit">kg</div>
+                <div style="margin-bottom: 24px;">
+                    <div style="font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">Financial</div>
+                    <div class="benefit-card">
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('cost')">Lifecycle Cost</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                        <div id="def-cost" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.cost}</div>
+                        <div class="benefit-value">$${totalCost.toLocaleString()}</div>
+                        <div class="benefit-unit">establishment + maintenance</div>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('energy')">Annual Energy Savings Value</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                        <div id="def-energy" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.energy}</div>
+                        <div class="benefit-value">${totalEnergy.toLocaleString()}</div>
+                        <div class="benefit-unit">kWh/year</div>
+                    </div>
                 </div>
-                <div class="benefit-card">
-                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('seq')">Annual Sequestration</u> <span style="font-size: 10px; color: #999;">▼</span></div>
-                    <div id="def-seq" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.sequestration}</div>
-                    <div class="benefit-value">${totalSeq.toLocaleString()}</div>
-                    <div class="benefit-unit">kg/year</div>
+
+                <div style="margin-bottom: 24px;">
+                    <div style="font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">Carbon & Climate</div>
+                    <div class="benefit-card">
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('carbon')">Total Stored Carbon</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                        <div id="def-carbon" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.carbon}</div>
+                        <div class="benefit-value">${totalCarbon.toLocaleString()}</div>
+                        <div class="benefit-unit">kg</div>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('seq')">Annual Sequestration</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                        <div id="def-seq" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.sequestration}</div>
+                        <div class="benefit-value">${totalSeq.toLocaleString()}</div>
+                        <div class="benefit-unit">kg/year</div>
+                    </div>
                 </div>
-                <div class="benefit-card">
-                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('water')">Stormwater Intercepted</u> <span style="font-size: 10px; color: #999;">▼</span></div>
-                    <div id="def-water" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.stormwater}</div>
-                    <div class="benefit-value">${totalWater.toLocaleString()}</div>
-                    <div class="benefit-unit">gallons/year</div>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('pollution')">Pollution Removed</u> <span style="font-size: 10px; color: #999;">▼</span></div>
-                    <div id="def-pollution" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.pollution}</div>
-                    <div class="benefit-value">${totalPollution.toFixed(0)}</div>
-                    <div class="benefit-unit">kg/year</div>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('energy')">Energy Savings</u> <span style="font-size: 10px; color: #999;">▼</span></div>
-                    <div id="def-energy" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.energy}</div>
-                    <div class="benefit-value">${totalEnergy.toLocaleString()}</div>
-                    <div class="benefit-unit">kWh/year</div>
-                </div>
-                <div class="benefit-card">
-                    <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('survival')">Avg. Survival</u> <span style="font-size: 10px; color: #999;">▼</span></div>
-                    <div id="def-survival" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.survival}</div>
-                    <div class="benefit-value">${avgSurvival}%</div>
-                    <div class="benefit-unit">likely to survive</div>
+
+                <div style="margin-bottom: 24px;">
+                    <div style="font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">Water/Air Quality</div>
+                    <div class="benefit-card">
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('water')">Stormwater Intercepted</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                        <div id="def-water" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.stormwater}</div>
+                        <div class="benefit-value">${totalWater.toLocaleString()}</div>
+                        <div class="benefit-unit">gallons/year</div>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('pollution')">Pollution Removed</u> <span style="font-size: 10px; color: #999;">▼</span></div>
+                        <div id="def-pollution" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.pollution}</div>
+                        <div class="benefit-value">${totalPollution.toFixed(0)}</div>
+                        <div class="benefit-unit">kg/year</div>
+                    </div>
                 </div>
             `;
 
@@ -2295,7 +2328,9 @@
             ['energy', 'avoided_co2'],
             // Life cycle connections
             ['age', 'mortality'],
-            ['annual_seq', 'expected'], ['mortality', 'expected']
+            ['annual_seq', 'expected'], ['mortality', 'expected'],
+            // Cost connections
+            ['dbh', 'lifecycle_cost'], ['age', 'lifecycle_cost']
         ];
 
         // Data Flow Diagram: Left to Right
@@ -2353,7 +2388,8 @@
                 tier: 'Life Cycle',
                 nodes: [
                     { id: 'mortality', label: 'Survival', type: 'intermediate', chain: '(1-m)^t' },
-                    { id: 'expected', label: 'Expected Benefit', type: 'output', chain: 'Adjusted total' }
+                    { id: 'expected', label: 'Expected Benefit', type: 'output', chain: 'Adjusted total' },
+                    { id: 'lifecycle_cost', label: 'Cost', type: 'output', chain: 'Total cost' }
                 ]
             }
         ];
