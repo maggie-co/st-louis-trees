@@ -37,10 +37,13 @@
             display: none;
             height: 100vh;
             flex-direction: column;
+            position: relative;
+            z-index: 0;
         }
 
         .screen.active {
             display: flex;
+            z-index: 10;
         }
 
         #landingScreen {
@@ -1378,14 +1381,16 @@
     </div>
 
     <!-- Methodology Screen -->
-    <div class="screen" id="methodologyScreen" style="display: flex; flex-direction: column; height: 100vh; width: 100%;">
+    <div class="screen" id="methodologyScreen" style="display: flex; flex-direction: column; height: 100vh; width: 100%; overflow: hidden;">
         <div style="background: white; padding: 24px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
             <h1 style="font-size: 20px; font-weight: 400; letter-spacing: 1px; color: var(--primary); margin: 0;">Calculation Framework</h1>
             <button class="back-btn" onclick="goToScreen('landingScreen')">Back</button>
         </div>
 
-        <div style="flex: 1; overflow-y: auto; padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%;">
-            <div id="flowchartDisplay"></div>
+        <div style="flex: 1; overflow: hidden; position: relative; width: 100%;">
+            <div style="overflow-y: auto; overflow-x: hidden; height: 100%; padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%;">
+                <div id="flowchartDisplay" style="overflow: hidden;"></div>
+            </div>
         </div>
     </div>
 
@@ -2480,7 +2485,10 @@
                     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                     path.classList.add('arrow');
                     path.setAttribute('id', `arrow_${fromId}_${toId}`);
-                    path.setAttribute('d', `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${y1} ${x2} ${y2}`);
+                    // Improved bezier curve with better control points for smoother arcs
+                    const ctrlX = (x1 + x2) / 2;
+                    const ctrlY = (y1 + y2) / 2;
+                    path.setAttribute('d', `M ${x1} ${y1} Q ${ctrlX} ${ctrlY} ${x2} ${y2}`);
                     svg.appendChild(path);
                 });
             }, 100);
