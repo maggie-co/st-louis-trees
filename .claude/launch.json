@@ -5,8 +5,8 @@
       "name": "serve-map",
       "runtimeExecutable": "powershell",
       "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:/Users/Maggie Coleman/portfolio/scripts/serve_map.ps1"],
-      "port": 8420,
-      "autoPort": true
+      "port": 9420,
+      "autoPort": false
     },
     {
       "name": "portfolio-v2",
