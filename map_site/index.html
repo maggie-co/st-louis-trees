@@ -2481,7 +2481,7 @@
             wrapper.appendChild(containerDiv);
             display.appendChild(wrapper);
 
-            // Draw arrows after rendering
+            // Draw arrows after rendering (increased delay for Vercel compatibility)
             setTimeout(() => {
                 const displayRect = display.getBoundingClientRect();
                 const wrapperRect = wrapper.getBoundingClientRect();
@@ -2496,6 +2496,11 @@
                     minY = Math.min(minY, rect.top-wrapperRect.top);
                     maxY = Math.max(maxY, rect.bottom-wrapperRect.top);
                 });
+
+                // Fallback to reasonable default if calculations didn't work
+                if (!isFinite(maxX) || !isFinite(maxY) || maxX - minX < 100) {
+                    minX = 0; maxX = 1304; minY = 0; maxY = 380;
+                }
 
                 const svgWidth = maxX-minX + 40;
                 const svgHeight = maxY-minY + 40;
@@ -2527,7 +2532,7 @@
                     path.setAttribute('d', `M ${x1} ${y1} Q ${ctrlX} ${ctrlY} ${x2} ${y2}`);
                     svg.appendChild(path);
                 });
-            }, 100);
+            }, 500);
 
             // Add formula display
             const formulaDiv = document.createElement('div');
