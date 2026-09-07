@@ -2481,8 +2481,8 @@
             wrapper.appendChild(containerDiv);
             display.appendChild(wrapper);
 
-            // Draw arrows after rendering (increased delay for Vercel compatibility)
-            setTimeout(() => {
+            // Draw arrows after rendering - use multiple attempts for Vercel compatibility
+            const tryRenderFlowchart = (attemptCount = 0) => {
                 const displayRect = display.getBoundingClientRect();
                 const wrapperRect = wrapper.getBoundingClientRect();
 
@@ -2497,7 +2497,13 @@
                     maxY = Math.max(maxY, rect.bottom-wrapperRect.top);
                 });
 
-                // Fallback to reasonable default if calculations didn't work
+                // If calculations didn't work and we haven't tried enough, retry
+                if ((!isFinite(maxX) || !isFinite(maxY) || maxX - minX < 100) && attemptCount < 5) {
+                    setTimeout(() => tryRenderFlowchart(attemptCount + 1), 100);
+                    return;
+                }
+
+                // Fallback to reasonable default if calculations still didn't work
                 if (!isFinite(maxX) || !isFinite(maxY) || maxX - minX < 100) {
                     minX = 0; maxX = 1304; minY = 0; maxY = 380;
                 }
@@ -2532,7 +2538,10 @@
                     path.setAttribute('d', `M ${x1} ${y1} Q ${ctrlX} ${ctrlY} ${x2} ${y2}`);
                     svg.appendChild(path);
                 });
-            }, 500);
+            };
+
+            // Start the rendering with initial delay
+            setTimeout(() => tryRenderFlowchart(0), 300);
 
             // Add formula display
             const formulaDiv = document.createElement('div');
