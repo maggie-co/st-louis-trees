@@ -1217,6 +1217,24 @@
                         </select>
                     </div>
 
+                    <!-- Community & Social -->
+                    <h3>Community & Social</h3>
+                    <div class="form-group">
+                        <label>Community Access Type <span class="info-icon">i<span class="info-tooltip">What type of public or community space will the tree serve? This helps recommend species with high community engagement and accessibility value.</span></span></label>
+                        <select id="recAccessType">
+                            <option value="">Select (optional)</option>
+                            <option value="park">Park/Greenspace</option>
+                            <option value="school">School/Youth Center</option>
+                            <option value="transit">Transit Stop/Bus Stop</option>
+                            <option value="senior">Senior Center/Healthcare</option>
+                            <option value="library">Public Library</option>
+                            <option value="community-garden">Community Garden</option>
+                            <option value="food-desert">Food-Insecure Area</option>
+                            <option value="gathering">Public Gathering Space</option>
+                            <option value="other">Other Public Space</option>
+                        </select>
+                    </div>
+
                     <!-- Infrastructure -->
                     <h3>Infrastructure & Constraints</h3>
                     <div class="form-group">
@@ -2646,6 +2664,7 @@
 
         function runRecommender() {
             const location = document.getElementById('recLocation').value;
+            const accessType = document.getElementById('recAccessType').value;
             const proximity = document.getElementById('recProximity').value;
             const utilities = document.getElementById('recUtilities').value;
             const powerLines = document.getElementById('recPowerLines').value;
@@ -2807,6 +2826,26 @@
                     }
 
                     // Social factors (new)
+                    // Community access type (8 pts max)
+                    if (accessType) {
+                        if ((accessType === 'park' || accessType === 'gathering') && SPECIES[sp].max_height > 20) {
+                            score += 8;
+                            reasons.push('Excellent for public shade/gathering');
+                        }
+                        else if ((accessType === 'school' || accessType === 'transit') && SPECIES[sp].max_height > 15 && SPECIES[sp].max_height < 35) {
+                            score += 6;
+                            reasons.push('Ideal size for community access');
+                        }
+                        else if (accessType === 'food-desert' && SPECIES[sp].fruit) {
+                            score += 8;
+                            reasons.push('Provides food production benefit');
+                        }
+                        else if (accessType === 'senior' && SPECIES[sp].maintenance !== 'high') {
+                            score += 6;
+                            reasons.push('Low-maintenance for accessible care');
+                        }
+                    }
+
                     // Maintenance capacity (10 pts max)
                     if (maintenance === 'high' && SPECIES[sp].maintenance !== 'high') {
                         score += 10;
