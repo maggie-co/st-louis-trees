@@ -1707,7 +1707,7 @@
             },
             condition: {
                 title: "Health Factor (C)",
-                formula: "Scale: 0.3 (poor) to 1.0 (excellent)\nMultiplies annual growth rate:\nGrowth_year = Gs Ã— C Ã— S",
+                formula: "Scale: 0.3 (poor) to 1.0 (excellent)\nMultiplies annual growth rate:\nGrowth_year = Gs × C × S",
                 inputs: [],
                 outputs: ["future_dbh", "stormwater"]
             },
@@ -1719,49 +1719,49 @@
             },
             future_dbh: {
                 title: "Future Diameter",
-                formula: "DBH_future = DBHâ‚€ + (Gs Ã— t Ã— C Ã— S)\n\nGS = species growth rate (cm/year)\nt = years\nAsymptotically approaches max DBH",
+                formula: "DBH_future = DBHâ‚€ + (Gs × t × C × S)\n\nGS = species growth rate (cm/year)\nt = years\nAsymptotically approaches max DBH",
                 inputs: ["dbh", "species", "condition", "sun"],
                 outputs: ["height", "crown", "biomass"]
             },
             height: {
                 title: "Height",
-                formula: "H = Hmax Ã— (1-e^(-kh Ã— DBH))\n\nLogistic curve saturates at species max\nUsed for visualization and windthrow risk",
+                formula: "H = Hmax × (1-e^(-kh × DBH))\n\nLogistic curve saturates at species max\nUsed for visualization and windthrow risk",
                 inputs: ["future_dbh", "species"],
                 outputs: []
             },
             crown: {
                 title: "Crown Width",
-                formula: "CW = CWmax Ã— (1-e^(-kc Ã— DBH))\n\nDrives most ecosystem services\nCanopy area = Ï€(CW/2)Â²",
+                formula: "CW = CWmax × (1-e^(-kc × DBH))\n\nDrives most ecosystem services\nCanopy area = Ï€(CW/2)Â²",
                 inputs: ["future_dbh", "species"],
                 outputs: ["canopy"]
             },
             canopy: {
                 title: "Canopy Area",
-                formula: "CA = Ï€ Ã— (CW/2)Â²\n\nThis is THE key variable for all ecosystem services",
+                formula: "CA = Ï€ × (CW/2)Â²\n\nThis is THE key variable for all ecosystem services",
                 inputs: ["crown"],
                 outputs: ["stormwater", "leaf_area", "shade"]
             },
             biomass: {
                 title: "Biomass",
-                formula: "B = a Ã— (DBH)^b\n\nAllometric equation specific to species\nExample: B = 0.10 Ã— (33)^2.45 = 155 kg",
+                formula: "B = a × (DBH)^b\n\nAllometric equation specific to species\nExample: B = 0.10 × (33)^2.45 = 155 kg",
                 inputs: ["future_dbh", "species"],
                 outputs: ["carbon_stored"]
             },
             leaf_area: {
                 title: "Leaf Area Index",
-                formula: "LA = CA Ã— LAI\n\nLAI = species-specific leaf area index\nDrives pollution removal and ET",
+                formula: "LA = CA × LAI\n\nLAI = species-specific leaf area index\nDrives pollution removal and ET",
                 inputs: ["canopy", "species"],
                 outputs: ["pollution"]
             },
             carbon_stored: {
                 title: "Stored Carbon",
-                formula: "C = B Ã— 0.5\n\nCarbon is ~50% of dry biomass\nDO NOT confuse with annual sequestration",
+                formula: "C = B × 0.5\n\nCarbon is ~50% of dry biomass\nDO NOT confuse with annual sequestration",
                 inputs: ["biomass"],
                 outputs: ["co2_eq"]
             },
             co2_eq: {
                 title: "COâ‚‚ Equivalent",
-                formula: "COâ‚‚ = C Ã— 3.667\n\nMolecular weight: 44/12 = 3.667\nTotal stored carbon as COâ‚‚",
+                formula: "COâ‚‚ = C × 3.667\n\nMolecular weight: 44/12 = 3.667\nTotal stored carbon as COâ‚‚",
                 inputs: ["carbon_stored"],
                 outputs: ["annual_seq"]
             },
@@ -1773,31 +1773,31 @@
             },
             stormwater: {
                 title: "Stormwater Interception",
-                formula: "I = CA Ã— P Ã— Ki Ã— C\n\nCA = canopy area (mÂ²)\nP = rainfall (1.07 m/yr)\nKi = 0.18 (interception coefficient)\nC = condition factor",
+                formula: "I = CA × P × Ki × C\n\nCA = canopy area (m²)\nP = rainfall (1.07 m/yr)\nKi = 0.18 (interception coefficient)\nC = condition factor",
                 inputs: ["canopy", "condition"],
                 outputs: []
             },
             pollution: {
                 title: "Pollution Removal",
-                formula: "R = LA Ã— Mp\n\nLA = leaf area (CA Ã— LAI)\nMp = pollutant removal rate per mÂ²\nDepends on species leaf traits",
+                formula: "R = LA × Mp\n\nLA = leaf area (CA × LAI)\nMp = pollutant removal rate per m²\nDepends on species leaf traits",
                 inputs: ["leaf_area", "species"],
                 outputs: []
             },
             shade: {
                 title: "Shade Area",
-                formula: "Ashade = CA Ã— 0.6\n\nApproximate fraction of usable shade\nMore precise: 3D geometry + solar position",
+                formula: "Ashade = CA × 0.6\n\nApproximate fraction of usable shade\nMore precise: 3D geometry + solar position",
                 inputs: ["canopy"],
                 outputs: ["energy"]
             },
             energy: {
                 title: "Energy Savings",
-                formula: "E = (Ashade Ã— 50) / COP\n\n50 W/mÂ² = typical cooling load\nCOP = 3 (air conditioning efficiency)\nkWh/year saved",
+                formula: "E = (Ashade × 50) / COP\n\n50 W/m² = typical cooling load\nCOP = 3 (air conditioning efficiency)\nkWh/year saved",
                 inputs: ["shade"],
                 outputs: ["avoided_co2"]
             },
             avoided_co2: {
                 title: "Avoided COâ‚‚ from Energy",
-                formula: "COâ‚‚avoided = E Ã— EFgrid\n\nE = energy savings (kWh)\nEFgrid = 0.35 kg COâ‚‚/kWh (St. Louis grid)",
+                formula: "COâ‚‚avoided = E × EFgrid\n\nE = energy savings (kWh)\nEFgrid = 0.35 kg COâ‚‚/kWh (St. Louis grid)",
                 inputs: ["energy"],
                 outputs: ["expected"]
             },
@@ -1809,13 +1809,13 @@
             },
             expected: {
                 title: "Expected Benefit",
-                formula: "Benefit_expected = Benefit Ã— Psurvive\n\nAdjusts all ecosystem services\nfor probability tree survives to given year",
+                formula: "Benefit_expected = Benefit × Psurvive\n\nAdjusts all ecosystem services\nfor probability tree survives to given year",
                 inputs: ["annual_seq", "mortality"],
                 outputs: []
             },
             lifecycle_cost: {
                 title: "Lifecycle Cost",
-                formula: "Cost_total = Establish + (Maintain Ã— years)\n\nEstablish = $100 + ($50 Ã— DBH)\nMaintain = $30 + ($5 Ã— DBH) annually\nBased on iTree Design methodology",
+                formula: "Cost_total = Establish + (Maintain × years)\n\nEstablish = $100 + ($50 × DBH)\nMaintain = $30 + ($5 × DBH) annually\nBased on iTree Design methodology",
                 inputs: ["dbh", "age"],
                 outputs: []
             }
@@ -2157,7 +2157,7 @@
                         <span>${t.species}</span>
                         <div class="tree-actions">
                             <button class="tree-btn" onclick="editTree(${i}); event.stopPropagation();">Edit</button>
-                            <button class="tree-btn remove" onclick="removeTree(${i}); event.stopPropagation();">Ã—</button>
+                            <button class="tree-btn remove" onclick="removeTree(${i}); event.stopPropagation();">×</button>
                         </div>
                     </div>
                     <div class="tree-stats">
@@ -2263,24 +2263,24 @@
             const benefitDefs = {
                 carbon: "Cumulative carbon locked in tree biomass using allometric equations. Biomass = a(DBH)^b, where carbon comprises 50% of dry mass.",
                 sequestration: "Annual carbon removal from atmosphere through new biomass growth. Based on species growth rate and productivity.",
-                stormwater: "Rainfall captured by canopy before reaching ground. Formula: Canopy Area Ã— LAI Ã— Rainfall Ã— 0.18 interception factor.",
-                pollution: "Air pollutants (PM2.5, Oâ‚ƒ, NOâ‚‚) filtered by foliage. Based on leaf surface area Ã— species capture efficiency (0.5 kg/mÂ²/year).",
-                energy: "Electricity avoided through shade cooling and windbreak heating reduction. Formula: (Canopy Area Ã— 0.6 Ã— 50 kWh/mÂ²/year) Ã· 3.",
+                stormwater: "Rainfall captured by canopy before reaching ground. Formula: Canopy Area × LAI × Rainfall × 0.18 interception factor.",
+                pollution: "Air pollutants (PM2.5, O₃, NO₂) filtered by foliage. Based on leaf surface area × species capture efficiency (0.5 kg/m²/year).",
+                energy: "Electricity avoided through shade cooling and windbreak heating reduction. Formula: (Canopy Area × 0.6 × 50 kWh/m²/year) Ã· 3.",
                 survival: "Probability tree survives to projected year. Calculated as: (1-mortality_rate)^age, adjusted for site conditions.",
-                cost: "Cumulative tree lifecycle cost including establishment and maintenance. Formula: Establishment ($100 + $50Ã—DBH) + Annual maintenance ($30 + $5Ã—DBH) Ã— years. Based on iTree Design methodology."
+                cost: "Cumulative tree lifecycle cost including establishment and maintenance. Formula: Establishment ($100 + $50×DBH) + Annual maintenance ($30 + $5×DBH) × years. Based on iTree Design methodology."
             };
 
             const html = `
                 <div style="margin-bottom: 24px;">
                     <div style="font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">Financial</div>
                     <div class="benefit-card">
-                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('cost')">Lifecycle Cost</u> <span style="font-size: 10px; color: #999;">â–¼</span></div>
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('cost')">Lifecycle Cost</u> <span style="font-size: 10px; color: #999;">▼</span></div>
                         <div id="def-cost" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.cost}</div>
                         <div class="benefit-value">$${totalCost.toLocaleString()}</div>
                         <div class="benefit-unit">establishment + maintenance</div>
                     </div>
                     <div class="benefit-card">
-                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('energy')">Annual Energy Savings Value</u> <span style="font-size: 10px; color: #999;">â–¼</span></div>
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('energy')">Annual Energy Savings Value</u> <span style="font-size: 10px; color: #999;">▼</span></div>
                         <div id="def-energy" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.energy}</div>
                         <div class="benefit-value">${totalEnergy.toLocaleString()}</div>
                         <div class="benefit-unit">kWh/year</div>
@@ -2290,13 +2290,13 @@
                 <div style="margin-bottom: 24px;">
                     <div style="font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">Carbon & Climate</div>
                     <div class="benefit-card">
-                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('carbon')">Total Stored Carbon</u> <span style="font-size: 10px; color: #999;">â–¼</span></div>
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('carbon')">Total Stored Carbon</u> <span style="font-size: 10px; color: #999;">▼</span></div>
                         <div id="def-carbon" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.carbon}</div>
                         <div class="benefit-value">${totalCarbon.toLocaleString()}</div>
                         <div class="benefit-unit">kg</div>
                     </div>
                     <div class="benefit-card">
-                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('seq')">Annual Sequestration</u> <span style="font-size: 10px; color: #999;">â–¼</span></div>
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('seq')">Annual Sequestration</u> <span style="font-size: 10px; color: #999;">▼</span></div>
                         <div id="def-seq" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.sequestration}</div>
                         <div class="benefit-value">${totalSeq.toLocaleString()}</div>
                         <div class="benefit-unit">kg/year</div>
@@ -2306,13 +2306,13 @@
                 <div style="margin-bottom: 24px;">
                     <div style="font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);">Water/Air Quality</div>
                     <div class="benefit-card">
-                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('water')">Stormwater Intercepted</u> <span style="font-size: 10px; color: #999;">â–¼</span></div>
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('water')">Stormwater Intercepted</u> <span style="font-size: 10px; color: #999;">▼</span></div>
                         <div id="def-water" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.stormwater}</div>
                         <div class="benefit-value">${totalWater.toLocaleString()}</div>
                         <div class="benefit-unit">gallons/year</div>
                     </div>
                     <div class="benefit-card">
-                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('pollution')">Pollution Removed</u> <span style="font-size: 10px; color: #999;">â–¼</span></div>
+                        <div class="benefit-label"><u style="cursor: pointer;" onclick="toggleBenefitDef('pollution')">Pollution Removed</u> <span style="font-size: 10px; color: #999;">▼</span></div>
                         <div id="def-pollution" style="display: none; font-size: 10px; color: #777; margin: 8px 0; padding: 8px; background: #f9f9f9; border-radius: 2px;">${benefitDefs.pollution}</div>
                         <div class="benefit-value">${totalPollution.toFixed(0)}</div>
                         <div class="benefit-unit">kg/year</div>
@@ -2376,14 +2376,14 @@
                 nodes: [
                     { id: 'canopy', label: 'Canopy Area', type: 'intermediate', chain: 'KEY: Ï€(CW/2)Â²' },
                     { id: 'biomass', label: 'Biomass', type: 'intermediate', chain: 'Dry mass' },
-                    { id: 'leaf_area', label: 'Leaf Area', type: 'intermediate', chain: 'CA Ã— LAI' }
+                    { id: 'leaf_area', label: 'Leaf Area', type: 'intermediate', chain: 'CA × LAI' }
                 ]
             },
             {
                 tier: 'Carbon',
                 nodes: [
-                    { id: 'carbon_stored', label: 'Stored C', type: 'intermediate', chain: 'B Ã— 0.5' },
-                    { id: 'co2_eq', label: 'COâ‚‚ Total', type: 'intermediate', chain: 'C Ã— 3.667' },
+                    { id: 'carbon_stored', label: 'Stored C', type: 'intermediate', chain: 'B × 0.5' },
+                    { id: 'co2_eq', label: 'COâ‚‚ Total', type: 'intermediate', chain: 'C × 3.667' },
                     { id: 'annual_seq', label: 'C Seq/Yr', type: 'output', chain: 'Annual gain' }
                 ]
             },
@@ -2392,7 +2392,7 @@
                 nodes: [
                     { id: 'stormwater', label: 'Stormwater', type: 'output', chain: 'Interception' },
                     { id: 'pollution', label: 'Pollution', type: 'output', chain: 'Air cleaning' },
-                    { id: 'shade', label: 'Shade Area', type: 'intermediate', chain: 'CA Ã— 0.6' }
+                    { id: 'shade', label: 'Shade Area', type: 'intermediate', chain: 'CA × 0.6' }
                 ]
             },
             {
