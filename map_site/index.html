@@ -442,6 +442,15 @@
             align-items: flex-start;
         }
 
+        .legend-box-static {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 16px;
+            font-size: 11px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
         .legend-box {
             position: fixed;
             bottom: 20px;
@@ -1090,25 +1099,36 @@
         </div>
 
         <div style="margin-bottom: 16px; font-size: 11px; color: var(--text);">TOOLS</div>
-        <div class="cards-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 40px;">
-            <div class="card" onclick="goToScreen('recommenderScreen')" style="border-left: 4px solid var(--accent); position: relative;">
-                <div style="position: absolute; top: 12px; right: 12px; font-size: 20px; opacity: 0.3; cursor: pointer;" title="View Recommendation Parameters" onclick="event.stopPropagation(); goToScreen('methodologyScreen'); setTimeout(() => switchFrameworkTab('recommend'), 100);">→</div>
+        <div class="cards-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 40px; position: relative;">
+            <div class="card" id="toolRecommendCard" onclick="goToScreen('recommenderScreen')" style="border-left: 4px solid var(--accent);">
                 <h2>Recommend Species</h2>
                 <p>Find the best species for your site based on constraints and environmental goals.</p>
             </div>
 
-            <div class="card" onclick="goToScreen('evaluateScreen')" style="border-left: 4px solid var(--accent); position: relative;">
-                <div style="position: absolute; top: 12px; right: 12px; font-size: 20px; opacity: 0.3; cursor: pointer;" title="View Evaluation Parameters" onclick="event.stopPropagation(); goToScreen('methodologyScreen'); setTimeout(() => switchFrameworkTab('evaluate'), 100);">→</div>
+            <div class="card" id="toolEvaluateCard" onclick="goToScreen('evaluateScreen')" style="border-left: 4px solid var(--accent);">
                 <h2>Evaluate Trees</h2>
                 <p>Model multiple trees placed on your map. See total ecosystem benefits over time.</p>
             </div>
         </div>
 
+        <!-- Connecting arrows (positioned dynamically by positionLandingArrows()) -->
+        <svg id="landingArrowsSvg" style="position: absolute; width: 100%; height: 100%; left: 0; top: 0; pointer-events: none; overflow: visible;">
+            <defs>
+                <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="2" orient="auto">
+                    <polygon points="0 0, 8 2, 0 4" fill="#999" />
+                </marker>
+            </defs>
+            <path id="arrowRecommend" stroke="#999" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)" />
+            <path id="arrowEvaluate" stroke="#999" stroke-width="1.5" fill="none" marker-end="url(#arrowhead)" />
+        </svg>
+
         <div style="margin-bottom: 16px; font-size: 11px; color: var(--text);">FRAMEWORK</div>
-        <div class="cards-grid" style="grid-template-columns: repeat(1, 1fr);">
-            <div class="card" onclick="goToScreen('methodologyScreen')" style="border-left: 4px solid var(--secondary);">
-                <h2>Parameters Chart</h2>
-                <p>Explore all 25 calculation formulas and how site-specific parameters drive recommendations. Hover over any node to see the math.</p>
+        <div class="cards-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="card" id="paramRecommendCard" onclick="goToScreen('methodologyScreen'); setTimeout(() => switchFrameworkTab('recommend'), 100);" style="border-left: 4px solid var(--secondary);">
+                <h2>Parameters Chart (Recommend Species)</h2>
+            </div>
+            <div class="card" id="paramEvaluateCard" onclick="goToScreen('methodologyScreen'); setTimeout(() => switchFrameworkTab('evaluate'), 100);" style="border-left: 4px solid var(--secondary);">
+                <h2>Parameters Chart (Evaluate Trees)</h2>
             </div>
         </div>
 
@@ -1118,7 +1138,7 @@
                 Built on the framework of the <a href="https://www.fs.usda.gov/managing-land/urban-forests/itree" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">iTree Design tool</a>
             </div>
             <div>
-                Project team: AndrÃ©s FernÃ¡ndez-Aguilar, Maggie Coleman, Gail Bray
+                Project team: Andrés Fernández-Aguilar, Maggie Coleman, Gail Bray
             </div>
         </div>
     </div>
@@ -1411,23 +1431,50 @@
 
     <!-- Methodology Screen -->
     <div class="screen" id="methodologyScreen" style="display: flex; flex-direction: column; height: 100vh; width: 100%; overflow: hidden;">
-        <div style="background: white; padding: 0; border-bottom: 1px solid var(--border); flex-shrink: 0;">
-            <div style="padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
-                <h1 style="font-size: 20px; font-weight: 400; letter-spacing: 1px; color: var(--primary); margin: 0;">Framework</h1>
-                <button class="back-btn" onclick="goToScreen('landingScreen')">Back</button>
-            </div>
-            <div style="display: flex; padding: 0 40px;">
-                <button onclick="switchFrameworkTab('evaluate')" id="tabEvaluate" style="flex: 1; padding: 16px 20px; background: none; border: none; border-bottom: 3px solid var(--primary); color: var(--primary); font-weight: 500; cursor: pointer; font-size: 14px;">Evaluate Trees Parameters</button>
-                <button onclick="switchFrameworkTab('recommend')" id="tabRecommend" style="flex: 1; padding: 16px 20px; background: none; border: none; border-bottom: 3px solid transparent; color: #999; font-weight: 500; cursor: pointer; font-size: 14px;">Recommend Species Parameters</button>
-            </div>
+        <div style="background: white; padding: 24px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <h1 style="font-size: 20px; font-weight: 400; letter-spacing: 1px; color: var(--primary); margin: 0;">Framework</h1>
+            <button class="back-btn" onclick="goToScreen('landingScreen')">Back</button>
         </div>
 
-        <div style="flex: 1; overflow: hidden; position: relative; width: 100%;">
-            <div id="evaluateFramework" style="overflow-y: auto; overflow-x: hidden; height: 100%; padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%;">
-                <div id="flowchartDisplay" style="overflow: hidden;"></div>
+        <div style="flex: 1; overflow: hidden; position: relative; width: 100%; display: flex;">
+            <div id="evaluateFramework" style="flex: 1; overflow-y: auto; overflow-x: hidden; height: 100%; padding: 40px; width: 100%;">
+                <div id="flowchartDisplay" style="overflow: hidden; max-width: 1200px; margin: 0 auto;"></div>
             </div>
-            <div id="recommendFramework" style="display: none; overflow-y: auto; overflow-x: hidden; height: 100%; padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%;">
-                <div id="recommendationFlowchart" style="overflow: hidden;"></div>
+            <div id="recommendFramework" style="display: none; flex: 1; overflow-y: auto; overflow-x: hidden; height: 100%; padding: 40px; width: 100%;">
+                <div id="recommendationFlowchart" style="overflow: hidden; max-width: 1200px; margin: 0 auto;"></div>
+            </div>
+
+            <div style="width: 200px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px 20px 20px 0;">
+                <div id="legendEvaluate" class="legend-box-static">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--primary);">Color Key</div>
+                    <div class="legend-item">
+                        <div class="legend-color input"></div>
+                        <div class="legend-label">Input: You provide</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color intermediate"></div>
+                        <div class="legend-label">Calculate: Internal step</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color output"></div>
+                        <div class="legend-label">Output: Final result</div>
+                    </div>
+                </div>
+                <div id="legendRecommend" class="legend-box-static" style="display: none;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: var(--primary);">Color Key</div>
+                    <div class="legend-item">
+                        <div class="legend-color input"></div>
+                        <div class="legend-label">Input: You provide</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color intermediate"></div>
+                        <div class="legend-label">Calculate: Scoring step</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color output"></div>
+                        <div class="legend-label">Output: Final result</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1980,7 +2027,50 @@
                 populateRecommenderSelects();
                 setTimeout(() => initRecLocationMap(), 200);
             }
+
+            if (screenId === 'landingScreen') {
+                setTimeout(() => positionLandingArrows(), 50);
+            }
         }
+
+        function positionLandingArrows() {
+            const screen = document.getElementById('landingScreen');
+            if (!screen) return;
+            const screenRect = screen.getBoundingClientRect();
+
+            const pairs = [
+                ['toolRecommendCard', 'paramRecommendCard', 'arrowRecommend'],
+                ['toolEvaluateCard', 'paramEvaluateCard', 'arrowEvaluate']
+            ];
+
+            pairs.forEach(([toolId, paramId, arrowId]) => {
+                const toolEl = document.getElementById(toolId);
+                const paramEl = document.getElementById(paramId);
+                const arrow = document.getElementById(arrowId);
+                if (!toolEl || !paramEl || !arrow) return;
+
+                const toolRect = toolEl.getBoundingClientRect();
+                const paramRect = paramEl.getBoundingClientRect();
+
+                if (toolRect.width === 0 || paramRect.width === 0) return;
+
+                const x = (toolRect.left + toolRect.right) / 2 - screenRect.left;
+                const y1 = toolRect.bottom - screenRect.top;
+                const y2 = paramRect.top - screenRect.top;
+
+                arrow.setAttribute('d', `M ${x} ${y1} L ${x} ${y2}`);
+            });
+        }
+
+        window.addEventListener('resize', () => {
+            if (document.getElementById('landingScreen')?.classList.contains('active')) {
+                positionLandingArrows();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => positionLandingArrows(), 100);
+        });
 
         function initMap() {
             if (map) return;
@@ -2077,8 +2167,10 @@
             // Add visual indicator
             ['recDrainage', 'recRainfall', 'recWind'].forEach(id => {
                 const el = document.getElementById(id);
-                el.style.backgroundColor = '#e8f4f8';
-                el.title = `Auto-filled from ${locName}`;
+                if (el) {
+                    el.style.backgroundColor = '#e8f4f8';
+                    el.title = `Auto-filled from ${locName}`;
+                }
             });
 
             alert(`Location "${locName}" selected!\n\nAuto-filled:\n• Soil Drainage: ${data.drainage}\n• Annual Rainfall: ${data.rainfall}\n• Wind Exposure: ${data.wind}`);
@@ -2423,26 +2515,261 @@
             }
         ];
 
+        // Recommend Species Flowchart Data
+        const FLOWCHART_DATA_RECOMMEND = [
+            {
+                tier: 'Site Inputs',
+                nodes: [
+                    { id: 'rec_location', label: 'Location Type', type: 'input', chain: 'Street/Park/Floodplain' },
+                    { id: 'rec_sun', label: 'Sun Exposure', type: 'input', chain: 'Full/Partial/Shade' },
+                    { id: 'rec_drainage', label: 'Soil Drainage', type: 'input', chain: 'Well/Moderate/Poor' },
+                    { id: 'rec_rainfall', label: 'Rainfall Tolerance', type: 'input', chain: 'Drought/Normal/Wet' },
+                    { id: 'rec_water', label: 'Water Availability', type: 'input', chain: 'Low/Moderate/High' }
+                ]
+            },
+            {
+                tier: 'Constraint Inputs',
+                nodes: [
+                    { id: 'rec_proximity', label: 'Proximity to Structures', type: 'input', chain: 'Distance to buildings' },
+                    { id: 'rec_utilities', label: 'Underground Utilities', type: 'input', chain: 'Yes/No' },
+                    { id: 'rec_powerlines', label: 'Overhead Power Lines', type: 'input', chain: 'Yes/No' },
+                    { id: 'rec_wind', label: 'Wind Exposure', type: 'input', chain: 'Sheltered/Exposed' },
+                    { id: 'rec_height', label: 'Height Preference', type: 'input', chain: 'Small/Medium/Large' }
+                ]
+            },
+            {
+                tier: 'Preference Inputs',
+                nodes: [
+                    { id: 'rec_maintenance', label: 'Maintenance Capacity', type: 'input', chain: 'Low/Moderate/High' },
+                    { id: 'rec_sentiment', label: 'Community Sentiment', type: 'input', chain: '1-10 scale' },
+                    { id: 'rec_access', label: 'Community Access Type', type: 'input', chain: 'Park/School/Senior/etc' },
+                    { id: 'rec_priority', label: 'Priority Outcome', type: 'input', chain: 'Carbon/Stormwater/etc' },
+                    { id: 'rec_aesthetic', label: 'Aesthetic Preference', type: 'input', chain: 'Flowering/Fall color/etc' },
+                    { id: 'rec_wildlife', label: 'Wildlife Priority', type: 'input', chain: 'High/Low' },
+                    { id: 'rec_native', label: 'Native Only', type: 'input', chain: 'Checkbox' }
+                ]
+            },
+            {
+                tier: 'Scoring',
+                nodes: [
+                    { id: 'rec_sitescore', label: 'Site Match Score', type: 'intermediate', chain: 'Sun + Drainage + Rainfall + Water' },
+                    { id: 'rec_infrascore', label: 'Infrastructure Score', type: 'intermediate', chain: 'Proximity + Utilities + Power + Wind + Height' },
+                    { id: 'rec_contextscore', label: 'Context Multiplier', type: 'intermediate', chain: 'Maintenance x Sentiment x Access' },
+                    { id: 'rec_prefscore', label: 'Preference Bonus', type: 'intermediate', chain: 'Priority + Aesthetic + Wildlife + Native' }
+                ]
+            },
+            {
+                tier: 'Ranking',
+                nodes: [
+                    { id: 'rec_score', label: 'Suitability Score', type: 'output', chain: 'Sum x Multiplier' },
+                    { id: 'rec_species', label: 'Top 10 Species', type: 'output', chain: 'Ranked list' }
+                ]
+            },
+            {
+                tier: 'Est. Benefits @ 30yr',
+                nodes: [
+                    { id: 'rec_carbon', label: 'Carbon Storage', type: 'output', chain: 'biomass x 0.5' },
+                    { id: 'rec_stormwater', label: 'Stormwater', type: 'output', chain: 'crown area x 1.067 x 0.18 x 264.172' },
+                    { id: 'rec_pollution', label: 'Pollution Filter', type: 'output', chain: 'leaf area x 0.5' },
+                    { id: 'rec_energy', label: 'Energy Savings', type: 'output', chain: 'crown area x 0.6 x 50 / 3' },
+                    { id: 'rec_growth', label: 'Growth Rate', type: 'output', chain: 'species.growth_rate x 100' },
+                    { id: 'rec_windresist', label: 'Wind Resist', type: 'output', chain: 'species.wind x 100' }
+                ]
+            }
+        ];
+
+        const FLOWCHART_CONNECTIONS_RECOMMEND = [
+            ['rec_location', 'rec_sitescore'], ['rec_sun', 'rec_sitescore'], ['rec_drainage', 'rec_sitescore'], ['rec_rainfall', 'rec_sitescore'], ['rec_water', 'rec_sitescore'],
+            ['rec_proximity', 'rec_infrascore'], ['rec_utilities', 'rec_infrascore'], ['rec_powerlines', 'rec_infrascore'], ['rec_wind', 'rec_infrascore'], ['rec_height', 'rec_infrascore'],
+            ['rec_maintenance', 'rec_contextscore'], ['rec_sentiment', 'rec_contextscore'], ['rec_access', 'rec_contextscore'],
+            ['rec_priority', 'rec_prefscore'], ['rec_aesthetic', 'rec_prefscore'], ['rec_wildlife', 'rec_prefscore'], ['rec_native', 'rec_prefscore'],
+            ['rec_species', 'rec_carbon'], ['rec_species', 'rec_stormwater'], ['rec_species', 'rec_pollution'], ['rec_species', 'rec_energy'], ['rec_species', 'rec_growth'], ['rec_species', 'rec_windresist'],
+            ['rec_sitescore', 'rec_score'], ['rec_infrascore', 'rec_score'], ['rec_contextscore', 'rec_score'], ['rec_prefscore', 'rec_score'],
+            ['rec_score', 'rec_species']
+        ];
+
+        const FORMULAS_RECOMMEND = {
+            rec_location: {
+                title: "Location Type",
+                formula: "Street: Hardy, low-maintenance species\nPark: Large shade providers\nFloodplain: Flood-tolerant species",
+                inputs: [], outputs: ["rec_sitescore"]
+            },
+            rec_sun: {
+                title: "Sun Exposure",
+                formula: "Full sun match: +25 pts\nPartial shade match: +20 pts\nShade match: +18 pts\nMismatch: +5 pts or penalty",
+                inputs: [], outputs: ["rec_sitescore"]
+            },
+            rec_drainage: {
+                title: "Soil Drainage",
+                formula: "Well-drained match: +20 pts\nModerate match: +20 pts\nPoor-drainage match: +20 pts\nMismatch = missed points",
+                inputs: [], outputs: ["rec_sitescore"]
+            },
+            rec_rainfall: {
+                title: "Rainfall Tolerance",
+                formula: "Species rainfall tolerance matched against the site's annual rainfall profile: up to +8 pts",
+                inputs: [], outputs: ["rec_sitescore"]
+            },
+            rec_water: {
+                title: "Water Availability",
+                formula: "Species water needs matched against site water table/irrigation access: up to +8 pts",
+                inputs: [], outputs: ["rec_sitescore"]
+            },
+            rec_proximity: {
+                title: "Proximity to Structures",
+                formula: "Small mature height near buildings: +15 pts\nAdequate setback: +12 pts\nToo close for large species: penalty",
+                inputs: [], outputs: ["rec_infrascore"]
+            },
+            rec_utilities: {
+                title: "Underground Utilities",
+                formula: "Shallow-root species score: species.utilities x 15 pts\nDeep-root near utilities: species.utilities x 12 pts penalty",
+                inputs: [], outputs: ["rec_infrascore"]
+            },
+            rec_powerlines: {
+                title: "Overhead Power Lines",
+                formula: "Low mature height near lines: species.power_lines x 8 pts\nTall species near lines: species.power_lines x 5 pts penalty",
+                inputs: [], outputs: ["rec_infrascore"]
+            },
+            rec_wind: {
+                title: "Wind Exposure",
+                formula: "Wind-hardy species (wind rating > 0.8) in exposed sites: +4 pts",
+                inputs: [], outputs: ["rec_infrascore"]
+            },
+            rec_height: {
+                title: "Height Preference",
+                formula: "Species mature height matched to preferred size class: +8 pts",
+                inputs: [], outputs: ["rec_infrascore"]
+            },
+            rec_maintenance: {
+                title: "Maintenance Capacity",
+                formula: "High capacity: bonus for higher-maintenance species (+10 pts)\nLow capacity: bonus for hardy, low-maintenance species (+8 pts)",
+                inputs: [], outputs: ["rec_contextscore"]
+            },
+            rec_sentiment: {
+                title: "Community Sentiment",
+                formula: "High (8-10): full score, no penalty\nModerate (5-7): minor hardiness bonus\nLow (1-4): favors extremely hardy species, risk warning shown",
+                inputs: [], outputs: ["rec_contextscore"]
+            },
+            rec_access: {
+                title: "Community Access Type",
+                formula: "Parks: +8 pts (large shade trees)\nSchools: +7 pts (safe, medium size)\nFood-insecure areas: +8 pts (fruit producers)\nSenior sites: +6 pts (low-maintenance)",
+                inputs: [], outputs: ["rec_contextscore"]
+            },
+            rec_priority: {
+                title: "Priority Outcome",
+                formula: "Carbon: fast-growing species +12 pts\nStormwater: large canopy +12 pts\nPollution: dense foliage +12 pts\nShade: tall mature height +12 pts",
+                inputs: [], outputs: ["rec_prefscore"]
+            },
+            rec_aesthetic: {
+                title: "Aesthetic Preference",
+                formula: "Flowering, fall color, or evergreen preference matched to species traits: up to +10 pts",
+                inputs: [], outputs: ["rec_prefscore"]
+            },
+            rec_wildlife: {
+                title: "Wildlife Priority",
+                formula: "High wildlife priority: bonus for species supporting pollinators/birds: +8 pts",
+                inputs: [], outputs: ["rec_prefscore"]
+            },
+            rec_native: {
+                title: "Native Only",
+                formula: "When checked, only Missouri-native species are scored/returned; non-native species excluded entirely",
+                inputs: [], outputs: ["rec_prefscore"]
+            },
+            rec_sitescore: {
+                title: "Site Match Score",
+                formula: "Sum of Location + Sun + Drainage + Rainfall + Water scores\nMeasures how well species fits the physical growing conditions",
+                inputs: ["rec_location", "rec_sun", "rec_drainage", "rec_rainfall", "rec_water"],
+                outputs: ["rec_score"]
+            },
+            rec_infrascore: {
+                title: "Infrastructure Score",
+                formula: "Sum of Proximity + Utilities + Power Lines + Wind + Height scores\nMeasures compatibility with built infrastructure",
+                inputs: ["rec_proximity", "rec_utilities", "rec_powerlines", "rec_wind", "rec_height"],
+                outputs: ["rec_score"]
+            },
+            rec_contextscore: {
+                title: "Context Multiplier",
+                formula: "Combines Maintenance Capacity + Community Sentiment + Access Type\nLow sentiment applies a 0.7-1.0x penalty to the final score",
+                inputs: ["rec_maintenance", "rec_sentiment", "rec_access"],
+                outputs: ["rec_score"]
+            },
+            rec_prefscore: {
+                title: "Preference Bonus",
+                formula: "Sum of Priority Outcome + Aesthetic + Wildlife + Native-only filtering\nRewards species matching stated goals and style",
+                inputs: ["rec_priority", "rec_aesthetic", "rec_wildlife", "rec_native"],
+                outputs: ["rec_score"]
+            },
+            rec_score: {
+                title: "Suitability Score",
+                formula: "Site Match + Infrastructure + Preference Bonus scores, x Context Multiplier (0.7-1.0)\n= Final Suitability (0-100%)",
+                inputs: ["rec_sitescore", "rec_infrascore", "rec_contextscore", "rec_prefscore"],
+                outputs: ["rec_species"]
+            },
+            rec_species: {
+                title: "Top 10 Species Recommendation",
+                formula: "Species ranked by final suitability score\nTies broken by species resilience and ecosystem value\nEach recommended species then gets a 30-year benefit projection using the same growth model as Evaluate Trees",
+                inputs: ["rec_score"],
+                outputs: ["rec_carbon", "rec_stormwater", "rec_pollution", "rec_energy", "rec_growth", "rec_windresist"]
+            },
+            rec_carbon: {
+                title: "Carbon Storage",
+                formula: "DBH @ 30yr = 15 + (growth_rate x 30 x 0.8)\nBiomass = biomass_a x DBH^biomass_b\nCarbon Storage (kg) = Biomass x 0.5",
+                inputs: ["rec_species"], outputs: []
+            },
+            rec_stormwater: {
+                title: "Stormwater Intercepted",
+                formula: "Crown Width = max_crown x (1 - e^(-k_c x DBH))\nCrown Area = pi x (Crown Width/2)^2\nStormwater (gal) = Crown Area x 1.067 x 0.18 x 264.172",
+                inputs: ["rec_species"], outputs: []
+            },
+            rec_pollution: {
+                title: "Pollution Removed",
+                formula: "Leaf Area = Crown Area x species LAI (leaf area index)\nPollution Removed (kg) = Leaf Area x 0.5",
+                inputs: ["rec_species"], outputs: []
+            },
+            rec_energy: {
+                title: "Energy Savings",
+                formula: "Energy Saved (kWh) = (Crown Area x 0.6 x 50) / 3\nBased on shade-driven cooling reduction",
+                inputs: ["rec_species"], outputs: []
+            },
+            rec_growth: {
+                title: "Growth Rate",
+                formula: "Displayed directly from species database: growth_rate x 100\nHigher = faster-growing species",
+                inputs: ["rec_species"], outputs: []
+            },
+            rec_windresist: {
+                title: "Wind Resistance",
+                formula: "Displayed directly from species database: wind rating x 100\nHigher = more resistant to wind damage/storm loss",
+                inputs: ["rec_species"], outputs: []
+            }
+        };
+
         function switchFrameworkTab(tab) {
             const evaluateFrame = document.getElementById('evaluateFramework');
             const recommendFrame = document.getElementById('recommendFramework');
             const tabEvaluate = document.getElementById('tabEvaluate');
             const tabRecommend = document.getElementById('tabRecommend');
+            const legendEvaluate = document.getElementById('legendEvaluate');
+            const legendRecommend = document.getElementById('legendRecommend');
+
+            if (!evaluateFrame || !recommendFrame) return;
 
             if (tab === 'evaluate') {
                 evaluateFrame.style.display = 'block';
                 recommendFrame.style.display = 'none';
-                tabEvaluate.style.borderBottomColor = 'var(--primary)';
-                tabEvaluate.style.color = 'var(--primary)';
-                tabRecommend.style.borderBottomColor = 'transparent';
-                tabRecommend.style.color = '#999';
+                if (legendEvaluate) legendEvaluate.style.display = 'block';
+                if (legendRecommend) legendRecommend.style.display = 'none';
+                if (tabEvaluate) tabEvaluate.style.borderBottomColor = 'var(--primary)';
+                if (tabEvaluate) tabEvaluate.style.color = 'var(--primary)';
+                if (tabRecommend) tabRecommend.style.borderBottomColor = 'transparent';
+                if (tabRecommend) tabRecommend.style.color = '#999';
             } else {
                 evaluateFrame.style.display = 'none';
                 recommendFrame.style.display = 'block';
-                tabEvaluate.style.borderBottomColor = 'transparent';
-                tabEvaluate.style.color = '#999';
-                tabRecommend.style.borderBottomColor = 'var(--primary)';
-                tabRecommend.style.color = 'var(--primary)';
+                if (legendEvaluate) legendEvaluate.style.display = 'none';
+                if (legendRecommend) legendRecommend.style.display = 'block';
+                if (tabEvaluate) tabEvaluate.style.borderBottomColor = 'transparent';
+                if (tabEvaluate) tabEvaluate.style.color = '#999';
+                if (tabRecommend) tabRecommend.style.borderBottomColor = 'var(--primary)';
+                if (tabRecommend) tabRecommend.style.color = 'var(--primary)';
                 renderRecommendationFramework();
             }
         }
@@ -2451,82 +2778,142 @@
             const display = document.getElementById('recommendationFlowchart');
             display.innerHTML = '';
 
-            const html = `
-                <div style="max-width: 1000px;">
-                    <h2 style="color: var(--primary); margin-top: 0;">Recommend Species Scoring Parameters</h2>
-                    <p style="color: #666; font-size: 14px; margin-bottom: 32px;">How each input parameter influences species recommendations. Higher scores = better fit for the site.</p>
+            // Wrapper div for horizontal container
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.width = '100%';
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px;">
-                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
-                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Site Location (5-15 pts)</h3>
-                            <p style="font-size: 12px; color: #666; margin: 0;">Street trees prioritize hardy, low-maintenance. Park trees favor large shade providers. Floodplain trees must be flood-tolerant.</p>
-                        </div>
-                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
-                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Sun Exposure (10-20 pts)</h3>
-                            <p style="font-size: 12px; color: #666; margin: 0;">Full sun species need 6+ hrs. Partial shade species 3-6 hrs. Shade species <3 hrs. Major mismatch = negative points.</p>
-                        </div>
-                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
-                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Soil Drainage (10-20 pts)</h3>
-                            <p style="font-size: 12px; color: #666; margin: 0;">Well-drained species in poor drainage = penalty. Poor-drainage species in well-drained = missed benefit.</p>
-                        </div>
-                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
-                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Infrastructure Constraints (10-20 pts)</h3>
-                            <p style="font-size: 12px; color: #666; margin: 0;">Shallow-rooted trees near utilities. Small mature height near buildings. Wind-hardy species in exposed areas.</p>
-                        </div>
-                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
-                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Maintenance Capacity (5-10 pts)</h3>
-                            <p style="font-size: 12px; color: #666; margin: 0;">High capacity selected → bonus for low-maintenance species. Low capacity → need very hardy, pest-resistant trees.</p>
-                        </div>
-                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
-                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Priority Outcome (12 pts max)</h3>
-                            <p style="font-size: 12px; color: #666; margin: 0;">Carbon: Fast-growing species. Stormwater: Large canopy. Pollution: Dense foliage. Shade: Tall mature height.</p>
-                        </div>
-                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
-                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Site Sentiment/Risk (0.7-1.0×)</h3>
-                            <p style="font-size: 12px; color: #666; margin: 0;">High-risk sites (1-5): Multiplies final score by 0.7-1.0. Favors extremely hardy species.</p>
-                        </div>
-                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
-                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Community Access Type (6-8 pts)</h3>
-                            <p style="font-size: 12px; color: #666; margin: 0;">Parks: Large shade trees. Schools: Medium, safe. Food-insecure: Fruit producers. Senior: Low-maintenance.</p>
-                        </div>
-                    </div>
+            // Create SVG overlay
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.classList.add('flowchart-svg');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.width = '100%';
+            svg.style.pointerEvents = 'none';
+            svg.innerHTML = '<defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><polygon points="0 0, 10 3, 0 6" fill="#0F8BCD"/></marker></defs>';
+            wrapper.appendChild(svg);
 
-                    <div style="background: #f9f9f9; padding: 16px; border-radius: 4px; border-left: 4px solid var(--secondary);">
-                        <h3 style="color: var(--primary); margin-top: 0;">Final Score Calculation</h3>
-                        <p style="font-size: 12px; color: #666; margin: 0;">
-                            <strong>Suitability (0-100%) = Sum of all parameter scores × Site sentiment multiplier</strong><br/>
-                            Top 10 species ranked by final score. Ties broken by species resilience and ecosystem value.
-                        </p>
-                    </div>
-                </div>
-            `;
+            // Horizontal container for columns
+            const containerDiv = document.createElement('div');
+            containerDiv.className = 'flowchart-container';
+            containerDiv.style.position = 'relative';
+            containerDiv.style.zIndex = '1';
 
-            display.innerHTML = html;
+            const nodeBoxes = {};
+
+            FLOWCHART_DATA_RECOMMEND.forEach(tier => {
+                const tierDiv = document.createElement('div');
+                tierDiv.className = 'flowchart-tier';
+
+                const title = document.createElement('div');
+                title.className = 'tier-title';
+                title.textContent = tier.tier;
+                tierDiv.appendChild(title);
+
+                tier.nodes.forEach(nodeData => {
+                    const box = document.createElement('div');
+                    box.className = `calc-box ${nodeData.type}`;
+                    box.id = `node_${nodeData.id}`;
+                    box.textContent = nodeData.label;
+
+                    box.addEventListener('mouseenter', () => {
+                        showFormulaRecommend(nodeData.id, nodeData.chain);
+                        highlightFlowRecommend(nodeData.id);
+                    });
+
+                    box.addEventListener('mouseleave', () => {
+                        clearHighlightFlowRecommend();
+                    });
+
+                    tierDiv.appendChild(box);
+                    nodeBoxes[nodeData.id] = box;
+                });
+
+                containerDiv.appendChild(tierDiv);
+            });
+
+            wrapper.appendChild(containerDiv);
+            display.appendChild(wrapper);
+
+            // Add formula display
+            const formulaDiv = document.createElement('div');
+            formulaDiv.id = 'formulaAreaRecommend';
+            formulaDiv.className = 'formula-display';
+            display.appendChild(formulaDiv);
+
+            // Draw arrows after rendering
+            const tryRenderFlowchart = (attemptCount = 0) => {
+                try {
+                    const displayRect = display.getBoundingClientRect();
+                    const wrapperRect = wrapper.getBoundingClientRect();
+
+                    if (!displayRect || !wrapperRect) {
+                        if (attemptCount < 5) {
+                            setTimeout(() => tryRenderFlowchart(attemptCount + 1), 100);
+                        }
+                        return;
+                    }
+
+                    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+
+                    Object.values(nodeBoxes).forEach(box => {
+                        const rect = box.getBoundingClientRect();
+                        minX = Math.min(minX, rect.left-wrapperRect.left);
+                        maxX = Math.max(maxX, rect.right-wrapperRect.left);
+                        minY = Math.min(minY, rect.top-wrapperRect.top);
+                        maxY = Math.max(maxY, rect.bottom-wrapperRect.top);
+                    });
+
+                if ((!isFinite(maxX) || !isFinite(maxY) || maxX - minX < 100) && attemptCount < 5) {
+                    setTimeout(() => tryRenderFlowchart(attemptCount + 1), 100);
+                    return;
+                }
+
+                if (!isFinite(maxX) || !isFinite(maxY) || maxX - minX < 100) {
+                    minX = 0; maxX = 1000; minY = 0; maxY = 280;
+                }
+
+                const svgWidth = maxX-minX + 40;
+                const svgHeight = maxY-minY + 40;
+
+                svg.setAttribute('width', svgWidth);
+                svg.setAttribute('height', svgHeight);
+                svg.setAttribute('viewBox', `${minX-20} ${minY-20} ${svgWidth} ${svgHeight}`);
+
+                FLOWCHART_CONNECTIONS_RECOMMEND.forEach(([fromId, toId]) => {
+                    const fromBox = nodeBoxes[fromId];
+                    const toBox = nodeBoxes[toId];
+
+                    if (!fromBox || !toBox) return;
+
+                    const fromRect = fromBox.getBoundingClientRect();
+                    const toRect = toBox.getBoundingClientRect();
+
+                    const x1 = fromRect.right-wrapperRect.left;
+                    const y1 = fromRect.top-wrapperRect.top + fromRect.height / 2;
+                    const x2 = toRect.left-wrapperRect.left;
+                    const y2 = toRect.top-wrapperRect.top + toRect.height / 2;
+
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.classList.add('arrow');
+                    path.setAttribute('id', `arrow_${fromId}_${toId}`);
+                    const ctrlX = (x1 + x2) / 2;
+                    const ctrlY = (y1 + y2) / 2;
+                    path.setAttribute('d', `M ${x1} ${y1} Q ${ctrlX} ${ctrlY} ${x2} ${y2}`);
+                    svg.appendChild(path);
+                });
+                } catch (e) {
+                    console.error('Error rendering recommendation flowchart:', e);
+                }
+            };
+
+            tryRenderFlowchart();
         }
 
         function renderFlowchart() {
             const display = document.getElementById('flowchartDisplay');
             display.innerHTML = '';
-
-            // Add legend (floating in bottom right via CSS)
-            const legendBox = document.createElement('div');
-            legendBox.className = 'legend-box';
-            legendBox.innerHTML = `
-                <div style="font-weight: 600; margin-bottom: 12px; color: var(--primary);">Color Key</div>
-                <div class="legend-item">
-                    <div class="legend-color input"></div>
-                    <div class="legend-label">Input: You provide</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color intermediate"></div>
-                    <div class="legend-label">Calculate: Internal step</div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color output"></div>
-                    <div class="legend-label">Output: Final result</div>
-                </div>
-            `;
-            display.appendChild(legendBox);
 
             // Wrapper div for horizontal container
             const wrapper = document.createElement('div');
@@ -2691,11 +3078,45 @@
             }
         }
 
+        function highlightFlowRecommend(nodeId) {
+            const allArrows = document.querySelectorAll('.arrow');
+            allArrows.forEach(arrow => arrow.classList.remove('active'));
+
+            FLOWCHART_CONNECTIONS_RECOMMEND.forEach(([fromId, toId]) => {
+                if (toId === nodeId || fromId === nodeId) {
+                    const arrow = document.getElementById(`arrow_${fromId}_${toId}`);
+                    if (arrow) arrow.classList.add('active');
+                }
+            });
+        }
+
+        function clearHighlightFlowRecommend() {
+            const allArrows = document.querySelectorAll('.arrow');
+            allArrows.forEach(arrow => arrow.classList.remove('active'));
+        }
+
+        function showFormulaRecommend(nodeId, chain) {
+            const formula = FORMULAS_RECOMMEND[nodeId];
+            const area = document.getElementById('formulaAreaRecommend');
+            if (!area) return;
+
+            if (formula) {
+                area.innerHTML = `
+                    <div class="formula-title">${formula.title}</div>
+                    <div class="formula-chain">${chain}</div>
+                    <div class="formula-text">${formula.formula}</div>
+                `;
+                area.classList.add('active');
+            }
+        }
+
         function showTooltip(e, formulaId) {
             const f = FORMULAS[formulaId];
             if (!f) return;
 
             const tooltip = document.getElementById('tooltip');
+            if (!tooltip) return;
+
             tooltip.innerHTML = `<div class="tooltip-title">${f.title}</div><div>${f.formula}</div>`;
             tooltip.classList.add('active');
 
@@ -2705,7 +3126,8 @@
         }
 
         function hideTooltip() {
-            document.getElementById('tooltip').classList.remove('active');
+            const tooltip = document.getElementById('tooltip');
+            if (tooltip) tooltip.classList.remove('active');
         }
 
         function estimateSpeciesBenefits(species) {
