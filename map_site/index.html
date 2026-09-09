@@ -1167,7 +1167,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Health (0.3â€“1.0)</label>
+                        <label>Health (0.3–1.0)</label>
                         <input type="number" id="condition" min="0.3" max="1.0" value="0.8" step="0.1">
                     </div>
 
@@ -1224,7 +1224,7 @@
                         <select id="recProximity" required>
                             <option value="">Select</option>
                             <option value="0">Within 20 feet</option>
-                            <option value="1">20â€“40 feet</option>
+                            <option value="1">20–40 feet</option>
                             <option value="2">Over 40 feet</option>
                         </select>
                     </div>
@@ -1266,13 +1266,13 @@
                         <select id="recSun" required>
                             <option value="">Select</option>
                             <option value="full">Full Sun (6+ hrs)</option>
-                            <option value="partial">Partial (3â€“6 hrs)</option>
+                            <option value="partial">Partial (3–6 hrs)</option>
                             <option value="shade">Shade (&lt;3 hrs)</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label>Soil Drainage<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">How quickly water moves through the soil. Test it yourself: dig a 12"-deep hole, fill with water, let it drain, refill, and time the second drain-under 4 hrs is well-drained, 4â€“8 hrs is moderate, over 8 hrs is poor/wet. See MU Extension's guide at <a href="https://extension.missouri.edu" target="_blank" rel="noopener">extension.missouri.edu</a>.</span></span></label>
+                        <label>Soil Drainage<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">How quickly water moves through the soil. Test it yourself: dig a 12"-deep hole, fill with water, let it drain, refill, and time the second drain-under 4 hrs is well-drained, 4–8 hrs is moderate, over 8 hrs is poor/wet. See MU Extension's guide at <a href="https://extension.missouri.edu" target="_blank" rel="noopener">extension.missouri.edu</a>.</span></span></label>
                         <select id="recDrainage" required>
                             <option value="">Select</option>
                             <option value="poor">Poor (wet/clay)</option>
@@ -1292,7 +1292,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Water Budget (irrigation access) <span class="info-icon">i<span class="info-tooltip">How much supplemental watering you can realistically provide during establishment (the first 2â€“3 years)-hose access, irrigation systems, or volunteer watering crews. Distinct from Annual Rainfall, which is what the site gets naturally.</span></span></label>
+                        <label>Water Budget (irrigation access) <span class="info-icon">i<span class="info-tooltip">How much supplemental watering you can realistically provide during establishment (the first 2–3 years)-hose access, irrigation systems, or volunteer watering crews. Distinct from Annual Rainfall, which is what the site gets naturally.</span></span></label>
                         <select id="recWater">
                             <option value="">Optional</option>
                             <option value="high">Regular irrigation available</option>
@@ -1375,7 +1375,7 @@
                         <select id="recHeight">
                             <option value="">Any</option>
                             <option value="small">Small (&lt;30 ft)</option>
-                            <option value="medium">Medium (30â€“50 ft)</option>
+                            <option value="medium">Medium (30–50 ft)</option>
                             <option value="large">Large (&gt;50 ft)</option>
                         </select>
                     </div>
@@ -2052,7 +2052,7 @@
                 el.title = `Auto-filled from ${locName}`;
             });
 
-            alert(`Location "${locName}" selected!\n\nAuto-filled:\nâ€¢ Soil Drainage: ${data.drainage}\nâ€¢ Annual Rainfall: ${data.rainfall}\nâ€¢ Wind Exposure: ${data.wind}`);
+            alert(`Location "${locName}" selected!\n\nAuto-filled:\n• Soil Drainage: ${data.drainage}\n• Annual Rainfall: ${data.rainfall}\n• Wind Exposure: ${data.wind}`);
         }
 
         function onMapClick(e) {
@@ -2093,7 +2093,7 @@
             const popupHtml = `
                 <div style="font-family: 'Times New Roman', serif; font-size: 12px;">
                     <strong>${species}</strong><br/>
-                    Diameter: ${dbh}â€³<br/>
+                    Diameter: ${dbh}"<br/>
                     Age: ${age} years<br/>
                     Sun: ${sun === '1.0' ? 'Full' : sun === '0.8' ? 'Partial' : 'Shade'}<br/>
                     Health: ${(condition * 100).toFixed(0)}%
@@ -2145,7 +2145,7 @@
                     <div class="tree-stats">
                         <div class="tree-stat">
                             <span class="tree-stat-label">Diameter:</span>
-                            <span>${t.dbh}â€³</span>
+                            <span>${t.dbh}"</span>
                         </div>
                         <div class="tree-stat">
                             <span class="tree-stat-label">Age:</span>
@@ -2184,7 +2184,7 @@
         }
 
         function removeTree(idx) {
-            if (confirm(`Remove ${placedTrees[idx].species} (${placedTrees[idx].dbh}â€³)?`)) {
+            if (confirm(`Remove ${placedTrees[idx].species} (${placedTrees[idx].dbh}")?`)) {
                 placedTrees.splice(idx, 1);
                 if (selectedTreeIdx === idx) selectedTreeIdx = null;
                 updateTreesList();
@@ -2630,8 +2630,8 @@
                                 This site has low community support for tree planting. Success will require careful species selection and engagement strategies.
                             </div>
                             <div style="font-size: 11px; color: #ccc;">
-                                <strong>Risks:</strong> Vandalism â€¢ Reduced maintenance â€¢ Community objections â€¢ Lower survival rates<br/>
-                                <strong>Mitigation:</strong> Select hardy, low-maintenance species â€¢ Community engagement â€¢ Tree protection â€¢ Smaller trees
+                                <strong>Risks:</strong> Vandalism • Reduced maintenance • Community objections • Lower survival rates<br/>
+                                <strong>Mitigation:</strong> Select hardy, low-maintenance species • Community engagement • Tree protection • Smaller trees
                             </div>
                         </div>
                     </div>
@@ -2866,7 +2866,7 @@
                     <div class="species-card">
                         <div class="species-name">${sp}</div>
                         <div class="species-reason" style="font-size: 11px; color: #777; margin-bottom: 12px; line-height: 1.3;">
-                            ${reasoning[sp].join(' â€¢ ')}
+                            ${reasoning[sp].join(' • ')}
                         </div>
                         <div class="score-bar">
                             <div class="score-fill" style="width: ${score}%"></div>
@@ -2939,4 +2939,5 @@
     </script>
 </body>
 </html>
+
 
