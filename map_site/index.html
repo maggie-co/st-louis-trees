@@ -1091,12 +1091,14 @@
 
         <div style="margin-bottom: 16px; font-size: 11px; color: var(--text);">TOOLS</div>
         <div class="cards-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 40px;">
-            <div class="card" onclick="goToScreen('recommenderScreen')" style="border-left: 4px solid var(--accent);">
+            <div class="card" onclick="goToScreen('recommenderScreen')" style="border-left: 4px solid var(--accent); position: relative;">
+                <div style="position: absolute; top: 12px; right: 12px; font-size: 20px; opacity: 0.3; cursor: pointer;" title="View Recommendation Parameters" onclick="event.stopPropagation(); goToScreen('methodologyScreen'); setTimeout(() => switchFrameworkTab('recommend'), 100);">→</div>
                 <h2>Recommend Species</h2>
                 <p>Find the best species for your site based on constraints and environmental goals.</p>
             </div>
 
-            <div class="card" onclick="goToScreen('evaluateScreen')" style="border-left: 4px solid var(--accent);">
+            <div class="card" onclick="goToScreen('evaluateScreen')" style="border-left: 4px solid var(--accent); position: relative;">
+                <div style="position: absolute; top: 12px; right: 12px; font-size: 20px; opacity: 0.3; cursor: pointer;" title="View Evaluation Parameters" onclick="event.stopPropagation(); goToScreen('methodologyScreen'); setTimeout(() => switchFrameworkTab('evaluate'), 100);">→</div>
                 <h2>Evaluate Trees</h2>
                 <p>Model multiple trees placed on your map. See total ecosystem benefits over time.</p>
             </div>
@@ -1409,14 +1411,23 @@
 
     <!-- Methodology Screen -->
     <div class="screen" id="methodologyScreen" style="display: flex; flex-direction: column; height: 100vh; width: 100%; overflow: hidden;">
-        <div style="background: white; padding: 24px 40px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
-            <h1 style="font-size: 20px; font-weight: 400; letter-spacing: 1px; color: var(--primary); margin: 0;">Calculation Framework</h1>
-            <button class="back-btn" onclick="goToScreen('landingScreen')">Back</button>
+        <div style="background: white; padding: 0; border-bottom: 1px solid var(--border); flex-shrink: 0;">
+            <div style="padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+                <h1 style="font-size: 20px; font-weight: 400; letter-spacing: 1px; color: var(--primary); margin: 0;">Framework</h1>
+                <button class="back-btn" onclick="goToScreen('landingScreen')">Back</button>
+            </div>
+            <div style="display: flex; padding: 0 40px;">
+                <button onclick="switchFrameworkTab('evaluate')" id="tabEvaluate" style="flex: 1; padding: 16px 20px; background: none; border: none; border-bottom: 3px solid var(--primary); color: var(--primary); font-weight: 500; cursor: pointer; font-size: 14px;">Evaluate Trees Parameters</button>
+                <button onclick="switchFrameworkTab('recommend')" id="tabRecommend" style="flex: 1; padding: 16px 20px; background: none; border: none; border-bottom: 3px solid transparent; color: #999; font-weight: 500; cursor: pointer; font-size: 14px;">Recommend Species Parameters</button>
+            </div>
         </div>
 
         <div style="flex: 1; overflow: hidden; position: relative; width: 100%;">
-            <div style="overflow-y: auto; overflow-x: hidden; height: 100%; padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%;">
+            <div id="evaluateFramework" style="overflow-y: auto; overflow-x: hidden; height: 100%; padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%;">
                 <div id="flowchartDisplay" style="overflow: hidden;"></div>
+            </div>
+            <div id="recommendFramework" style="display: none; overflow-y: auto; overflow-x: hidden; height: 100%; padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%;">
+                <div id="recommendationFlowchart" style="overflow: hidden;"></div>
             </div>
         </div>
     </div>
@@ -2411,6 +2422,87 @@
                 ]
             }
         ];
+
+        function switchFrameworkTab(tab) {
+            const evaluateFrame = document.getElementById('evaluateFramework');
+            const recommendFrame = document.getElementById('recommendFramework');
+            const tabEvaluate = document.getElementById('tabEvaluate');
+            const tabRecommend = document.getElementById('tabRecommend');
+
+            if (tab === 'evaluate') {
+                evaluateFrame.style.display = 'block';
+                recommendFrame.style.display = 'none';
+                tabEvaluate.style.borderBottomColor = 'var(--primary)';
+                tabEvaluate.style.color = 'var(--primary)';
+                tabRecommend.style.borderBottomColor = 'transparent';
+                tabRecommend.style.color = '#999';
+            } else {
+                evaluateFrame.style.display = 'none';
+                recommendFrame.style.display = 'block';
+                tabEvaluate.style.borderBottomColor = 'transparent';
+                tabEvaluate.style.color = '#999';
+                tabRecommend.style.borderBottomColor = 'var(--primary)';
+                tabRecommend.style.color = 'var(--primary)';
+                renderRecommendationFramework();
+            }
+        }
+
+        function renderRecommendationFramework() {
+            const display = document.getElementById('recommendationFlowchart');
+            display.innerHTML = '';
+
+            const html = `
+                <div style="max-width: 1000px;">
+                    <h2 style="color: var(--primary); margin-top: 0;">Recommend Species Scoring Parameters</h2>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 32px;">How each input parameter influences species recommendations. Higher scores = better fit for the site.</p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px;">
+                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
+                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Site Location (5-15 pts)</h3>
+                            <p style="font-size: 12px; color: #666; margin: 0;">Street trees prioritize hardy, low-maintenance. Park trees favor large shade providers. Floodplain trees must be flood-tolerant.</p>
+                        </div>
+                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
+                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Sun Exposure (10-20 pts)</h3>
+                            <p style="font-size: 12px; color: #666; margin: 0;">Full sun species need 6+ hrs. Partial shade species 3-6 hrs. Shade species <3 hrs. Major mismatch = negative points.</p>
+                        </div>
+                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
+                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Soil Drainage (10-20 pts)</h3>
+                            <p style="font-size: 12px; color: #666; margin: 0;">Well-drained species in poor drainage = penalty. Poor-drainage species in well-drained = missed benefit.</p>
+                        </div>
+                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
+                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Infrastructure Constraints (10-20 pts)</h3>
+                            <p style="font-size: 12px; color: #666; margin: 0;">Shallow-rooted trees near utilities. Small mature height near buildings. Wind-hardy species in exposed areas.</p>
+                        </div>
+                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
+                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Maintenance Capacity (5-10 pts)</h3>
+                            <p style="font-size: 12px; color: #666; margin: 0;">High capacity selected → bonus for low-maintenance species. Low capacity → need very hardy, pest-resistant trees.</p>
+                        </div>
+                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
+                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Priority Outcome (12 pts max)</h3>
+                            <p style="font-size: 12px; color: #666; margin: 0;">Carbon: Fast-growing species. Stormwater: Large canopy. Pollution: Dense foliage. Shade: Tall mature height.</p>
+                        </div>
+                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
+                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Site Sentiment/Risk (0.7-1.0×)</h3>
+                            <p style="font-size: 12px; color: #666; margin: 0;">High-risk sites (1-5): Multiplies final score by 0.7-1.0. Favors extremely hardy species.</p>
+                        </div>
+                        <div style="border: 1px solid var(--border); padding: 16px; border-radius: 4px;">
+                            <h3 style="color: var(--primary); font-size: 14px; margin-top: 0;">Community Access Type (6-8 pts)</h3>
+                            <p style="font-size: 12px; color: #666; margin: 0;">Parks: Large shade trees. Schools: Medium, safe. Food-insecure: Fruit producers. Senior: Low-maintenance.</p>
+                        </div>
+                    </div>
+
+                    <div style="background: #f9f9f9; padding: 16px; border-radius: 4px; border-left: 4px solid var(--secondary);">
+                        <h3 style="color: var(--primary); margin-top: 0;">Final Score Calculation</h3>
+                        <p style="font-size: 12px; color: #666; margin: 0;">
+                            <strong>Suitability (0-100%) = Sum of all parameter scores × Site sentiment multiplier</strong><br/>
+                            Top 10 species ranked by final score. Ties broken by species resilience and ecosystem value.
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            display.innerHTML = html;
+        }
 
         function renderFlowchart() {
             const display = document.getElementById('flowchartDisplay');
