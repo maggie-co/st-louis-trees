@@ -1760,8 +1760,8 @@
                 outputs: ["co2_eq"]
             },
             co2_eq: {
-                title: "COâ‚‚ Equivalent",
-                formula: "COâ‚‚ = C × 3.667\n\nMolecular weight: 44/12 = 3.667\nTotal stored carbon as COâ‚‚",
+                title: "CO₂ Equivalent",
+                formula: "CO₂ = C × 3.667\n\nMolecular weight: 44/12 = 3.667\nTotal stored carbon as CO₂",
                 inputs: ["carbon_stored"],
                 outputs: ["annual_seq"]
             },
@@ -1796,8 +1796,8 @@
                 outputs: ["avoided_co2"]
             },
             avoided_co2: {
-                title: "Avoided COâ‚‚ from Energy",
-                formula: "COâ‚‚avoided = E × EFgrid\n\nE = energy savings (kWh)\nEFgrid = 0.35 kg COâ‚‚/kWh (St. Louis grid)",
+                title: "Avoided CO₂ from Energy",
+                formula: "CO₂avoided = E × EFgrid\n\nE = energy savings (kWh)\nEFgrid = 0.35 kg CO₂/kWh (St. Louis grid)",
                 inputs: ["energy"],
                 outputs: ["expected"]
             },
@@ -2383,7 +2383,7 @@
                 tier: 'Carbon',
                 nodes: [
                     { id: 'carbon_stored', label: 'Stored C', type: 'intermediate', chain: 'B × 0.5' },
-                    { id: 'co2_eq', label: 'COâ‚‚ Total', type: 'intermediate', chain: 'C × 3.667' },
+                    { id: 'co2_eq', label: 'CO₂ Total', type: 'intermediate', chain: 'C × 3.667' },
                     { id: 'annual_seq', label: 'C Seq/Yr', type: 'output', chain: 'Annual gain' }
                 ]
             },
@@ -2399,7 +2399,7 @@
                 tier: 'Energy',
                 nodes: [
                     { id: 'energy', label: 'Energy Saved', type: 'intermediate', chain: 'kWh/year' },
-                    { id: 'avoided_co2', label: 'Avoided COâ‚‚', type: 'output', chain: 'Grid factor' }
+                    { id: 'avoided_co2', label: 'Avoided CO₂', type: 'output', chain: 'Grid factor' }
                 ]
             },
             {
