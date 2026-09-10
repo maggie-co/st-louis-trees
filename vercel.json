@@ -1,5 +1,4 @@
 {
   "buildCommand": "echo 'Static site'",
-  "outputDirectory": "portfolio-september-2026",
-  "framework": null
+  "outputDirectory": "portfolio-september-2026"
 }
