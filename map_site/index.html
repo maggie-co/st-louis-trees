@@ -197,7 +197,7 @@
         }
 
         .panel h3 {
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -223,6 +223,21 @@
             color: var(--text);
             margin-bottom: 8px;
             font-weight: 600;
+        }
+
+        .form-group label.required-label {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .required-note {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 24px;
+            padding: 10px 14px;
+            background: #f4f1ea;
+            border-left: 3px solid var(--secondary);
+            border-radius: 2px;
         }
 
         .form-group input,
@@ -1252,13 +1267,36 @@
             </div>
         </div>
 
-        <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 11px; color: #999; text-align: center; line-height: 1.6;">
-            <div style="margin-bottom: 12px;">
+        <div style="margin-top: 60px; padding-top: 24px; border-top: 1px solid #e0e0e0; font-size: 11px; color: #999; text-align: center; line-height: 1.6;">
+            <div style="margin-bottom: 20px;">
                 A project by <strong>Living Earth Design Collective</strong><br/>
-                Built on the framework of the <a href="https://www.fs.usda.gov/managing-land/urban-forests/itree" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">iTree Design tool</a>
-            </div>
-            <div>
                 Project team: Andrés Fernández-Aguilar, Maggie Coleman, Gail Bray
+            </div>
+
+            <div style="max-width: 700px; margin: 0 auto; text-align: left;">
+                <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; text-align: center; margin-bottom: 12px;">Sources & Inspiration</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 11px;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); margin-bottom: 4px;">Methodology</div>
+                        <div><a href="https://www.itreetools.org/tools" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">i-Tree Design</a> - benefit calculation framework</div>
+                        <div><a href="https://research.fs.usda.gov/products/dataandtools/i-tree" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">USDA Forest Service: i-Tree</a> - underlying research</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); margin-bottom: 4px;">Local Resources</div>
+                        <div><a href="https://www.stlouis-mo.gov/government/departments/parks/forestry/documents/street-tree-information.cfm" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">St. Louis Forestry Division</a> - approved street tree list</div>
+                        <div><a href="https://extension.missouri.edu/programs/soil-testing" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">MU Extension</a> - soil testing & drainage guidance</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); margin-bottom: 4px;">Community Engagement</div>
+                        <div><a href="https://www.arborday.org/tree-resources/community-engagement" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">Arbor Day Foundation</a> - resident outreach guidance</div>
+                        <div><a href="https://www.fs.usda.gov/managing-land/urban-forests" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">USDA Forest Service</a> - urban forestry programs</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); margin-bottom: 4px;">Non-Tree Alternatives</div>
+                        <div><a href="https://www.epa.gov/green-infrastructure/types-green-infrastructure" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">EPA Green Infrastructure</a> - rain gardens, permeable pavement</div>
+                        <div><a href="https://websoilsurvey.nrcs.usda.gov/" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none;">USDA Web Soil Survey</a> - free soil pH & type lookup</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1345,13 +1383,15 @@
                 <div class="panel">
                     <h2>Find Recommended Species</h2>
 
+                    <div class="required-note"><strong>Bolded</strong> fields marked with <span class="required-marker">*</span> are required. Everything else is optional and refines your results.</div>
+
                     <!-- Site & Physical -->
                     <h3>Site Location</h3>
                     <div class="form-group">
-                        <label>Where is this tree going?<span class="required-marker">*</span></label>
+                        <label class="required-label">Where is this tree going?<span class="required-marker">*</span></label>
                         <select id="recLocation" required>
                             <option value="">Select</option>
-                            <option value="street">Street/public ROW</option>
+                            <option value="street">Street/Public Row</option>
                             <option value="residential">Residential Yard</option>
                             <option value="park">Park/Greenspace</option>
                             <option value="commercial">Commercial Property</option>
@@ -1359,28 +1399,10 @@
                         </select>
                     </div>
 
-                    <!-- Community & Social -->
-                    <h3>Community & Social</h3>
-                    <div class="form-group">
-                        <label>Community Access Type <span class="info-icon">i<span class="info-tooltip">What type of public or community space will the tree serve? This helps recommend species with high community engagement and accessibility value.</span></span></label>
-                        <select id="recAccessType">
-                            <option value="">Select (optional)</option>
-                            <option value="park">Park/Greenspace</option>
-                            <option value="school">School/Youth Center</option>
-                            <option value="transit">Transit Stop/Bus Stop</option>
-                            <option value="senior">Senior Center/Healthcare</option>
-                            <option value="library">Public Library</option>
-                            <option value="community-garden">Community Garden</option>
-                            <option value="food-desert">Food-Insecure Area</option>
-                            <option value="gathering">Public Gathering Space</option>
-                            <option value="other">Other Public Space</option>
-                        </select>
-                    </div>
-
                     <!-- Infrastructure -->
                     <h3>Infrastructure & Constraints</h3>
                     <div class="form-group">
-                        <label>Proximity to Nearest Building<span class="required-marker">*</span></label>
+                        <label class="required-label">Proximity to Nearest Building<span class="required-marker">*</span></label>
                         <select id="recProximity" required>
                             <option value="">Select</option>
                             <option value="0">Within 20 feet</option>
@@ -1422,7 +1444,7 @@
                     <!-- Environmental -->
                     <h3>Environmental Conditions</h3>
                     <div class="form-group">
-                        <label>Sun Exposure<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">Average hours of direct sunlight the site receives daily during the growing season. Observe the site at different times of day, or estimate from nearby building/tree shadows and orientation (south-facing = more sun).</span></span></label>
+                        <label class="required-label">Sun Exposure<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">Average hours of direct sunlight the site receives daily during the growing season. Observe the site at different times of day, or estimate from nearby building/tree shadows and orientation (south-facing = more sun).</span></span></label>
                         <select id="recSun" required>
                             <option value="">Select</option>
                             <option value="full">Full Sun (6+ hrs)</option>
@@ -1432,12 +1454,22 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Soil Drainage<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">How quickly water moves through the soil. Test it yourself: dig a 12"-deep hole, fill with water, let it drain, refill, and time the second drain-under 4 hrs is well-drained, 4–8 hrs is moderate, over 8 hrs is poor/wet. See MU Extension's guide at <a href="https://extension.missouri.edu" target="_blank" rel="noopener">extension.missouri.edu</a>.</span></span></label>
+                        <label class="required-label">Soil Drainage<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">How quickly water moves through the soil. Test it yourself: dig a 12"-deep hole, fill with water, let it drain, refill, and time the second drain-under 4 hrs is well-drained, 4–8 hrs is moderate, over 8 hrs is poor/wet. See MU Extension's guide at <a href="https://extension.missouri.edu" target="_blank" rel="noopener">extension.missouri.edu</a>.</span></span></label>
                         <select id="recDrainage" required>
                             <option value="">Select</option>
                             <option value="poor">Poor (wet/clay)</option>
                             <option value="moderate">Moderate (mixed)</option>
                             <option value="good">Good (sandy/well-draining)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Soil pH <span class="info-icon">i<span class="info-tooltip">Acidic (below 6.5), neutral (6.5-7.5), or alkaline (above 7.5) soil. Many species tolerate a range, but some struggle badly outside it (e.g. Pin Oak/Sweet Gum yellow and decline in alkaline soil). Look up your site for free on the USDA's <a href="https://websoilsurvey.nrcs.usda.gov/" target="_blank" rel="noopener">Web Soil Survey</a>, or get an exact reading from a home test kit or the MU Extension soil testing lab at <a href="https://extension.missouri.edu/programs/soil-testing" target="_blank" rel="noopener">extension.missouri.edu/programs/soil-testing</a>.</span></span></label>
+                        <select id="recSoilPh">
+                            <option value="">Unknown / no preference</option>
+                            <option value="acidic">Acidic (below 6.5)</option>
+                            <option value="neutral">Neutral (6.5-7.5)</option>
+                            <option value="alkaline">Alkaline (above 7.5)</option>
                         </select>
                     </div>
 
@@ -1464,12 +1496,28 @@
                     <!-- Social/Community -->
                     <h3>Community & Social</h3>
                     <div class="form-group">
-                        <label>Maintenance Capacity<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">Ongoing care realistically available after planting-pruning, pest/disease monitoring, mulching, watering. High = staff/volunteers on a schedule; Low = planted and largely left alone.</span></span></label>
+                        <label class="required-label">Maintenance Capacity<span class="required-marker">*</span> <span class="info-icon">i<span class="info-tooltip">Ongoing care realistically available after planting-pruning, pest/disease monitoring, mulching, watering. High = staff/volunteers on a schedule; Low = planted and largely left alone.</span></span></label>
                         <select id="recMaintenance" required>
                             <option value="">Select</option>
                             <option value="high">High (volunteers/staff available)</option>
                             <option value="moderate">Moderate (occasional care)</option>
                             <option value="low">Low (minimal intervention only)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Community Access Type <span class="info-icon">i<span class="info-tooltip">What type of public or community space will the tree serve? This helps recommend species with high community engagement and accessibility value.</span></span></label>
+                        <select id="recAccessType">
+                            <option value="">Select (optional)</option>
+                            <option value="park">Park/Greenspace</option>
+                            <option value="school">School/Youth Center</option>
+                            <option value="transit">Transit Stop/Bus Stop</option>
+                            <option value="senior">Senior Center/Healthcare</option>
+                            <option value="library">Public Library</option>
+                            <option value="community-garden">Community Garden</option>
+                            <option value="food-desert">Food-Insecure Area</option>
+                            <option value="gathering">Public Gathering Space</option>
+                            <option value="other">Other Public Space</option>
                         </select>
                     </div>
 
@@ -1492,6 +1540,17 @@
 
                     <!-- Goals (Optional) -->
                     <h3>Priorities (Optional)</h3>
+                    <label style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 12px; color: var(--text);">MINIMIZE ALLERGY & LITTER CONCERNS? <span class="info-icon">i<span class="info-tooltip">Some species drop heavy fruit, pods, or nuts, or produce a lot of pollen-more upkeep and a bigger allergy trigger on sidewalks, driveways, and lawns. Checking this favors lower-litter, lower-pollen species.</span></span></label>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <input type="checkbox" id="recAllergyLitter" style="flex-shrink: 0; width: 16px; height: 16px;">
+                        <span style="font-size: 13px; color: var(--text);">Yes</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Existing Trees Nearby <span class="info-icon">i<span class="info-tooltip">List any species already growing on the block (comma-separated). Recommending different species helps avoid canopy monoculture, which leaves a whole street vulnerable to a single pest or disease (like emerald ash borer wiping out all-ash blocks).</span></span></label>
+                        <input type="text" id="recExistingCanopy" placeholder="e.g. Red Maple, Pin Oak (optional)">
+                    </div>
+
                     <div class="form-group">
                         <label>Aesthetic Preference</label>
                         <select id="aestheticPref">
@@ -1631,7 +1690,7 @@
                 max_height: 22, max_crown: 14, growth_rate: 0.8,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.028, k_c: 0.034, lai: 4.5,
                 utilities: 0.7, power_lines: 0.8, wind: 0.7, drainage: "moderate", sun: "full",
-                mature_h: "medium", fall_color: true,
+                mature_h: "medium", fall_color: true, soil_ph: "acidic", litter: "moderate",
                 aesthetic_type: "ornamental", wildlife_value: 7, maintenance: "low", iconic_appeal: 8
             },
             "White Oak": {
@@ -1639,7 +1698,7 @@
                 max_height: 28, max_crown: 22, growth_rate: 0.55,
                 biomass_a: 0.12, biomass_b: 2.48, k_h: 0.025, k_c: 0.030, lai: 4.2,
                 utilities: 0.9, power_lines: 0.9, wind: 0.8, drainage: "good", sun: "full",
-                mature_h: "large", fall_color: true,
+                mature_h: "large", fall_color: true, soil_ph: "acidic", litter: "moderate",
                 aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 9
             },
             "Bald Cypress": {
@@ -1647,7 +1706,7 @@
                 max_height: 30, max_crown: 16, growth_rate: 0.85,
                 biomass_a: 0.09, biomass_b: 2.42, k_h: 0.026, k_c: 0.032, lai: 4.0,
                 utilities: 0.6, power_lines: 0.7, wind: 0.6, drainage: "poor", sun: "full",
-                mature_h: "large", deciduous: false,
+                mature_h: "large", deciduous: false, soil_ph: "acidic", litter: "low",
                 aesthetic_type: "ornamental", wildlife_value: 6, maintenance: "medium", iconic_appeal: 7
             },
             "Black Gum": {
@@ -1655,7 +1714,7 @@
                 max_height: 25, max_crown: 18, growth_rate: 0.7,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.027, k_c: 0.033, lai: 4.3,
                 utilities: 0.75, power_lines: 0.8, wind: 0.7, drainage: "poor", sun: "full",
-                mature_h: "medium", fall_color: true,
+                mature_h: "medium", fall_color: true, soil_ph: "acidic", litter: "low",
                 aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 6
             },
             "Pin Oak": {
@@ -1663,7 +1722,7 @@
                 max_height: 20, max_crown: 15, growth_rate: 0.75,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.029, k_c: 0.034, lai: 4.3,
                 utilities: 0.85, power_lines: 0.85, wind: 0.75, drainage: "moderate", sun: "full",
-                mature_h: "medium", fall_color: true,
+                mature_h: "medium", fall_color: true, soil_ph: "acidic", litter: "high",
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "low", iconic_appeal: 6
             },
             "Willow Oak": {
@@ -1671,7 +1730,7 @@
                 max_height: 23, max_crown: 16, growth_rate: 0.8,
                 biomass_a: 0.10, biomass_b: 2.44, k_h: 0.028, k_c: 0.034, lai: 4.6,
                 utilities: 0.75, power_lines: 0.75, wind: 0.6, drainage: "poor", sun: "full",
-                mature_h: "medium", form: "distinctive",
+                mature_h: "medium", form: "distinctive", soil_ph: "acidic", litter: "moderate",
                 aesthetic_type: "shade", wildlife_value: 7, maintenance: "low", iconic_appeal: 5
             },
             "Red Oak": {
@@ -1679,7 +1738,7 @@
                 max_height: 27, max_crown: 20, growth_rate: 0.8,
                 biomass_a: 0.11, biomass_b: 2.46, k_h: 0.026, k_c: 0.031, lai: 4.2,
                 utilities: 0.8, power_lines: 0.8, wind: 0.75, drainage: "good", sun: "full",
-                mature_h: "large", fall_color: true,
+                mature_h: "large", fall_color: true, soil_ph: "acidic", litter: "high",
                 aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 8
             },
             "Black Oak": {
@@ -1687,7 +1746,7 @@
                 max_height: 26, max_crown: 19, growth_rate: 0.75,
                 biomass_a: 0.11, biomass_b: 2.46, k_h: 0.027, k_c: 0.032, lai: 4.1,
                 utilities: 0.8, power_lines: 0.8, wind: 0.75, drainage: "good", sun: "full",
-                mature_h: "large", fall_color: true,
+                mature_h: "large", fall_color: true, soil_ph: "acidic", litter: "high",
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "low", iconic_appeal: 7
             },
             "Serviceberry": {
@@ -1695,7 +1754,7 @@
                 max_height: 16, max_crown: 10, growth_rate: 0.5,
                 biomass_a: 0.08, biomass_b: 2.40, k_h: 0.032, k_c: 0.038, lai: 4.7,
                 utilities: 0.95, power_lines: 0.95, wind: 0.85, drainage: "moderate", sun: "partial",
-                mature_h: "small", spring_bloom: true,
+                mature_h: "small", spring_bloom: true, soil_ph: "adaptable", litter: "low",
                 aesthetic_type: "ornamental", wildlife_value: 9, maintenance: "low", iconic_appeal: 7
             },
             "Redbud": {
@@ -1703,7 +1762,7 @@
                 max_height: 14, max_crown: 11, growth_rate: 0.55,
                 biomass_a: 0.08, biomass_b: 2.39, k_h: 0.033, k_c: 0.039, lai: 4.5,
                 utilities: 0.95, power_lines: 0.95, wind: 0.8, drainage: "good", sun: "partial",
-                mature_h: "small", spring_bloom: true,
+                mature_h: "small", spring_bloom: true, soil_ph: "adaptable", litter: "low",
                 aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 8
             },
             "Hackberry": {
@@ -1711,7 +1770,7 @@
                 max_height: 24, max_crown: 18, growth_rate: 0.7,
                 biomass_a: 0.10, biomass_b: 2.44, k_h: 0.027, k_c: 0.033, lai: 4.3,
                 utilities: 0.7, power_lines: 0.7, wind: 0.85, drainage: "good", sun: "full",
-                mature_h: "medium", form: "distinctive",
+                mature_h: "medium", form: "distinctive", soil_ph: "adaptable", litter: "moderate",
                 aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 6
             },
             "Honey Locust": {
@@ -1719,7 +1778,7 @@
                 max_height: 25, max_crown: 17, growth_rate: 0.85,
                 biomass_a: 0.09, biomass_b: 2.42, k_h: 0.028, k_c: 0.034, lai: 3.5,
                 utilities: 0.75, power_lines: 0.75, wind: 0.8, drainage: "good", sun: "full",
-                mature_h: "medium", deciduous: true,
+                mature_h: "medium", deciduous: true, soil_ph: "adaptable", litter: "moderate",
                 aesthetic_type: "shade", wildlife_value: 5, maintenance: "medium", iconic_appeal: 5
             },
             "Kentucky Coffeetree": {
@@ -1727,7 +1786,7 @@
                 max_height: 26, max_crown: 16, growth_rate: 0.65,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.027, k_c: 0.033, lai: 3.2,
                 utilities: 0.75, power_lines: 0.75, wind: 0.9, drainage: "good", sun: "full",
-                mature_h: "large", form: "distinctive",
+                mature_h: "large", form: "distinctive", soil_ph: "adaptable", litter: "high",
                 aesthetic_type: "shade", wildlife_value: 6, maintenance: "medium", iconic_appeal: 4
             },
             "Black Walnut": {
@@ -1735,7 +1794,7 @@
                 max_height: 28, max_crown: 20, growth_rate: 0.6,
                 biomass_a: 0.12, biomass_b: 2.48, k_h: 0.025, k_c: 0.030, lai: 4.0,
                 utilities: 0.6, power_lines: 0.6, wind: 0.8, drainage: "good", sun: "full",
-                mature_h: "large", allelopathic: true,
+                mature_h: "large", allelopathic: true, soil_ph: "neutral", litter: "high",
                 aesthetic_type: "shade", wildlife_value: 7, maintenance: "high", iconic_appeal: 5
             },
             "Sycamore": {
@@ -1743,7 +1802,7 @@
                 max_height: 32, max_crown: 24, growth_rate: 0.9,
                 biomass_a: 0.13, biomass_b: 2.50, k_h: 0.024, k_c: 0.029, lai: 4.1,
                 utilities: 0.5, power_lines: 0.5, wind: 0.7, drainage: "poor", sun: "full",
-                mature_h: "large", form: "distinctive",
+                mature_h: "large", form: "distinctive", soil_ph: "adaptable", litter: "high",
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "high", iconic_appeal: 6
             },
             "Tulip Tree": {
@@ -1751,7 +1810,7 @@
                 max_height: 30, max_crown: 18, growth_rate: 0.95,
                 biomass_a: 0.11, biomass_b: 2.47, k_h: 0.025, k_c: 0.030, lai: 4.3,
                 utilities: 0.7, power_lines: 0.7, wind: 0.6, drainage: "good", sun: "full",
-                mature_h: "large", spring_bloom: true,
+                mature_h: "large", spring_bloom: true, soil_ph: "acidic", litter: "moderate",
                 aesthetic_type: "ornamental", wildlife_value: 6, maintenance: "medium", iconic_appeal: 7
             },
             "Sweet Gum": {
@@ -1759,7 +1818,7 @@
                 max_height: 28, max_crown: 19, growth_rate: 0.8,
                 biomass_a: 0.11, biomass_b: 2.46, k_h: 0.026, k_c: 0.031, lai: 4.2,
                 utilities: 0.65, power_lines: 0.65, wind: 0.7, drainage: "moderate", sun: "full",
-                mature_h: "large", fall_color: true,
+                mature_h: "large", fall_color: true, soil_ph: "acidic", litter: "high",
                 aesthetic_type: "ornamental", wildlife_value: 7, maintenance: "medium", iconic_appeal: 6
             },
             "American Elm": {
@@ -1767,7 +1826,7 @@
                 max_height: 29, max_crown: 21, growth_rate: 0.85,
                 biomass_a: 0.12, biomass_b: 2.48, k_h: 0.025, k_c: 0.030, lai: 4.4,
                 utilities: 0.7, power_lines: 0.7, wind: 0.75, drainage: "moderate", sun: "full",
-                mature_h: "large", disease: "elm_decline",
+                mature_h: "large", disease: "elm_decline", soil_ph: "adaptable", litter: "moderate",
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "high", iconic_appeal: 7
             },
             "Green Ash": {
@@ -1775,7 +1834,7 @@
                 max_height: 24, max_crown: 16, growth_rate: 0.75,
                 biomass_a: 0.10, biomass_b: 2.45, k_h: 0.028, k_c: 0.034, lai: 4.3,
                 utilities: 0.8, power_lines: 0.8, wind: 0.75, drainage: "good", sun: "full",
-                mature_h: "medium", disease: "eab_risk",
+                mature_h: "medium", disease: "eab_risk", soil_ph: "adaptable", litter: "moderate",
                 aesthetic_type: "shade", wildlife_value: 6, maintenance: "medium", iconic_appeal: 5
             },
             "Pawpaw": {
@@ -1783,7 +1842,7 @@
                 max_height: 12, max_crown: 9, growth_rate: 0.45,
                 biomass_a: 0.07, biomass_b: 2.38, k_h: 0.035, k_c: 0.041, lai: 4.8,
                 utilities: 0.95, power_lines: 0.95, wind: 0.8, drainage: "moderate", sun: "shade",
-                mature_h: "small", native: true,
+                mature_h: "small", native: true, soil_ph: "acidic", litter: "low",
                 aesthetic_type: "ornamental", wildlife_value: 9, maintenance: "low", iconic_appeal: 4
             },
             "Mulberry": {
@@ -1791,7 +1850,7 @@
                 max_height: 20, max_crown: 14, growth_rate: 0.8,
                 biomass_a: 0.09, biomass_b: 2.42, k_h: 0.030, k_c: 0.035, lai: 4.6,
                 utilities: 0.85, power_lines: 0.85, wind: 0.8, drainage: "good", sun: "full",
-                mature_h: "medium", messy_fruit: true,
+                mature_h: "medium", messy_fruit: true, soil_ph: "adaptable", litter: "high",
                 aesthetic_type: "mixed", wildlife_value: 10, maintenance: "medium", iconic_appeal: 6
             },
             "Hickory": {
@@ -1799,7 +1858,7 @@
                 max_height: 26, max_crown: 18, growth_rate: 0.55,
                 biomass_a: 0.12, biomass_b: 2.48, k_h: 0.026, k_c: 0.031, lai: 4.1,
                 utilities: 0.85, power_lines: 0.85, wind: 0.9, drainage: "good", sun: "full",
-                mature_h: "large", native: true,
+                mature_h: "large", native: true, soil_ph: "acidic", litter: "high",
                 aesthetic_type: "shade", wildlife_value: 9, maintenance: "low", iconic_appeal: 5
             },
             "Sugar Maple": {
@@ -1807,7 +1866,7 @@
                 max_height: 27, max_crown: 20, growth_rate: 0.6,
                 biomass_a: 0.11, biomass_b: 2.46, k_h: 0.026, k_c: 0.031, lai: 4.4,
                 utilities: 0.8, power_lines: 0.8, wind: 0.85, drainage: "good", sun: "full",
-                mature_h: "large", fall_color: true, native: true,
+                mature_h: "large", fall_color: true, native: true, soil_ph: "neutral", litter: "moderate",
                 aesthetic_type: "shade", wildlife_value: 8, maintenance: "low", iconic_appeal: 9
             },
             "Ginkgo": {
@@ -1815,7 +1874,7 @@
                 max_height: 25, max_crown: 14, growth_rate: 0.65,
                 biomass_a: 0.10, biomass_b: 2.44, k_h: 0.027, k_c: 0.033, lai: 3.9,
                 utilities: 0.95, power_lines: 0.95, wind: 0.95, drainage: "good", sun: "full",
-                mature_h: "large", fall_color: true,
+                mature_h: "large", fall_color: true, soil_ph: "adaptable", litter: "moderate",
                 aesthetic_type: "ornamental", wildlife_value: 4, maintenance: "low", iconic_appeal: 8
             },
             "Zelkova": {
@@ -1823,7 +1882,7 @@
                 max_height: 24, max_crown: 16, growth_rate: 0.7,
                 biomass_a: 0.10, biomass_b: 2.44, k_h: 0.028, k_c: 0.033, lai: 4.2,
                 utilities: 0.85, power_lines: 0.85, wind: 0.8, drainage: "good", sun: "full",
-                mature_h: "medium", fall_color: true,
+                mature_h: "medium", fall_color: true, soil_ph: "adaptable", litter: "low",
                 aesthetic_type: "shade", wildlife_value: 5, maintenance: "low", iconic_appeal: 6
             },
             "Sweetbay Magnolia": {
@@ -1831,7 +1890,7 @@
                 max_height: 18, max_crown: 12, growth_rate: 0.6,
                 biomass_a: 0.08, biomass_b: 2.40, k_h: 0.031, k_c: 0.036, lai: 4.7,
                 utilities: 0.9, power_lines: 0.9, wind: 0.7, drainage: "poor", sun: "partial",
-                mature_h: "medium", native: true, deciduous: false,
+                mature_h: "medium", native: true, deciduous: false, soil_ph: "acidic", litter: "low",
                 aesthetic_type: "ornamental", wildlife_value: 7, maintenance: "medium", iconic_appeal: 8
             },
             "Fringe Tree": {
@@ -1839,7 +1898,7 @@
                 max_height: 12, max_crown: 10, growth_rate: 0.5,
                 biomass_a: 0.06, biomass_b: 2.35, k_h: 0.034, k_c: 0.040, lai: 4.5,
                 utilities: 0.95, power_lines: 0.95, wind: 0.8, drainage: "moderate", sun: "partial",
-                mature_h: "small", native: true,
+                mature_h: "small", native: true, soil_ph: "acidic", litter: "low",
                 aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 7
             },
             "Ironwood": {
@@ -1847,7 +1906,7 @@
                 max_height: 14, max_crown: 11, growth_rate: 0.45,
                 biomass_a: 0.07, biomass_b: 2.38, k_h: 0.033, k_c: 0.039, lai: 4.4,
                 utilities: 0.95, power_lines: 0.95, wind: 0.85, drainage: "moderate", sun: "shade",
-                mature_h: "small", native: true,
+                mature_h: "small", native: true, soil_ph: "acidic", litter: "low",
                 aesthetic_type: "mixed", wildlife_value: 7, maintenance: "low", iconic_appeal: 5
             },
             "Cornelian Cherry": {
@@ -1855,7 +1914,7 @@
                 max_height: 16, max_crown: 12, growth_rate: 0.55,
                 biomass_a: 0.07, biomass_b: 2.39, k_h: 0.032, k_c: 0.037, lai: 4.3,
                 utilities: 0.9, power_lines: 0.9, wind: 0.8, drainage: "good", sun: "full",
-                mature_h: "small", native: false,
+                mature_h: "small", native: false, soil_ph: "neutral", litter: "moderate",
                 aesthetic_type: "ornamental", wildlife_value: 8, maintenance: "low", iconic_appeal: 7
             }
         };
@@ -2643,6 +2702,7 @@
                     { id: 'rec_location', label: 'Location Type', type: 'input', chain: 'Street/Park/Floodplain' },
                     { id: 'rec_sun', label: 'Sun Exposure', type: 'input', chain: 'Full/Partial/Shade' },
                     { id: 'rec_drainage', label: 'Soil Drainage', type: 'input', chain: 'Well/Moderate/Poor' },
+                    { id: 'rec_soilph', label: 'Soil pH', type: 'input', chain: 'Acidic/Neutral/Alkaline' },
                     { id: 'rec_rainfall', label: 'Rainfall Tolerance', type: 'input', chain: 'Drought/Normal/Wet' },
                     { id: 'rec_water', label: 'Water Availability', type: 'input', chain: 'Low/Moderate/High' }
                 ]
@@ -2666,16 +2726,19 @@
                     { id: 'rec_priority', label: 'Priority Outcome', type: 'input', chain: 'Carbon/Stormwater/etc' },
                     { id: 'rec_aesthetic', label: 'Aesthetic Preference', type: 'input', chain: 'Flowering/Fall color/etc' },
                     { id: 'rec_wildlife', label: 'Wildlife Priority', type: 'input', chain: 'High/Low' },
-                    { id: 'rec_native', label: 'Native Only', type: 'input', chain: 'Checkbox' }
+                    { id: 'rec_native', label: 'Native Only', type: 'input', chain: 'Checkbox' },
+                    { id: 'rec_allergy', label: 'Allergy & Litter Concerns', type: 'input', chain: 'Optional' },
+                    { id: 'rec_canopy', label: 'Existing Trees Nearby', type: 'input', chain: 'Free-text search' }
                 ]
             },
             {
                 tier: 'Scoring',
                 nodes: [
-                    { id: 'rec_sitescore', label: 'Site Match Score', type: 'intermediate', chain: 'Sun + Drainage + Rainfall + Water' },
+                    { id: 'rec_sitescore', label: 'Site Match Score', type: 'intermediate', chain: 'Sun + Drainage + pH + Rainfall + Water' },
                     { id: 'rec_infrascore', label: 'Infrastructure Score', type: 'intermediate', chain: 'Proximity + Utilities + Power + Wind + Height' },
                     { id: 'rec_contextscore', label: 'Context Multiplier', type: 'intermediate', chain: 'Maintenance x Sentiment x Access' },
-                    { id: 'rec_prefscore', label: 'Preference Bonus', type: 'intermediate', chain: 'Priority + Aesthetic + Wildlife + Native' }
+                    { id: 'rec_prefscore', label: 'Preference Bonus', type: 'intermediate', chain: 'Priority + Aesthetic + Wildlife + Native + Allergy' },
+                    { id: 'rec_diversity', label: 'Diversity Adjustment', type: 'intermediate', chain: 'Penalty if already common nearby' }
                 ]
             },
             {
@@ -2699,12 +2762,13 @@
         ];
 
         const FLOWCHART_CONNECTIONS_RECOMMEND = [
-            ['rec_location', 'rec_sitescore'], ['rec_sun', 'rec_sitescore'], ['rec_drainage', 'rec_sitescore'], ['rec_rainfall', 'rec_sitescore'], ['rec_water', 'rec_sitescore'],
+            ['rec_location', 'rec_sitescore'], ['rec_sun', 'rec_sitescore'], ['rec_drainage', 'rec_sitescore'], ['rec_soilph', 'rec_sitescore'], ['rec_rainfall', 'rec_sitescore'], ['rec_water', 'rec_sitescore'],
             ['rec_proximity', 'rec_infrascore'], ['rec_utilities', 'rec_infrascore'], ['rec_powerlines', 'rec_infrascore'], ['rec_wind', 'rec_infrascore'], ['rec_height', 'rec_infrascore'],
             ['rec_maintenance', 'rec_contextscore'], ['rec_sentiment', 'rec_contextscore'], ['rec_access', 'rec_contextscore'],
-            ['rec_priority', 'rec_prefscore'], ['rec_aesthetic', 'rec_prefscore'], ['rec_wildlife', 'rec_prefscore'], ['rec_native', 'rec_prefscore'],
+            ['rec_priority', 'rec_prefscore'], ['rec_aesthetic', 'rec_prefscore'], ['rec_wildlife', 'rec_prefscore'], ['rec_native', 'rec_prefscore'], ['rec_allergy', 'rec_prefscore'],
+            ['rec_canopy', 'rec_diversity'],
             ['rec_species', 'rec_carbon'], ['rec_species', 'rec_stormwater'], ['rec_species', 'rec_pollution'], ['rec_species', 'rec_energy'], ['rec_species', 'rec_growth'], ['rec_species', 'rec_windresist'],
-            ['rec_sitescore', 'rec_score'], ['rec_infrascore', 'rec_score'], ['rec_contextscore', 'rec_score'], ['rec_prefscore', 'rec_score'],
+            ['rec_sitescore', 'rec_score'], ['rec_infrascore', 'rec_score'], ['rec_contextscore', 'rec_score'], ['rec_prefscore', 'rec_score'], ['rec_diversity', 'rec_score'],
             ['rec_score', 'rec_species']
         ];
 
@@ -2722,6 +2786,11 @@
             rec_drainage: {
                 title: "Soil Drainage",
                 formula: "Well-drained match: +20 pts\nModerate match: +20 pts\nPoor-drainage match: +20 pts\nMismatch = missed points",
+                inputs: [], outputs: ["rec_sitescore"]
+            },
+            rec_soilph: {
+                title: "Soil pH",
+                formula: "Optional. Species matched to acidic/neutral/alkaline soil: +8 pts\nSpecies tolerant of a wide pH range: +6 pts regardless of match\nNo penalty if left blank or unknown",
                 inputs: [], outputs: ["rec_sitescore"]
             },
             rec_rainfall: {
@@ -2794,10 +2863,26 @@
                 formula: "When checked, only Missouri-native species are scored/returned; non-native species excluded entirely",
                 inputs: [], outputs: ["rec_prefscore"]
             },
+            rec_allergy: {
+                title: "Allergy & Litter Concerns",
+                formula: "Optional. If selected:\nLow-litter/low-allergen species: +10 pts\nModerate litter species: +4 pts\nHigh litter/allergen species: -5 pts",
+                inputs: [], outputs: ["rec_prefscore"]
+            },
+            rec_canopy: {
+                title: "Existing Trees Nearby",
+                formula: "Optional free-text search box. Species already listed nearby are matched by name and penalized to encourage canopy diversity.",
+                inputs: [], outputs: ["rec_diversity"]
+            },
             rec_sitescore: {
                 title: "Site Match Score",
-                formula: "Sum of Location + Sun + Drainage + Rainfall + Water scores\nMeasures how well species fits the physical growing conditions",
-                inputs: ["rec_location", "rec_sun", "rec_drainage", "rec_rainfall", "rec_water"],
+                formula: "Sum of Location + Sun + Drainage + Soil pH + Rainfall + Water scores\nMeasures how well species fits the physical growing conditions",
+                inputs: ["rec_location", "rec_sun", "rec_drainage", "rec_soilph", "rec_rainfall", "rec_water"],
+                outputs: ["rec_score"]
+            },
+            rec_diversity: {
+                title: "Diversity Adjustment",
+                formula: "-15 pts if the candidate species name matches an entry in \"Existing Trees Nearby\"\nEncourages canopy diversity so a single pest/disease can't wipe out the whole block (e.g. emerald ash borer)",
+                inputs: ["rec_canopy"],
                 outputs: ["rec_score"]
             },
             rec_infrascore: {
@@ -2814,14 +2899,14 @@
             },
             rec_prefscore: {
                 title: "Preference Bonus",
-                formula: "Sum of Priority Outcome + Aesthetic + Wildlife + Native-only filtering\nRewards species matching stated goals and style",
-                inputs: ["rec_priority", "rec_aesthetic", "rec_wildlife", "rec_native"],
+                formula: "Sum of Priority Outcome + Aesthetic + Wildlife + Native-only filtering + Allergy/Litter preference\nRewards species matching stated goals and style",
+                inputs: ["rec_priority", "rec_aesthetic", "rec_wildlife", "rec_native", "rec_allergy"],
                 outputs: ["rec_score"]
             },
             rec_score: {
                 title: "Suitability Score",
-                formula: "Site Match + Infrastructure + Preference Bonus scores, x Context Multiplier (0.7-1.0)\n= Final Suitability (0-100%)",
-                inputs: ["rec_sitescore", "rec_infrascore", "rec_contextscore", "rec_prefscore"],
+                formula: "Site Match + Infrastructure + Preference Bonus + Diversity Adjustment, x Context Multiplier (0.7-1.0)\n= Final Suitability (0-100%)",
+                inputs: ["rec_sitescore", "rec_infrascore", "rec_contextscore", "rec_prefscore", "rec_diversity"],
                 outputs: ["rec_species"]
             },
             rec_species: {
@@ -3275,15 +3360,46 @@
             return `
                 <div style="background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%); border-left: 4px solid #ffd700; padding: 16px; margin-bottom: 20px; border-radius: 2px;">
                     <div style="display: flex; gap: 12px; align-items: flex-start;">
-                        <div style="font-size: 24px; color: #ffd700;">âš </div>
-                        <div style="flex: 1; color: white; font-family: 'Times New Roman', serif;">
+                        <div style="font-size: 24px; color: #ffd700;">⚠</div>
+                        <div style="flex: 1; color: white;">
                             <div style="font-weight: 600; margin-bottom: 8px; color: #ffd700;">Low Community Sentiment (${sentiment}/10)</div>
-                            <div style="font-size: 12px; line-height: 1.5; margin-bottom: 12px;">
-                                This site has low community support for tree planting. Success will require careful species selection and engagement strategies.
+                            <div style="font-size: 12px; line-height: 1.5; margin-bottom: 14px;">
+                                This site has low community support for tree planting. Trees planted without buy-in are far more likely to be vandalized, neglected, or removed. Consider the outreach steps below before planting-or a non-tree alternative if opposition doesn't shift.
                             </div>
-                            <div style="font-size: 11px; color: #ccc;">
-                                <strong>Risks:</strong> Vandalism • Reduced maintenance • Community objections • Lower survival rates<br/>
-                                <strong>Mitigation:</strong> Select hardy, low-maintenance species • Community engagement • Tree protection • Smaller trees
+
+                            <div style="font-size: 11px; color: #ccc; margin-bottom: 12px;">
+                                <strong>Risks:</strong> Vandalism • Reduced maintenance • Community objections • Lower survival rates
+                            </div>
+
+                            <div style="border-top: 1px solid #555; padding-top: 12px; margin-bottom: 12px;">
+                                <div style="font-weight: 600; color: #ffd700; font-size: 12px; margin-bottom: 6px;">1. Public Outreach Methods</div>
+                                <div style="font-size: 11px; color: #ccc; line-height: 1.6;">
+                                    Active, in-person outreach works far better than mailers or flyers alone. Go door-to-door and ask residents directly whether they want a tree and what their concerns are, rather than assuming. Partner with an existing neighborhood association, church, school, or civic group who already has trust on the block. Set up an info table at a farmers market or community event to reach people passively.
+                                </div>
+                                <div style="font-size: 11px; margin-top: 6px;">
+                                    <a href="https://www.arborday.org/tree-resources/community-engagement" target="_blank" rel="noopener" style="color: #7ec8e3;">Arbor Day Foundation: Community Engagement</a> &middot;
+                                    <a href="https://www.arborday.org/perspectives/five-ways-equitably-engage-residents-urban-and-community-forestry" target="_blank" rel="noopener" style="color: #7ec8e3;">Five Ways to Equitably Engage Residents</a>
+                                </div>
+                            </div>
+
+                            <div style="border-top: 1px solid #555; padding-top: 12px; margin-bottom: 12px;">
+                                <div style="font-weight: 600; color: #ffd700; font-size: 12px; margin-bottom: 6px;">2. Sharing Information & Listening</div>
+                                <div style="font-size: 11px; color: #ccc; line-height: 1.6;">
+                                    The goal is an informed decision, not a sales pitch-residents get to say no. Share honest, balanced information: real benefits (shade, cooler homes, cleaner air) alongside real tradeoffs (leaf cleanup, root growth, years before a tree provides much shade). Ask what's behind the hesitation before responding to it; a practical concern (who waters it, who rakes leaves) and a deeper one (distrust from a past project, feeling decisions get made without them) call for different responses, and both deserve to be heard on their own terms.
+                                </div>
+                                <div style="font-size: 11px; margin-top: 6px;">
+                                    <a href="https://www.fs.usda.gov/managing-land/urban-forests" target="_blank" rel="noopener" style="color: #7ec8e3;">USDA Forest Service: Urban Forestry Community Engagement</a>
+                                </div>
+                            </div>
+
+                            <div style="border-top: 1px solid #555; padding-top: 12px;">
+                                <div style="font-weight: 600; color: #ffd700; font-size: 12px; margin-bottom: 6px;">3. Non-Tree Alternatives</div>
+                                <div style="font-size: 11px; color: #ccc; line-height: 1.6;">
+                                    If sentiment doesn't shift, a tree isn't the only way to deliver the same benefits. A rain garden or bioswale can absorb stormwater without a long-term maintenance commitment on a resident's property line. Permeable pavement handles runoff on driveways, alleys, or parking areas. A shade sail or pergola can cool a porch or bus stop immediately, with no vandalism/liability concerns and no multi-year establishment period.
+                                </div>
+                                <div style="font-size: 11px; margin-top: 6px;">
+                                    <a href="https://www.epa.gov/green-infrastructure/types-green-infrastructure" target="_blank" rel="noopener" style="color: #7ec8e3;">EPA: Types of Green Infrastructure</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3314,6 +3430,10 @@
             const aesthetic = document.getElementById('aestheticPref').value;
             const prioritizeWildlife = document.getElementById('wildlifePriority').value === 'high';
             const nativeOnly = document.getElementById('nativeOnly').checked;
+            const soilPh = document.getElementById('recSoilPh').value;
+            const avoidAllergyLitter = document.getElementById('recAllergyLitter').checked;
+            const existingCanopy = document.getElementById('recExistingCanopy').value
+                .split(',').map(s => s.trim().toLowerCase()).filter(s => s.length > 0);
 
             // Check required fields
             const requiredFields = {
@@ -3509,6 +3629,35 @@
                     } else if (prioritizeWildlife && SPECIES[sp].wildlife_value >= 6) {
                         score += 5;
                         reasons.push('Good pollinator/bird support');
+                    }
+
+                    // Soil pH match (8 pts max, optional)
+                    if (soilPh && SPECIES[sp].soil_ph) {
+                        if (SPECIES[sp].soil_ph === 'adaptable') {
+                            score += 6;
+                            reasons.push('Tolerates a wide soil pH range');
+                        } else if (SPECIES[sp].soil_ph === soilPh) {
+                            score += 8;
+                            reasons.push(`Well-matched to ${soilPh} soil`);
+                        }
+                    }
+
+                    // Allergy & litter concerns (10 pts max, optional)
+                    if (avoidAllergyLitter && SPECIES[sp].litter) {
+                        if (SPECIES[sp].litter === 'low') {
+                            score += 10;
+                            reasons.push('Low litter, low-allergen species');
+                        } else if (SPECIES[sp].litter === 'moderate') {
+                            score += 4;
+                        } else if (SPECIES[sp].litter === 'high') {
+                            score -= 5;
+                        }
+                    }
+
+                    // Existing canopy diversity check (avoid recommending what's already there)
+                    if (existingCanopy.length > 0 && existingCanopy.some(name => sp.toLowerCase().includes(name) || name.includes(sp.toLowerCase()))) {
+                        score -= 15;
+                        reasons.push('Already common nearby-diversifying canopy is safer long-term');
                     }
 
                     score *= sentimentMult;
