@@ -1,5 +1,5 @@
 $port = 8421
-$path = "C:\Users\Maggie Coleman\portfolio\v2"
+$path = "C:\Users\Maggie Coleman\portfolio\portfolio-september-2026"
 
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")
@@ -19,8 +19,9 @@ while ($listener.IsListening) {
     if (Test-Path $filePath -PathType Leaf) {
         $file = Get-Item $filePath
         $response.ContentType = if ($filePath.EndsWith('.html')) { 'text/html' } elseif ($filePath.EndsWith('.css')) { 'text/css' } elseif ($filePath.EndsWith('.js')) { 'application/javascript' } else { 'application/octet-stream' }
-        $response.ContentLength64 = $file.Length
-        [System.IO.File]::ReadAllBytes($filePath) | ForEach-Object { $response.OutputStream.WriteByte($_) }
+        $bytes = [System.IO.File]::ReadAllBytes($filePath)
+        $response.ContentLength64 = $bytes.Length
+        $response.OutputStream.Write($bytes, 0, $bytes.Length)
     } else {
         $response.StatusCode = 404
         $response.StatusDescription = "Not Found"

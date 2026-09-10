@@ -468,3 +468,106 @@ h1 {
     transition-duration: 1ms;
   }
 }
+
+/* ---- Mobile: Card Grid Layout ---- */
+@media (max-width: 768px) {
+  .shelf-stage {
+    padding-bottom: 20px;
+  }
+
+  .shelf-viewport {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    overflow: visible;
+    padding: 24px 0 0;
+    max-width: 100%;
+  }
+
+  .shelf-track {
+    display: contents;
+  }
+
+  .book {
+    position: relative;
+    left: auto;
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    background: var(--spine-bg);
+    border: 1px solid var(--line);
+    gap: 12px;
+    margin-right: 0;
+    transform: none;
+    transition: all 200ms ease;
+  }
+
+  .book:hover {
+    left: auto;
+    transform: translateY(0);
+    margin-right: 0;
+    background: #efefec;
+  }
+
+  .book.is-highlighted {
+    transform: none;
+  }
+
+  .book-persp,
+  .book-3d,
+  .spine-label {
+    display: none;
+  }
+
+  .book-open-content {
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
+    background: transparent;
+    color: var(--fg);
+    padding: 0;
+    gap: 4px;
+  }
+
+  .open-category {
+    font-size: 10px;
+  }
+
+  .open-title {
+    font-size: 18px;
+  }
+
+  .open-meta {
+    font-size: 10px;
+  }
+
+  .open-description {
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .shelf-plank {
+    display: none;
+  }
+
+  .category-filter {
+    display: none;
+  }
+
+  .credit {
+    position: static;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  .credit a,
+  .credit span {
+    font-size: 10px;
+  }
+}
