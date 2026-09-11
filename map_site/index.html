@@ -185,6 +185,21 @@
             overflow-y: auto;
             padding: 40px;
             background: var(--light);
+            scrollbar-width: auto;
+            scrollbar-color: var(--primary) var(--border);
+        }
+
+        .panel::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .panel::-webkit-scrollbar-track {
+            background: var(--border);
+        }
+
+        .panel::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
         }
 
         .panel h2 {
@@ -1311,13 +1326,18 @@
             </div>
 
             <div class="main">
-                <div id="map"></div>
+                <div style="position: relative; width: 100%; height: 100%;">
+                    <div id="map"></div>
+                    <div id="mapInstruction" style="display: none; position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 10px 18px; border-radius: 3px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.25); z-index: 1000; pointer-events: none;">
+                        Click anywhere on the map to place your tree
+                    </div>
+                </div>
 
                 <div class="panel">
                     <h2>Trees on Site</h2>
 
                     <div class="trees-list" id="treesList" style="min-height: 120px;">
-                        <p style="color: #999; font-style: italic; padding: 16px; text-align: center;">No trees placed yet. Click "Add Tree" and then click on the map.</p>
+                        <p style="color: #999; font-style: italic; padding: 16px; text-align: center;">No trees placed yet. Fill out the form below, click "Add Tree to Map," then click a spot on the map.</p>
                     </div>
 
                     <h3 style="margin-top: 24px;">Add New Tree</h3>
@@ -1348,7 +1368,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Health (0.3–1.0)</label>
+                        <label>Health (0.3–1.0) <span class="info-icon">i<span class="info-tooltip">A rating of the tree's current condition, based on visible vigor, canopy density, and any visible damage or disease. 1.0 = excellent (full canopy, no visible issues). 0.7-0.9 = good (minor stress or thinning). 0.4-0.6 = fair (noticeable dieback or damage). 0.3 = poor (significant decline). This multiplies the tree's projected annual growth rate.</span></span></label>
                         <input type="number" id="condition" min="0.3" max="1.0" value="0.8" step="0.1">
                     </div>
 
@@ -1365,6 +1385,7 @@
                         <div class="year-display"><span id="yearDisplay">30</span> years</div>
                     </div>
 
+                    <div id="benefitsScrollHint" style="display: none; font-size: 11px; color: #999; text-align: center; margin-top: 20px; padding-top: 8px; border-top: 1px dashed var(--border);">↓ Scroll down for the full benefit breakdown</div>
                     <div class="benefits-grid" id="benefitsDisplay"></div>
 
                 </div>
@@ -2352,6 +2373,11 @@
         }
 
         function onMapClick(e) {
+            const instruction = document.getElementById('mapInstruction');
+            if (instruction) instruction.style.display = 'none';
+            const mapEl = document.getElementById('map');
+            if (mapEl) mapEl.style.cursor = '';
+
             const species = document.getElementById('species').value;
             const dbh = parseFloat(document.getElementById('dbh').value);
             const age = parseInt(document.getElementById('age').value);
@@ -2416,6 +2442,10 @@
                 alert('Select sun exposure first');
                 return;
             }
+
+            const instruction = document.getElementById('mapInstruction');
+            if (instruction) instruction.style.display = 'block';
+            document.getElementById('map').style.cursor = 'crosshair';
 
             map.once('click', onMapClick);
         }
@@ -2599,6 +2629,12 @@
             `;
 
             document.getElementById('benefitsDisplay').innerHTML = html;
+
+            const panelEl = document.getElementById('benefitsDisplay').closest('.panel');
+            const hintEl = document.getElementById('benefitsScrollHint');
+            if (panelEl && hintEl) {
+                hintEl.style.display = (panelEl.scrollHeight > panelEl.clientHeight + 10) ? 'block' : 'none';
+            }
         }
 
         // Data connections for arrow flow
