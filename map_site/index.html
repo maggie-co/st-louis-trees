@@ -1548,11 +1548,6 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Existing Trees Nearby <span class="info-icon">i<span class="info-tooltip">List any species already growing on the block (comma-separated). Recommending different species helps avoid canopy monoculture, which leaves a whole street vulnerable to a single pest or disease (like emerald ash borer wiping out all-ash blocks).</span></span></label>
-                        <input type="text" id="recExistingCanopy" placeholder="e.g. Red Maple, Pin Oak (optional)">
-                    </div>
-
-                    <div class="form-group">
                         <label>Aesthetic Preference</label>
                         <select id="aestheticPref">
                             <option value="">Any</option>
@@ -2728,8 +2723,7 @@
                     { id: 'rec_aesthetic', label: 'Aesthetic Preference', type: 'input', chain: 'Flowering/Fall color/etc' },
                     { id: 'rec_wildlife', label: 'Wildlife Priority', type: 'input', chain: 'High/Low' },
                     { id: 'rec_native', label: 'Native Only', type: 'input', chain: 'Checkbox' },
-                    { id: 'rec_allergy', label: 'Allergy & Litter Concerns', type: 'input', chain: 'Optional' },
-                    { id: 'rec_canopy', label: 'Existing Trees Nearby', type: 'input', chain: 'Free-text search' }
+                    { id: 'rec_allergy', label: 'Allergy & Litter Concerns', type: 'input', chain: 'Optional' }
                 ]
             },
             {
@@ -2738,8 +2732,7 @@
                     { id: 'rec_sitescore', label: 'Site Match Score', type: 'intermediate', chain: 'Sun + Drainage + pH + Rainfall + Water' },
                     { id: 'rec_infrascore', label: 'Infrastructure Score', type: 'intermediate', chain: 'Proximity + Utilities + Power + Wind + Height' },
                     { id: 'rec_contextscore', label: 'Context Multiplier', type: 'intermediate', chain: 'Maintenance x Sentiment x Access' },
-                    { id: 'rec_prefscore', label: 'Preference Bonus', type: 'intermediate', chain: 'Priority + Aesthetic + Wildlife + Native + Allergy' },
-                    { id: 'rec_diversity', label: 'Diversity Adjustment', type: 'intermediate', chain: 'Penalty if already common nearby' }
+                    { id: 'rec_prefscore', label: 'Preference Bonus', type: 'intermediate', chain: 'Priority + Aesthetic + Wildlife + Native + Allergy' }
                 ]
             },
             {
@@ -2767,9 +2760,8 @@
             ['rec_proximity', 'rec_infrascore'], ['rec_utilities', 'rec_infrascore'], ['rec_powerlines', 'rec_infrascore'], ['rec_wind', 'rec_infrascore'], ['rec_height', 'rec_infrascore'],
             ['rec_maintenance', 'rec_contextscore'], ['rec_sentiment', 'rec_contextscore'], ['rec_access', 'rec_contextscore'],
             ['rec_priority', 'rec_prefscore'], ['rec_aesthetic', 'rec_prefscore'], ['rec_wildlife', 'rec_prefscore'], ['rec_native', 'rec_prefscore'], ['rec_allergy', 'rec_prefscore'],
-            ['rec_canopy', 'rec_diversity'],
             ['rec_species', 'rec_carbon'], ['rec_species', 'rec_stormwater'], ['rec_species', 'rec_pollution'], ['rec_species', 'rec_energy'], ['rec_species', 'rec_growth'], ['rec_species', 'rec_windresist'],
-            ['rec_sitescore', 'rec_score'], ['rec_infrascore', 'rec_score'], ['rec_contextscore', 'rec_score'], ['rec_prefscore', 'rec_score'], ['rec_diversity', 'rec_score'],
+            ['rec_sitescore', 'rec_score'], ['rec_infrascore', 'rec_score'], ['rec_contextscore', 'rec_score'], ['rec_prefscore', 'rec_score'],
             ['rec_score', 'rec_species']
         ];
 
@@ -2869,21 +2861,10 @@
                 formula: "Optional. If selected:\nLow-litter/low-allergen species: +10 pts\nModerate litter species: +4 pts\nHigh litter/allergen species: -5 pts",
                 inputs: [], outputs: ["rec_prefscore"]
             },
-            rec_canopy: {
-                title: "Existing Trees Nearby",
-                formula: "Optional free-text search box. Species already listed nearby are matched by name and penalized to encourage canopy diversity.",
-                inputs: [], outputs: ["rec_diversity"]
-            },
             rec_sitescore: {
                 title: "Site Match Score",
                 formula: "Sum of Location + Sun + Drainage + Soil pH + Rainfall + Water scores\nMeasures how well species fits the physical growing conditions",
                 inputs: ["rec_location", "rec_sun", "rec_drainage", "rec_soilph", "rec_rainfall", "rec_water"],
-                outputs: ["rec_score"]
-            },
-            rec_diversity: {
-                title: "Diversity Adjustment",
-                formula: "-15 pts if the candidate species name matches an entry in \"Existing Trees Nearby\"\nEncourages canopy diversity so a single pest/disease can't wipe out the whole block (e.g. emerald ash borer)",
-                inputs: ["rec_canopy"],
                 outputs: ["rec_score"]
             },
             rec_infrascore: {
@@ -2906,8 +2887,8 @@
             },
             rec_score: {
                 title: "Suitability Score",
-                formula: "Site Match + Infrastructure + Preference Bonus + Diversity Adjustment, x Context Multiplier (0.7-1.0)\n= Final Suitability (0-100%)",
-                inputs: ["rec_sitescore", "rec_infrascore", "rec_contextscore", "rec_prefscore", "rec_diversity"],
+                formula: "Site Match + Infrastructure + Preference Bonus, x Context Multiplier (0.7-1.0)\n= Final Suitability (0-100%)",
+                inputs: ["rec_sitescore", "rec_infrascore", "rec_contextscore", "rec_prefscore"],
                 outputs: ["rec_species"]
             },
             rec_species: {
@@ -3433,8 +3414,6 @@
             const nativeOnly = document.getElementById('nativeOnly').checked;
             const soilPh = document.getElementById('recSoilPh').value;
             const avoidAllergyLitter = document.getElementById('recAllergyLitter').checked;
-            const existingCanopy = document.getElementById('recExistingCanopy').value
-                .split(',').map(s => s.trim().toLowerCase()).filter(s => s.length > 0);
 
             // Check required fields
             const requiredFields = {
@@ -3653,12 +3632,6 @@
                         } else if (SPECIES[sp].litter === 'high') {
                             score -= 5;
                         }
-                    }
-
-                    // Existing canopy diversity check (avoid recommending what's already there)
-                    if (existingCanopy.length > 0 && existingCanopy.some(name => sp.toLowerCase().includes(name) || name.includes(sp.toLowerCase()))) {
-                        score -= 15;
-                        reasons.push('Already common nearby-diversifying canopy is safer long-term');
                     }
 
                     score *= sentimentMult;
